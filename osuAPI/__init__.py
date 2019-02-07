@@ -1,1 +1,1 @@
-from .osuapi import OsuAPI
+from .osuAPI import OsuAPI
