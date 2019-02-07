@@ -13,7 +13,7 @@ $ pip install git+https://github.com/circleguard/osu-api
 
 To use:
 ```python
-import osuAPI
+from osuAPI import OsuAPI
 
 api = OsuAPI("key")
 api.get_replay({m: "0", b: "1776628", u: "3256299"})
