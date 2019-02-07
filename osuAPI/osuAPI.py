@@ -27,7 +27,7 @@ class OsuAPI():
     def _extend_url(self, url, params):
         """Adds every key/value pair in the params dict to the url."""
         # filter out None parameters
-        params = {k:v for k,v in params if k is not None}
+        params = {k:v for k,v in params.items() if k is not None}
         for key in params:
             url = url + "&{}={}".format(key, params[key])
         return url
@@ -49,4 +49,5 @@ class OsuAPI():
         ep = ENDPOINTS.GET_REPLAY
         self._check_parameters(ep, params)
         url = self.base_url.format(ep.EXTENSION)
-        return self._extend_url(url, params)
+        url = self._extend_url(url, params)
+        return self._process_url(url)
