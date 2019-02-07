@@ -1,0 +1,1 @@
+from .osuapi import OsuAPI
