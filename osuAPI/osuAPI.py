@@ -1,3 +1,5 @@
+import requests
+
 from .endpoints import ENDPOINTS
 from .exceptions import InvalidURLException
 
@@ -32,7 +34,7 @@ class OsuAPI():
 
     def _process_url(self, url):
         """Makes a request to the osu api and returns the json response."""
-
+        return requests.get(url).json()
 
     def get_scores(self, params):
         """Retrieves score data about the leaderboards of a map."""
