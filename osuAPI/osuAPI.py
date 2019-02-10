@@ -51,3 +51,11 @@ class OsuAPI():
         url = self.base_url.format(ep.EXTENSION)
         url = self._extend_url(url, params)
         return self._process_url(url)
+
+    def get_user_best(self, params):
+        """Retrieves top scores of a user."""
+        ep = ENDPOINTS.GET_USER_BEST
+        self._check_parameters(ep, params)
+        url = self.base_url.format(ep.EXTENSION)
+        url = self._extend_url(url, params)
+        return self._process_url(url)

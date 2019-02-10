@@ -9,3 +9,8 @@ class ENDPOINTS():
         EXTENSION = "get_replay"
         REQUIRED = ["m", "b", "u"]
         POSSIBLE = ["m", "b", "u", "mods"]
+
+    class GET_USER_BEST():
+        EXTENSION = "get_user_best"
+        REQUIRED = ["m", "u"]
+        POSSIBLE = ["m", "u", "limit", "type"]
