@@ -36,6 +36,22 @@ class OsuAPI():
         """Makes a request to the osu api and returns the json response."""
         return requests.get(url).json()
 
+    def get_beatmaps(self, params):
+        """Retrieves a list of maps an their information."""
+        ep = ENDPOINTS.GET_BEATMAPS
+        self._check_parameters(ep, params)
+        url = self.base_url.format(ep.EXTENSION)
+        url = self._extend_url(url, params)
+        return self._process_url(url)
+
+    def get_match(self, params):
+        """Retrieves information about a multiplayer match."""
+        ep = ENDPOINTS.GET_MATCH
+        self._check_parameters(ep, params)
+        url = self.base_url.format(ep.EXTENSION)
+        url = self._extend_url(url, params)
+        return self._process_url(url)
+
     def get_scores(self, params):
         """Retrieves score data about the leaderboards of a map."""
         ep = ENDPOINTS.GET_SCORES
@@ -47,6 +63,14 @@ class OsuAPI():
     def get_replay(self, params):
         """Retrieves replay data by a user on a map."""
         ep = ENDPOINTS.GET_REPLAY
+        self._check_parameters(ep, params)
+        url = self.base_url.format(ep.EXTENSION)
+        url = self._extend_url(url, params)
+        return self._process_url(url)
+
+    def get_user(self, params):
+        """Retrieves information about a user."""
+        ep = ENDPOINTS.GET_USER
         self._check_parameters(ep, params)
         url = self.base_url.format(ep.EXTENSION)
         url = self._extend_url(url, params)
