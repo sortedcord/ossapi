@@ -1,6 +1,6 @@
 # osuAPI
 
-OsuAPI is a minimal python wrapper for the osu api. Endpoints are implemented as necessary for the [circleguard](https://github.com/circleguard/circleguard) project. Passed keys (endpoint parameter key/value pairs, not the api key) are checked to make sure the api will accept them, and that all required keys are present. No attempt is made to check http status codes or retry requests that fail.
+OsuAPI is a minimal python wrapper for the osu api. This wrapper was created for, and is used in, the [circleguard](https://github.com/circleguard/circleguard) project. Passed keys (endpoint parameter key/value pairs, not the api key) are checked to make sure the api will accept them, and that all required keys are present. No attempt is made to check http status codes or retry requests that fail.
 
 ### Usage
 
