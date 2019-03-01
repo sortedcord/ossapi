@@ -27,7 +27,7 @@ class OsuAPI():
     def _extend_url(self, url, params):
         """Adds every key/value pair in the params dict to the url."""
         # filter out None parameters
-        params = {k:v for k,v in params.items() if k is not None}
+        params = {k:v for k,v in params.items() if v is not None}
         for key in params:
             url = url + "&{}={}".format(key, params[key])
         return url
