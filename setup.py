@@ -5,7 +5,7 @@ with open("README.md", "r") as readme:
 
 setuptools.setup(
     name="osuAPI",
-    version="1.0.0",
+    version="1.1.1",
     author="Liam DeVoe",
     author_email="orionldevoe@gmail.com",
     description="A simple, incomplete python wrapper for the osu api.",
