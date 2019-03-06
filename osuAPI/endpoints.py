@@ -27,7 +27,7 @@ class ENDPOINTS():
 
     class GET_USER_BEST():
         EXTENSION = "get_user_best"
-        REQUIRED = ["m", "u"]
+        REQUIRED = ["u"]
         POSSIBLE = ["m", "u", "limit", "type"]
 
     class GET_USER_RECENT():
