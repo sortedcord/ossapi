@@ -5,8 +5,13 @@ from ossapi.exceptions import InvalidURLException
 
 
 class ossapi():
-    """A simple api wrapper. Not all endpoints are implemented.
-    Every public method takes a dict as its argument, mapping keys to values."""
+    """
+    A simple api wrapper. Every public method takes a dict as its argument,
+    mapping keys to values.
+
+    No attempt is made to ratelimit the connection or catch request errors.
+    This is left to the user implementation.
+    """
 
     def __init__(self, key):
         """Initializes an API instance."""
