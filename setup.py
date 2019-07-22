@@ -1,21 +1,27 @@
-import setuptools
+from distutils.core import setup
+from setuptools import find_packages
+from ossapi.__init__ import __version__
 
 with open("README.md", "r") as readme:
     long_description = readme.read()
 
-setuptools.setup(
-    name="osuAPI",
-    version="1.2.0",
-    author="Liam DeVoe",
-    author_email="orionldevoe@gmail.com",
-    description="A simple, incomplete python wrapper for the osu api.",
+setup(
+    name="ossapi",
+    version=__version__,
+    description="A thin python wrapper around the osu! api, delegating error"
+                "handling and rate limiting (among other things) to the user.",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/circleguard/osu-api",
-    packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
+    keywords = ["osu!, wrapper, api, python"],
+    author="Liam DeVoe",
+    author_email="orionldevoe@gmail.com",
+    url="https://github.com/circleguard/osu-api",
+    download_url = "https://github.com/circleguard/osu-api/tarball/" + __version__,
+    license="MIT",
+    packages=find_packages(),
 )

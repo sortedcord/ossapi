@@ -1,10 +1,10 @@
 import requests
 
-from .endpoints import ENDPOINTS
-from .exceptions import InvalidURLException
+from ossapi.endpoints import ENDPOINTS
+from ossapi.exceptions import InvalidURLException
 
 
-class OsuAPI():
+class ossapi():
     """A simple api wrapper. Not all endpoints are implemented.
     Every public method takes a dict as its argument, mapping keys to values."""
 
