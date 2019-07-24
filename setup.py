@@ -20,8 +20,8 @@ setup(
     keywords = ["osu!, wrapper, api, python"],
     author="Liam DeVoe",
     author_email="orionldevoe@gmail.com",
-    url="https://github.com/circleguard/osu-api",
-    download_url = "https://github.com/circleguard/osu-api/tarball/" + __version__,
+    url="https://github.com/circleguard/ossapi",
+    download_url = "https://github.com/circleguard/ossapi/tarball/v" + __version__,
     license="MIT",
     packages=find_packages(),
 )
