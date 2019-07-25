@@ -8,7 +8,7 @@ with open("README.md", "r") as readme:
 setup(
     name="ossapi",
     version=__version__,
-    description="A thin python wrapper around the osu! api, delegating error"
+    description="A thin python wrapper around the osu! api, delegating error "
                 "handling and rate limiting (among other things) to the user.",
     long_description=long_description,
     long_description_content_type="text/markdown",
