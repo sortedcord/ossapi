@@ -1,8 +1,9 @@
 import requests
+from json.decoder import JSONDecodeError
+import logging
 
 from ossapi.endpoints import ENDPOINTS
 from ossapi.exceptions import InvalidURLException
-
 
 class ossapi():
     """
@@ -16,6 +17,7 @@ class ossapi():
     def __init__(self, key):
         """Initializes an API instance."""
         self._key = key
+        self.log = logging.getLogger(__name__)
         self.base_url = "https://osu.ppy.sh/api/{}?k=" + self._key
 
     def _check_parameters(self, ep, params):
@@ -38,8 +40,18 @@ class ossapi():
         return url
 
     def _process_url(self, url):
-        """Makes a request to the osu api and returns the json response."""
-        return requests.get(url).json()
+        """Makes a request to the osu api and returns the json response.
+        Returns a dictionary of 'error' to 'The api broke.' if no valid
+        json could be decoded (ie if a JSONDecodeError is thrown while
+        decoding the respoinse"""
+        response = requests.get(url)
+        try:
+            ret = response.json()
+            raise JSONDecodeError
+        except JSONDecodeError:
+            self.log.exception("JSONDecodeError, api response: %s", response.text)
+            ret = {"error": "The api broke."}
+        return ret
 
     def get_beatmaps(self, params):
         """Retrieves a list of maps an their information."""
