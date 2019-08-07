@@ -43,7 +43,7 @@ class ossapi():
         """Makes a request to the osu api and returns the json response.
         Returns a dictionary of 'error' to 'The api broke.' if no valid
         json could be decoded (ie if a JSONDecodeError is thrown while
-        decoding the respoinse"""
+        decoding the response)"""
         response = requests.get(url)
         try:
             ret = response.json()
