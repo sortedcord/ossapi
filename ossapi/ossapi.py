@@ -47,9 +47,8 @@ class ossapi():
         response = requests.get(url)
         try:
             ret = response.json()
-            raise JSONDecodeError
         except JSONDecodeError:
-            self.log.exception("JSONDecodeError, api response: %s", response.text)
+            self.log.exception("JSONDecodeError, response: %r, response.text: %r", response, response.text)
             ret = {"error": "The api broke."}
         return ret
 
