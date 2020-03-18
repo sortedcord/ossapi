@@ -45,7 +45,7 @@ class ossapi():
         Returns a dictionary of 'error' to 'The api broke.' if no valid
         json could be decoded (ie if a JSONDecodeError is thrown while
         decoding the response)"""
-        response = requests.get(url, self.timeout)
+        response = requests.get(url, timeout=self.timeout)
         try:
             ret = response.json()
         except JSONDecodeError:
