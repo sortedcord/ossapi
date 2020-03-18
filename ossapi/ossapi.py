@@ -14,9 +14,10 @@ class ossapi():
     This is left to the user implementation.
     """
 
-    def __init__(self, key):
+    def __init__(self, key, timeout=15):
         """Initializes an API instance."""
         self._key = key
+        self.timeout = timeout
         self.log = logging.getLogger(__name__)
         self.base_url = "https://osu.ppy.sh/api/{}?k=" + self._key
 
@@ -44,7 +45,7 @@ class ossapi():
         Returns a dictionary of 'error' to 'The api broke.' if no valid
         json could be decoded (ie if a JSONDecodeError is thrown while
         decoding the response)"""
-        response = requests.get(url)
+        response = requests.get(url, self.timeout)
         try:
             ret = response.json()
         except JSONDecodeError:
