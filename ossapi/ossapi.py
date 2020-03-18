@@ -14,6 +14,9 @@ class ossapi():
     This is left to the user implementation.
     """
 
+    # how long, in seconds, to wait before raising a `requests.Timeout` exception
+    TIMEOUT = 15
+
     def __init__(self, key):
         """Initializes an API instance."""
         self._key = key
@@ -44,7 +47,7 @@ class ossapi():
         Returns a dictionary of 'error' to 'The api broke.' if no valid
         json could be decoded (ie if a JSONDecodeError is thrown while
         decoding the response)"""
-        response = requests.get(url)
+        response = requests.get(url, timeout=ossapi.TIMEOUT)
         try:
             ret = response.json()
         except JSONDecodeError:
