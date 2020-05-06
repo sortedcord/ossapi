@@ -3,9 +3,8 @@ from json.decoder import JSONDecodeError
 import logging
 
 from ossapi.endpoints import ENDPOINTS
-from ossapi.exceptions import InvalidURLException
 
-class ossapi():
+class Ossapi():
     """
     A simple api wrapper. Every public method takes a dict as its argument,
     mapping keys to values.
@@ -26,13 +25,18 @@ class ossapi():
     def _check_parameters(self, ep, params):
         """Checks that all parameters required by the endpoint are present in the passed arguments,
         and that all passed arguments are possible parameters for the endpoint."""
-        for required in ep.REQUIRED:
-            if not any([r in params for r in required]):
-                raise InvalidURLException("{} is a required argument for {}".format(required, ep.EXTENSION))
+
+        any_group_satisfied = False
+        for group in ep.REQUIRED:
+            if all([required_param in params for required_param in group]):
+                any_group_satisfied = True
+
+        if not any_group_satisfied:
+            raise ValueError(f"Got parameters {params}, expected one of {ep.REQUIRED}")
 
         for key in params:
             if key not in ep.POSSIBLE:
-                raise InvalidURLException("{} cannot be set for {}".format(key, ep.EXTENSION))
+                raise ValueError(f"Got {key}, expected one of {ep.POSSIBLE}")
 
     def _extend_url(self, url, params):
         """Adds every key/value pair in the params dict to the url."""
@@ -110,3 +114,6 @@ class ossapi():
         url = self.base_url.format(ep.EXTENSION)
         url = self._extend_url(url, params)
         return self._process_url(url)
+
+# TODO remove in 2.0.0
+ossapi = Ossapi

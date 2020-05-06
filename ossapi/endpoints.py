@@ -2,35 +2,35 @@
 class ENDPOINTS():
     class GET_BEATMAPS():
         EXTENSION = "get_beatmaps"
-        REQUIRED = []  # this is according to https://github.com/ppy/osu-api/wiki
+        REQUIRED = [[]]  # this is according to https://github.com/ppy/osu-api/wiki
         POSSIBLE = ["since", "s", "b", "u", "type", "m", "a", "h", "limit", "mods"]
 
     class GET_MATCH():
         EXTENSION = "get_match"
-        REQUIRED = ["mp"]
+        REQUIRED = [["mp"]]
         POSSIBLE = ["mp"]
 
     class GET_SCORES():
         EXTENSION = "get_scores"
-        REQUIRED = ["b"]
+        REQUIRED = [["b"]]
         POSSIBLE = ["b", "u", "m", "mods", "type", "limit"]
 
     class GET_REPLAY():
         EXTENSION = "get_replay"
-        REQUIRED = [["b", "s"], ["u", "s"]]
+        REQUIRED = [["b", "u"], ["s"]]
         POSSIBLE = ["b", "u", "m", "s", "type", "mods"]
 
     class GET_USER():
         EXTENSION = "get_user"
-        REQUIRED = ["u"]
+        REQUIRED = [["u"]]
         POSSIBLE = ["u", "m", "type", "event_days"]
 
     class GET_USER_BEST():
         EXTENSION = "get_user_best"
-        REQUIRED = ["u"]
+        REQUIRED = [["u"]]
         POSSIBLE = ["m", "u", "limit", "type"]
 
     class GET_USER_RECENT():
         EXTENSION = "get_user_recent"
-        REQUIRED = ["u"]
+        REQUIRED = [["u"]]
         POSSIBLE = ["m", "u", "limit", "type"]
