@@ -27,7 +27,7 @@ class ossapi():
         """Checks that all parameters required by the endpoint are present in the passed arguments,
         and that all passed arguments are possible parameters for the endpoint."""
         for required in ep.REQUIRED:
-            if(required not in params):
+            if not any([r in params for r in required]):
                 raise InvalidURLException("{} is a required argument for {}".format(required, ep.EXTENSION))
 
         for key in params:
