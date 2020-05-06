@@ -31,7 +31,7 @@ class ossapi():
                 raise InvalidURLException("{} is a required argument for {}".format(required, ep.EXTENSION))
 
         for key in params:
-            if(key not in ep.POSSIBLE):
+            if key not in ep.POSSIBLE:
                 raise InvalidURLException("{} cannot be set for {}".format(key, ep.EXTENSION))
 
     def _extend_url(self, url, params):
