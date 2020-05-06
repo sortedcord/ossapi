@@ -3,7 +3,7 @@ class ENDPOINTS():
     class GET_BEATMAPS():
         EXTENSION = "get_beatmaps"
         REQUIRED = [["since"], ["s"], ["b"], ["u"], ["h"]]
-        POSSIBLE = ["type", "m", "a", "limit", "mods"]
+        POSSIBLE = ["since", "s", "b", "u", "h", "type", "m", "a", "limit", "mods"]
 
     class GET_MATCH():
         EXTENSION = "get_match"
