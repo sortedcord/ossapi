@@ -2,8 +2,8 @@
 class ENDPOINTS():
     class GET_BEATMAPS():
         EXTENSION = "get_beatmaps"
-        REQUIRED = [[]]  # this is according to https://github.com/ppy/osu-api/wiki
-        POSSIBLE = ["since", "s", "b", "u", "type", "m", "a", "h", "limit", "mods"]
+        REQUIRED = [["since"], ["s"], ["b"], ["u"], ["h"]]
+        POSSIBLE = ["type", "m", "a", "limit", "mods"]
 
     class GET_MATCH():
         EXTENSION = "get_match"
