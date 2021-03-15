@@ -28,7 +28,7 @@ class Ossapi():
 
         any_group_satisfied = False
         for group in ep.REQUIRED:
-            if all([required_param in params for required_param in group]):
+            if all(required_param in params for required_param in group):
                 any_group_satisfied = True
 
         if not any_group_satisfied:
@@ -114,6 +114,3 @@ class Ossapi():
         url = self.base_url.format(ep.EXTENSION)
         url = self._extend_url(url, params)
         return self._process_url(url)
-
-# TODO remove in 2.0.0
-ossapi = Ossapi

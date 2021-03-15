@@ -1,6 +1,5 @@
-# TODO remove ossapi in 2.0.0
-from ossapi.ossapi import Ossapi, ossapi
+from ossapi.ossapi import Ossapi
+from ossapi.ossapiv2 import OssapiV2
+from ossapi.version import __version__
 
-__all__ = ["Ossapi", "ossapi"]
-
-__version__ = "1.3.0"
+__all__ = ["Ossapi", "OssapiV2", "__version__"]
