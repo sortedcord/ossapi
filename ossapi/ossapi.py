@@ -51,7 +51,7 @@ class Ossapi():
         Returns a dictionary of 'error' to 'The api broke.' if no valid
         json could be decoded (ie if a JSONDecodeError is thrown while
         decoding the response)"""
-        response = requests.get(url, timeout=ossapi.TIMEOUT)
+        response = requests.get(url, timeout=self.TIMEOUT)
         try:
             ret = response.json()
         except JSONDecodeError:
