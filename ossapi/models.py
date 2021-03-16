@@ -19,6 +19,35 @@ class ProfilePage(Enum):
 T = TypeVar("T")
 
 
+
+@dataclass
+class Beatmap:
+    difficulty_rating: int
+    id: int
+    mode: str
+    status: str
+    total_length: int
+    version: str
+    accuracy: int
+    ar: int
+    beatmapset_id: int
+    bpm: int
+    convert: bool
+    count_circles: int
+    count_sliders: int
+    count_spinners: int
+    cs: int
+    deleted_at: str
+    drain: int
+    hit_length: int
+    is_scoreable: bool
+    last_updated: datetime
+    mode_int: int
+    passcount: int
+    playcount: int
+    ranked: int
+    url: str
+
 @dataclass
 class Beatmapset:
     artist: str
@@ -53,35 +82,9 @@ class Beatmapset:
     submitted_date: datetime
     tags: str
     ratings: list[int]
+    beatmaps: Optional[Beatmap]
 
 
-@dataclass
-class Beatmap:
-    difficulty_rating: int
-    id: int
-    mode: str
-    status: str
-    total_length: int
-    version: str
-    accuracy: int
-    ar: int
-    beatmapset_id: int
-    bpm: int
-    convert: bool
-    count_circles: int
-    count_sliders: int
-    count_spinners: int
-    cs: int
-    deleted_at: str
-    drain: int
-    hit_length: int
-    is_scoreable: bool
-    last_updated: datetime
-    mode_int: int
-    passcount: int
-    playcount: int
-    ranked: int
-    url: str
 
 @dataclass
 class BeatmapExtended(Beatmap):
@@ -244,7 +247,16 @@ class Comment:
 # receive that atttribute. So ``__annotations`` will need updating as we
 # encounter new cursor attributes.
 class Cursor(SimpleNamespace):
-    __annotations__ = {"created_at": datetime, "id": int, "votes_count": int}
+    __annotations__ = {
+        "created_at": datetime,
+        "id": int,
+        "_id": str,
+        "queued_at": str,
+        "approved_date": datetime,
+        "last_update": str,
+        "votes_count": int,
+        "page": int
+    }
 
 @dataclass
 class CommentBundle:
@@ -300,6 +312,15 @@ class WikiPage:
 class Search:
     user: Optional[SearchResult[UserCompact]]
     wiki_page: Optional[SearchResult[WikiPage]]
+
+
+@dataclass
+class BeatmapSearchResult:
+    beatmapsets: list[Beatmapset]
+    cursor: Cursor
+    recommended_difficulty: float
+    error: Optional[str]
+    total: int
 
 
 # the get replay endpoint
