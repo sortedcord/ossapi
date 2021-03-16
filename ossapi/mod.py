@@ -75,7 +75,7 @@ class ModCombination():
         if len(mod_string) % 2 != 0:
             raise ValueError(f"Invalid mod string {mod_string} (not of even "
                 "length)")
-        mod_value = 0
+        mod = Mod.NM
         for i in range(0, len(mod_string) - 1, 2):
             single_mod = mod_string[i: i + 2]
             # there better only be one Mod that has an acronym matching ours,
@@ -93,8 +93,8 @@ class ModCombination():
             if not matching_mods:
                 raise ValueError("Invalid mod string (no matching mod found "
                     f"for {single_mod})")
-            mod_value += matching_mods[0].value
-        return mod_value
+            mod += matching_mods[0]
+        return mod.value
 
     def short_name(self):
         """
