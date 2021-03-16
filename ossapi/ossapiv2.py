@@ -98,7 +98,6 @@ class OssapiV2:
         serversocket.close()
 
         code = data.split("code=")[1].split("&state=")[0]
-        # TODO: save token for future sessions
         token = oauth.fetch_token("https://osu.ppy.sh/oauth/token",
             client_id=client_id, client_secret=client_secret, code=code)
         path = Path(__file__).parent / "authorization_code.pickle"
@@ -107,17 +106,8 @@ class OssapiV2:
 
         return oauth
 
-    def _get(self, type_, url, locals_={}):
-        # ``locals()`` includes the ``self`` argument which we need to remove.
-        locals_ = {k:v for k,v in locals_.items() if k != "self"}
-        # some of our params are named eg ``id_`` to avoid conflicting with
-        # python builtins, but we need to pass eg ``id`` to the api.
-        for key in locals_:
-            if not key.endswith("_"):
-                continue
-            locals_[key] = locals_[key][:-1]
-
-        r = self.session.get(f"{self.BASE_URL}{url}", params=locals_)
+    def _get(self, type_, url, params={}):
+        r = self.session.get(f"{self.BASE_URL}{url}", params=params)
         json = r.json()
         obj = self._instantiate(type_, **json)
         obj = self._resolve_annotations(obj)
@@ -238,15 +228,14 @@ class OssapiV2:
         """
         return get_origin(type_) is Union and get_args(type_)[1] is type(None)
 
-    # we pass the arguments to these functions via ``locals()`` which pylint
-    # doesn't pick up on, so it thinks they're unused.
-    # pylint: disable=unused-argument
     def beatmap_lookup(self, checksum=None, filename=None, id_=None):
-        return self._get(Beatmap, "/beatmaps/lookup", locals())
+        params = {"checksum": checksum, "filename": filename, "id": id_}
+        return self._get(Beatmap, "/beatmaps/lookup", params)
 
     def beatmap_user_score(self, beatmap, user, mode=None, mods=None):
+        params = {"mode": mode, "mods": mods}
         return self._get(BeatmapUserScore,
-            f"/beatmaps/{beatmap}/scores/users/{user}", locals())
+            f"/beatmaps/{beatmap}/scores/users/{user}", params)
 
     def beatmap(self, beatmap):
         return self._get(BeatmapExtended, f"/beatmaps/{beatmap}")
@@ -263,7 +252,10 @@ class OssapiV2:
         ``pinned_comments`` is only included when ``commentable_type`` and
         ``commentable_id`` are specified.
         """
-        return self._get(CommentBundle, "/comments", locals())
+        params = {"commentable_type": commentable_type, "commentable_id":
+            commentable_id, "cursor": cursor, "parent_id": parent_id,
+            "sort": sort}
+        return self._get(CommentBundle, "/comments", params)
 
     def comment(self, comment):
         """
@@ -278,11 +270,13 @@ class OssapiV2:
 
         https://osu.ppy.sh/docs/index.html#get-topic-and-posts
         """
-        return self._get(ForumTopicAndPosts, f"/forums/topics/{topic}",
-            locals())
+        params = {"cursor": cursor, "sort": sort, "limit": limit,
+            "start": start, "end": end}
+        return self._get(ForumTopicAndPosts, f"/forums/topics/{topic}", params)
 
     def search(self, mode="all", query=None, page=None):
-        return self._get(Search, "/search", locals())
+        params = {"mode": mode, "query": query, "page": page}
+        return self._get(Search, "/search", params)
 
     def score(self, mode, score):
         return self._get(ReplayScore, f"/scores/{mode}/{score}")
