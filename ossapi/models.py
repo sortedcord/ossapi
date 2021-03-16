@@ -244,7 +244,16 @@ class Comment:
 # receive that atttribute. So ``__annotations`` will need updating as we
 # encounter new cursor attributes.
 class Cursor(SimpleNamespace):
-    __annotations__ = {"created_at": datetime, "id": int, "votes_count": int}
+    __annotations__ = {
+        "created_at": datetime,
+        "id": int,
+        "_id": str,
+        "queued_at": str,
+        "approved_date": str,
+        "last_update": str,
+        "votes_count": int,
+        "page": int,
+    }
 
 @dataclass
 class CommentBundle:
