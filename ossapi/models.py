@@ -294,7 +294,16 @@ class Comment:
 # receive that atttribute. So ``__annotations`` will need updating as we
 # encounter new cursor attributes.
 class Cursor(SimpleNamespace):
-    __annotations__ = {"created_at": datetime, "id": int, "votes_count": int}
+    __annotations__ = {
+        "created_at": datetime,
+        "id": int,
+        "_id": str,
+        "queued_at": str,
+        "approved_date": datetime,
+        "last_update": str,
+        "votes_count": int,
+        "page": int
+    }
 
 @dataclass
 class CommentBundle:
@@ -350,3 +359,11 @@ class WikiPage:
 class Search:
     user: Optional[SearchResult[UserCompact]]
     wiki_page: Optional[SearchResult[WikiPage]]
+
+@dataclass
+class BeatmapSearchResult:
+    beatmapsets: list[Beatmapset]
+    cursor: Cursor
+    recommended_difficulty: float
+    error: Optional[str]
+    total: int
