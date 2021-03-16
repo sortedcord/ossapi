@@ -125,7 +125,6 @@ class BeatmapCompact:
 
 @dataclass
 class Beatmap(BeatmapCompact):
-    status: str
     total_length: int
     version: str
     accuracy: int
@@ -169,7 +168,7 @@ class BeatmapsetCompact:
     play_count: int
     preview_url: str
     source: str
-    status: str
+    status: RankStatus
     title: str
     title_unicode: str
     user_id: int
@@ -239,7 +238,7 @@ class Score:
     pp: float
     rank: int
     created_at: datetime
-    mode: str
+    mode: GameMode
     mode_int: int
     replay: bool
 

@@ -7,6 +7,7 @@ import pickle
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 from datetime import datetime
+from enum import Enum
 
 from requests_oauthlib import OAuth2Session
 from oauthlib.oauth2 import BackendApplicationClient
@@ -194,14 +195,21 @@ class OssapiV2:
             origin = get_origin(type_)
             args = get_args(type_)
 
-            # TODO is this the right place to do this conversion for mods and
-            # datetime types? Should it happen lower down in our
+            # TODO is this the right place to do this conversion for these
+            # types? Should it happen lower down in our
             # ``if is_model_type(type_) or is_model_type(origin) or is_list:``
             # check? Where does our list conversion fit into all this, is that
             # happening in the right place as well?
             if type_ is Mod:
                 self.log.debug("Found a mod attribute, converting to a Mod")
                 value = Mod(value)
+                setattr(obj, attr, value)
+                continue
+            # ``issubclass`` only accepts classes so check if it's a class first
+            # https://stackoverflow.com/a/395741
+            if isinstance(type_, type) and issubclass(type_, Enum):
+                # TODO could consolidate this and the above into a single method
+                value = type_(value)
                 setattr(obj, attr, value)
                 continue
             if type_ is datetime:

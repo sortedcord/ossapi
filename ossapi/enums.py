@@ -27,6 +27,29 @@ class RankStatus(Enum):
     QUALIFIED = 3
     LOVED = 4
 
+    @classmethod
+    def _missing_(cls, value):
+        """
+        The api can return ``RankStatus`` values as either an int or a string,
+        so if we try to instantiatte with a string, return the corresponding
+        enum attribute.
+        """
+        if value == "graveyard":
+            return cls(-2)
+        if value == "wip":
+            return cls(-1)
+        if value == "pending":
+            return cls(0)
+        if value == "ranked":
+            return cls(1)
+        if value == "approved":
+            return cls(2)
+        if value == "qualified":
+            return cls(3)
+        if value == "loved":
+            return cls(4)
+        return super()._missing_(value)
+
 class UserAccountHistoryType(Enum):
     NOTE = "note"
     RESTRICTION = "restriction"
