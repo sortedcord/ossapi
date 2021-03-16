@@ -86,6 +86,15 @@ class OssapiV2:
         connection, _ = serversocket.accept()
         # arbitrary "large enough" byte receive size
         data = str(connection.recv(8192))
+        connection.send(b"HTTP/1.0 200 OK\n")
+        connection.send(b"Content-Type: text/html\n")
+        connection.send(b"\n")
+        connection.send(b"""<html><body>
+            <h2>Ossapi has received your authentication.</h2> You
+            can now close this tab safely.
+            </body></html>
+        """)
+        connection.close()
         serversocket.close()
 
         code = data.split("code=")[1].split("&state=")[0]
