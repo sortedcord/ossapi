@@ -314,17 +314,17 @@ class OssapiV2:
         """
         return get_origin(type_) is Union and get_args(type_)[1] is type(None)
 
-    def beatmap_lookup(self, checksum=None, filename=None, id_=None):
-        params = {"checksum": checksum, "filename": filename, "id": id_}
+    def beatmap_lookup(self, checksum=None, filename=None, beatmap_id=None):
+        params = {"checksum": checksum, "filename": filename, "id": beatmap_id}
         return self._get(Beatmap, "/beatmaps/lookup", params)
 
-    def beatmap_user_score(self, beatmap, user, mode=None, mods=None):
+    def beatmap_user_score(self, beatmap_id, user_id, mode=None, mods=None):
         params = {"mode": mode, "mods": mods}
         return self._get(BeatmapUserScore,
-            f"/beatmaps/{beatmap}/scores/users/{user}", params)
+            f"/beatmaps/{beatmap_id}/scores/users/{user_id}", params)
 
-    def beatmap(self, beatmap):
-        return self._get(BeatmapExtended, f"/beatmaps/{beatmap}")
+    def beatmap(self, beatmap_id):
+        return self._get(BeatmapExtended, f"/beatmaps/{beatmap_id}")
 
     def comments(self, commentable_type=None, commentable_id=None, cursor=None,
         parent_id=None, sort=None):
@@ -338,16 +338,16 @@ class OssapiV2:
         ``pinned_comments`` is only included when ``commentable_type`` and
         ``commentable_id`` are specified.
         """
-        params = {"commentable_type": commentable_type, "commentable_id":
-            commentable_id, "cursor": cursor, "parent_id": parent_id,
-            "sort": sort}
+        params = {"commentable_type": commentable_type,
+            "commentable_id": commentable_id, "cursor": cursor,
+            "parent_id": parent_id, "sort": sort}
         return self._get(CommentBundle, "/comments", params)
 
-    def comment(self, comment):
+    def comment(self, comment_id):
         """
         https://osu.ppy.sh/docs/index.html#get-a-comment
         """
-        return self._get(CommentBundle, f"/comments/{comment}")
+        return self._get(CommentBundle, f"/comments/{comment_id}")
 
     def topic(self, topic, cursor=None, sort=None, limit=None, start=None,
         end=None):
@@ -364,11 +364,11 @@ class OssapiV2:
         params = {"mode": mode, "query": query, "page": page}
         return self._get(Search, "/search", params)
 
-    def score(self, mode, score):
-        return self._get(ReplayScore, f"/scores/{mode}/{score}")
+    def score(self, mode, score_id):
+        return self._get(ReplayScore, f"/scores/{mode}/{score_id}")
 
-    def score_download(self, mode, score):
-        r = self.session.get(f"{self.BASE_URL}/scores/{mode}/{score}/download")
+    def download_score(self, mode, score_id):
+        r = self.session.get(f"{self.BASE_URL}/scores/{mode}/{score_id}/download")
 
         tempfile = NamedTemporaryFile(mode="wb", delete=False)
         with tempfile as f:
