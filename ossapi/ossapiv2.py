@@ -12,7 +12,7 @@ from requests_oauthlib import OAuth2Session
 from oauthlib.oauth2 import BackendApplicationClient
 
 from ossapi.models import (Beatmap, BeatmapUserScore, ForumTopicAndPosts,
-    Search, BeatmapExtended, CommentBundle, ReplayScore, Cursor)
+    Search, CommentBundle, Cursor, Score)
 from ossapi.mod import Mod
 
 def is_model_type(obj):
@@ -290,6 +290,14 @@ class OssapiV2:
         except TypeError:
             return type_(**kwargs)
 
+        # replace any key names that are invalid python syntax with a valid
+        # one. Note: this is relying on our models replacing an at sign with
+        # an underscore when declaring attributes.
+        # ``list(kwargs)`` to make a copy of it so we can modify kwargs while
+        # iterating.
+        for key in list(kwargs):
+            kwargs[key.replace("@", "_")] = kwargs.pop(key)
+
         # if we've annotated a class with ``Optional[X]``, and the api response
         # didn't return a value for that attribute, pass ``None`` for that
         # attribute.
@@ -324,7 +332,7 @@ class OssapiV2:
             f"/beatmaps/{beatmap_id}/scores/users/{user_id}", params)
 
     def beatmap(self, beatmap_id):
-        return self._get(BeatmapExtended, f"/beatmaps/{beatmap_id}")
+        return self._get(Beatmap, f"/beatmaps/{beatmap_id}")
 
     def comments(self, commentable_type=None, commentable_id=None, cursor=None,
         parent_id=None, sort=None):
@@ -365,7 +373,7 @@ class OssapiV2:
         return self._get(Search, "/search", params)
 
     def score(self, mode, score_id):
-        return self._get(ReplayScore, f"/scores/{mode}/{score_id}")
+        return self._get(Score, f"/scores/{mode}/{score_id}")
 
     def download_score(self, mode, score_id):
         r = self.session.get(f"{self.BASE_URL}/scores/{mode}/{score_id}/download")
