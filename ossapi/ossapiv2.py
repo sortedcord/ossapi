@@ -5,6 +5,7 @@ import webbrowser
 import socket
 import pickle
 from pathlib import Path
+from tempfile import NamedTemporaryFile
 
 from requests_oauthlib import OAuth2Session
 from oauthlib.oauth2 import BackendApplicationClient
@@ -278,4 +279,10 @@ class OssapiV2:
         return self._get(ReplayScore, f"/scores/{mode}/{score}")
 
     def score_download(self, mode, score):
-        return self._get(ReplayScore, f"/scores/{mode}/{score}/download")
+        r = self.session.get(f"{self.BASE_URL}/scores/{mode}/{score}/download")
+
+        tempfile = NamedTemporaryFile(mode="wb", delete=False)
+        with tempfile as f:
+            f.write(r.content)
+
+        return tempfile.name
