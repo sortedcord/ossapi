@@ -129,6 +129,43 @@ class OssapiV2:
         return obj
 
     def _resolve_annotations(self, obj):
+        """
+        This is where the magic happens. Since python lacks a good
+        deserialization library, I've opted to use type annotations and type
+        annotations only to convert json to objects. A breakdown follows.
+
+        Every endpoint defines a base object, let's say it's a ``Score``. We
+        first instantiate this object with the json we received. This is easy to
+        do because (almost) all of our objects are dataclasses, which means we
+        can pass the json as ``Score(**json)`` and since the names of our fields
+        coincide with the names of the api json keys, everything works.
+
+        This populates all of the surface level members, but nested attributes
+        which are annotated as another dataclass object will still be dicts. So
+        we traverse down the tree of our base object's attributes (depth-first,
+        though I'm pretty sure BFS would work just as well), looking for any
+        attribute with a type annotation that we need to deal with. For
+        instance, ``Score`` has a ``beatmap`` attribute, which is annotated as
+        ``Optional[Beatmap]``. We ignore the optional annotation (since we're
+        looking at this attribute, we must have received data for it, so it's
+        nonnull) and then instantiate the ``beatmap`` attribute the same way
+        we instantiated the ``Score`` - with ``Beatmap(**json)``. Of course, the
+        variables will look different in the method (``type_(**value)``).
+
+        Finally, when traversing the attribute tree, we also look for attributes
+        which aren't dataclasses, but we still need to convert. For instance,
+        any attribute with an annotation of ``datetime`` or ``Mod`` we convert
+        to a ``datetime`` and ``Mod`` object respectively.
+
+        This code is arguably trying to be too smart for its own good, but I
+        think it's very elegant from the perspective of "just add a dataclass
+        that mirrors the api's objects and everything works". Will hopefully
+        make changing our dataclasses to account for breaking api changes in
+        the future trivial as well.
+
+        And if I'm being honest, it was an excuse to learn the internals of
+        python's typing system.
+        """
         # we want to get the annotations of inherited members as well, which is
         # why we pass ``type(obj)`` instead of just ``obj``, which would only
         # return annotations for attributes defined in ``obj`` and not its
