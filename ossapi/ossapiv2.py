@@ -87,7 +87,8 @@ class OssapiV2:
     def _authorization_code_grant(self, client_id, client_secret, redirect_uri,
         scope):
         oauth = OAuth2Session(client_id, redirect_uri=redirect_uri, scope=scope)
-        authorization_url, _state = oauth.authorization_url("https://osu.ppy.sh/oauth/authorize")
+        authorization_url, _state = oauth.authorization_url(
+                "https://osu.ppy.sh/oauth/authorize")
 
         webbrowser.open(authorization_url)
 
@@ -197,7 +198,8 @@ class OssapiV2:
                 origin = get_origin(type_)
                 args = get_args(type_)
 
-            if origin is list and (is_model_type(args[0]) or isinstance(args[0], TypeVar)):
+            if (origin is list and (is_model_type(args[0]) or
+                isinstance(args[0], TypeVar))):
                 assert len(args) == 1
                 is_list = True
                 # check if the list has been instantiated generically; if so,
