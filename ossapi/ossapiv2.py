@@ -1,6 +1,10 @@
 from typing import get_type_hints, get_origin, get_args, Union, TypeVar
 from dataclasses import is_dataclass
 import logging
+import webbrowser
+import socket
+import pickle
+from pathlib import Path
 
 from requests_oauthlib import OAuth2Session
 from oauthlib.oauth2 import BackendApplicationClient
@@ -14,23 +18,84 @@ class OssapiV2:
     BASE_URL = "https://osu.ppy.sh/api/v2"
     SCOPE = ["public"]
 
-    def __init__(self, client_id, client_secret):
+    def __init__(self, client_id, client_secret, redirect_uri=None,
+        scope=["public"]):
+
+        self.session = self.authenticate(client_id, client_secret, redirect_uri,
+            scope)
+        self.log = logging.getLogger(__name__)
+
+    def authenticate(self, client_id, client_secret, redirect_uri, scope):
+        # Prefer saved sessions to re-authenticating. Furthermore, prefer the
+        # authorization code grant over the client credentials grant if both
+        # exist.
+        token_file = Path(__file__).parent / "authorization_code.pickle"
+        if token_file.is_file():
+            with open(token_file, "rb") as f:
+                token = pickle.load(f)
+            return OAuth2Session(client_id, token=token)
+
+        token_file = Path(__file__).parent / "client_credentials.pickle"
+        if token_file.is_file():
+            with open(token_file, "rb") as f:
+                token = pickle.load(f)
+            return OAuth2Session(client_id, token=token)
+
+        # if redirect_uri is not passed, assume the user wanted to use the
+        # client credentials grant.
+        if not redirect_uri:
+            if scope != ["public"]:
+                raise ValueError(f"scope must be ['public'] if the "
+                    f"client credentials grant is used. Got {scope}")
+            return self._client_credentials_grant(client_id, client_secret)
+        return self._authorization_code_grant(client_id, client_secret,
+            redirect_uri, scope)
+
+    def _client_credentials_grant(self, client_id, client_secret):
         auto_refresh_kwargs = {
             "client_id": client_id,
             "client_secret": client_secret
         }
-
-        client = BackendApplicationClient(client_id=client_id, scope=self.SCOPE)
+        client = BackendApplicationClient(client_id=client_id, scope=["public"])
 
         oauth = OAuth2Session(client=client,
-            auto_refresh_kwargs=auto_refresh_kwargs,
-            token_updater=self._update_token)
+            auto_refresh_kwargs=auto_refresh_kwargs)
+
         token = oauth.fetch_token(token_url=self.TOKEN_URL, client_id=client_id,
             client_secret=client_secret)
-        self._update_token(token)
-        self.session = oauth
+        path = Path(__file__).parent / "client_credentials.pickle"
+        with open(path, "wb+") as f:
+            pickle.dump(token, f)
 
-        self.log = logging.getLogger(__name__)
+        return oauth
+
+    def _authorization_code_grant(self, client_id, client_secret, redirect_uri,
+        scope):
+        oauth = OAuth2Session(client_id, redirect_uri=redirect_uri, scope=scope)
+        authorization_url, _state = oauth.authorization_url("https://osu.ppy.sh/oauth/authorize")
+
+        webbrowser.open(authorization_url)
+
+        # open up a temporary socket so we can receive the GET request to the
+        # callback url
+        port = int(redirect_uri.rsplit(":", 1)[1].split("/")[0])
+        serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        serversocket.bind(("localhost", port))
+        serversocket.listen(1)
+        connection, _ = serversocket.accept()
+        # arbitrary "large enough" byte receive size
+        data = str(connection.recv(8192))
+        serversocket.close()
+
+        code = data.split("code=")[1].split("&state=")[0]
+        # TODO: save token for future sessions
+        token = oauth.fetch_token("https://osu.ppy.sh/oauth/token",
+            client_id=client_id, client_secret=client_secret, code=code)
+        path = Path(__file__).parent / "authorization_code.pickle"
+        with open(path, "wb+") as f:
+            pickle.dump(token, f)
+
+        return oauth
 
     def _get(self, type_, url, locals_={}):
         # ``locals()`` includes the ``self`` argument which we need to remove.
@@ -162,9 +227,6 @@ class OssapiV2:
         ``Optional[X]`` is equivalent to ``Union[X, None]``.
         """
         return get_origin(type_) is Union and get_args(type_)[1] is type(None)
-
-    def _update_token(self, token):
-        self.token = token
 
     # we pass the arguments to these functions via ``locals()`` which pylint
     # doesn't pick up on, so it thinks they're unused.
