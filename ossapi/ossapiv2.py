@@ -12,6 +12,7 @@ from oauthlib.oauth2 import BackendApplicationClient
 
 from ossapi.models import (Beatmap, BeatmapUserScore, ForumTopicAndPosts,
     Search, BeatmapExtended, CommentBundle, ReplayScore, Cursor)
+from ossapi.mod import Mod
 
 def is_model_type(obj):
     # almost every model we have is a dataclass, but we do have a unique one,
@@ -154,6 +155,16 @@ class OssapiV2:
             type_ = annotations[attr]
             origin = get_origin(type_)
             args = get_args(type_)
+
+            # TODO is this the right place to do this conversion (for datetime
+            # attributes too)? Should it happen lower down in our
+            # ``if is_model_type(type_) or is_model_type(origin) or is_list:``
+            # check?
+            if type_ is Mod:
+                self.log.debug("Found a mod attribute, converting to a Mod")
+                value = Mod(value)
+                setattr(obj, attr, value)
+                continue
 
             # if this type is an optional, "unwrap" it to get the true type.
             # We don't care about the optional annotation in this context

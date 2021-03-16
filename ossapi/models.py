@@ -4,6 +4,8 @@ from datetime import datetime
 from enum import Enum
 from types import SimpleNamespace
 
+from ossapi.mod import Mod
+
 class ProfilePage(Enum):
     ME = "me"
     RECENT_ACTIVITY = "recent_activity"
@@ -175,7 +177,7 @@ class Score:
     best_id: int
     user_id: int
     accuracy: float
-    mods: list[str]
+    mods: Mod
     score: int
     max_combo: int
     perfect: bool
