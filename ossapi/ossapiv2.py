@@ -12,7 +12,8 @@ from requests_oauthlib import OAuth2Session
 from oauthlib.oauth2 import BackendApplicationClient
 
 from ossapi.models import (Beatmap, BeatmapUserScore, ForumTopicAndPosts,
-    Search, BeatmapExtended, CommentBundle, ReplayScore, Cursor)
+    Search, BeatmapExtended, CommentBundle, ReplayScore, Cursor,
+    BeatmapSearchResult)
 from ossapi.mod import Mod
 
 def is_model_type(obj):
@@ -206,11 +207,11 @@ class OssapiV2:
                 setattr(obj, attr, value)
                 continue
             if type_ is datetime:
-                # the api returns two types of timestamps (although both are
-                # valid ISO 8601), "2018-09-11T08:45:49.000000Z" and
-                # "2014-05-18T17:22:23+00:00". We handle these in the two
-                # following cases respectively.
-                # fully compliant ISO 8601 parsing is apparently a pain, and
+                # the api returns two three of timestamps: two ISO 8601 formats
+                # (eg "2018-09-11T08:45:49.000000Z" and
+                # "2014-05-18T17:22:23+00:00") and a unix timestamp (eg
+                # 1615385278000). We handle each case below.
+                # Fully compliant ISO 8601 parsing is apparently a pain, and
                 # the proper way to do this would be to use a third party
                 # library, but I don't want to add any dependencies. This
                 # stopgap seems to work for now, but may break in the future if
@@ -219,7 +220,17 @@ class OssapiV2:
                 if value.endswith("Z"):
                     value = datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%f%z")
                 else:
-                    value = datetime.strptime(value, "%Y-%m-%dT%H:%M:%S%z")
+                    try:
+                        # see if it's an int first, if so it's a unix timestamp.
+                        # the api returns the timestamp in milliseconds but
+                        # ``datetime.utcfromtimestamp`` expects it in seconds,
+                        # so divide by 1000 to convert.
+                        value = int(value) / 1000
+                        value = datetime.utcfromtimestamp(value)
+                    except ValueError:
+                        # if it's not an int, assume it's the secnd form of ISO
+                        # 8601
+                        value = datetime.strptime(value, "%Y-%m-%dT%H:%M:%S%z")
                 setattr(obj, attr, value)
                 continue
 
@@ -375,3 +386,6 @@ class OssapiV2:
             f.write(r.content)
 
         return tempfile.name
+
+    def search_beatmaps(self, filters):
+        return self._get(BeatmapSearchResult, f"/beatmapsets/search/{filters}")
