@@ -234,7 +234,7 @@ class OssapiV2:
                         value = int(value) / 1000
                         value = datetime.utcfromtimestamp(value)
                     except ValueError:
-                        # if it's not an int, assume it's the secnd form of ISO
+                        # if it's not an int, assume it's the second form of ISO
                         # 8601
                         value = datetime.strptime(value, "%Y-%m-%dT%H:%M:%S%z")
                 setattr(obj, attr, value)
