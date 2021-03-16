@@ -236,6 +236,9 @@ class Comment:
 class Cursor:
     created_at: datetime
     id: int
+    # why in the world is this here? call ``api.comment(1)`` while using the
+    # authorization code flow to reproduce.
+    votes_count: int
 
 @dataclass
 class CommentBundle:
@@ -279,7 +282,13 @@ class SearchResult(Generic[T]):
 
 @dataclass
 class WikiPage:
-    pass
+    layout: str
+    locale: str
+    markdown: str
+    path: str
+    subtitle: Optional[str]
+    tags: list[str]
+    title: str
 
 @dataclass
 class Search:
