@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional, TypeVar, Generic
+from typing import Optional, TypeVar, Generic, Any
 from datetime import datetime
 from types import SimpleNamespace
 
@@ -10,6 +10,11 @@ from ossapi.enums import (Country, Cover, ProfilePage, UserAccountHistory,
 
 T = TypeVar("T")
 
+
+"""
+a type hint of ``Optional[Any]`` or ``Any`` means that I don't know what type it
+is, not that the api actually lets any type be returned there.
+"""
 
 @dataclass
 class UserCompact:
@@ -38,12 +43,12 @@ class UserCompact:
     active_tournament_banner: Optional[ProfileBanner]
     badges: Optional[list[UserBadge]]
     beatmap_playcounts_count: Optional[int]
-    blocks: Optional[None]
+    blocks: Optional[Any]
     country: Optional[Country]
     cover: Optional[Cover]
     favourite_beatmapset_count: Optional[int]
     follower_count: Optional[int]
-    friends: Optional[None]
+    friends: Optional[Any]
     graveyard_beatmapset_count: Optional[int]
     groups: Optional[list[UserGroup]]
     is_admin: Optional[bool]
@@ -57,21 +62,21 @@ class UserCompact:
     is_silenced: Optional[bool]
     loved_beatmapset_count: Optional[int]
     monthly_playcounts: Optional[list[None]]
-    page: Optional[None]
-    previous_usernames: Optional[None]
-    ranked_and_approved_beatmapset_count: Optional[None]
-    replays_watched_counts: Optional[None]
+    page: Optional[Any]
+    previous_usernames: Optional[Any]
+    ranked_and_approved_beatmapset_count: Optional[Any]
+    replays_watched_counts: Optional[Any]
     scores_best_count: Optional[int]
     scores_first_count: Optional[int]
     scores_recent_count: Optional[int]
-    statistics: Optional[None]
-    statistics_rulesets: Optional[None]
-    support_level: Optional[None]
-    unranked_beatmapset_count: Optional[None]
-    unread_pm_count: Optional[None]
-    user_achievements: Optional[None]
-    user_preferences: Optional[None]
-    rank_history: Optional[None]
+    statistics: Optional[Any]
+    statistics_rulesets: Optional[Any]
+    support_level: Optional[Any]
+    unranked_beatmapset_count: Optional[Any]
+    unread_pm_count: Optional[Any]
+    user_achievements: Optional[Any]
+    user_preferences: Optional[Any]
+    rank_history: Optional[Any]
 
 
 @dataclass
@@ -81,8 +86,7 @@ class User(UserCompact):
     has_supported: bool
     interests: Optional[str]
     join_date: datetime
-    # TODO
-    kudosu: None
+    kudosu: Any
     location: Optional[str]
     max_blocks: int
     max_friends: int
@@ -113,10 +117,10 @@ class BeatmapCompact:
     # ``BeatmapCompact`` and ``BeatmapsetCompact`` are mutually dependent, so
     # set a dummy type here and we'll update it to the real type after
     # ``BeatmapsetCompact`` is defined.
-    beatmapset: Optional[None] # Optional[BeatmapsetCompact]
+    beatmapset: Optional[Any] # Optional[BeatmapsetCompact]
     checksum: Optional[str]
-    failtimes: Failtimes
-    max_combo: int
+    failtimes: Optional[Failtimes]
+    max_combo: Optional[int]
 
 
 @dataclass
@@ -146,7 +150,7 @@ class Beatmap(BeatmapCompact):
 
     # overridden fields
     # -----------------
-    beatmapset: Optional[None] # Optional[Beatmapset]
+    beatmapset: Optional[Any] # Optional[Beatmapset]
 
 
 @dataclass
@@ -174,19 +178,19 @@ class BeatmapsetCompact:
     # optional fields
     # ---------------
     beatmaps: Optional[list[Beatmap]]
-    converts: Optional[None]
-    current_user_attributes: Optional[None]
-    description: Optional[None]
-    discussions: Optional[None]
-    events: Optional[None]
-    genre: Optional[None]
+    converts: Optional[Any]
+    current_user_attributes: Optional[Any]
+    description: Optional[Any]
+    discussions: Optional[Any]
+    events: Optional[Any]
+    genre: Optional[Any]
     has_favourited: Optional[bool]
-    language: Optional[None]
-    nominations: Optional[None]
-    ratings: Optional[None]
-    recent_favourites: Optional[None]
-    related_users: Optional[None]
-    user: Optional[None]
+    language: Optional[Any]
+    nominations: Optional[Any]
+    ratings: Optional[Any]
+    recent_favourites: Optional[Any]
+    related_users: Optional[Any]
+    user: Optional[Any]
 
 @dataclass
 class Beatmapset(BeatmapsetCompact):
@@ -210,8 +214,8 @@ class Beatmapset(BeatmapsetCompact):
 
 # see the comment on BeatmapCompact.beatmapset for reasoning
 # pylint: disable=no-member
-BeatmapCompact.__annotations__["beatmapset"] = BeatmapsetCompact
-Beatmap.__annotations__["beatmapset"] = Beatmapset
+BeatmapCompact.__annotations__["beatmapset"] = Optional[BeatmapsetCompact]
+Beatmap.__annotations__["beatmapset"] = Optional[Beatmapset]
 # pylint: enable=no-member
 
 @dataclass
@@ -244,7 +248,7 @@ class Score:
     rank_country: Optional[int]
     rank_global: Optional[int]
     weight: Optional[float]
-    user: Optional[User]
+    user: Optional[UserCompact]
     match: Optional[Match]
 
 @dataclass

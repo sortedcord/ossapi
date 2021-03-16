@@ -31,14 +31,13 @@ class OssapiV2:
         self.session = self.authenticate(client_id, client_secret, redirect_uri,
             scope)
         self.log = logging.getLogger(__name__)
-        # api responses often differ from their documentation. I'm not going to
-        # go and reverse engineer every endpoint (which could change at any
+        # api responses sometimes differ from their documentation. I'm not going
+        # to go and reverse engineer every endpoint (which could change at any
         # moment), so instead we have this stopgap: we consider every attribute
         # to be nullable, so if it's missing from the api response we just give
         # it a value of ``None``. Normally this only happens for ``Optional[X]``
-        # type hints. TODO turn this off when the api is more stable or has
-        # better documentation.
-        self.consider_everything_nullable = True
+        # type hints.
+        self.consider_everything_nullable = False
 
     def authenticate(self, client_id, client_secret, redirect_uri, scope):
         # Prefer saved sessions to re-authenticating. Furthermore, prefer the
