@@ -6,6 +6,7 @@ import socket
 import pickle
 from pathlib import Path
 from tempfile import NamedTemporaryFile
+from datetime import datetime
 
 from requests_oauthlib import OAuth2Session
 from oauthlib.oauth2 import BackendApplicationClient
@@ -156,13 +157,31 @@ class OssapiV2:
             origin = get_origin(type_)
             args = get_args(type_)
 
-            # TODO is this the right place to do this conversion (for datetime
-            # attributes too)? Should it happen lower down in our
+            # TODO is this the right place to do this conversion for mods and
+            # datetime types? Should it happen lower down in our
             # ``if is_model_type(type_) or is_model_type(origin) or is_list:``
-            # check?
+            # check? Where does our list conversion fit into all this, is that
+            # happening in the right place as well?
             if type_ is Mod:
                 self.log.debug("Found a mod attribute, converting to a Mod")
                 value = Mod(value)
+                setattr(obj, attr, value)
+                continue
+            if type_ is datetime:
+                # the api returns two types of timestamps (although both are
+                # valid ISO 8601), "2018-09-11T08:45:49.000000Z" and
+                # "2014-05-18T17:22:23+00:00". We handle these in the two
+                # following cases respectively.
+                # fully compliant ISO 8601 parsing is apparently a pain, and
+                # the proper way to do this would be to use a third party
+                # library, but I don't want to add any dependencies. This
+                # stopgap seems to work for now, but may break in the future if
+                # the api changes the timestamps they return.
+                # see https://stackoverflow.com/q/969285.
+                if value.endswith("Z"):
+                    value = datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%f%z")
+                else:
+                    value = datetime.strptime(value, "%Y-%m-%dT%H:%M:%S%z")
                 setattr(obj, attr, value)
                 continue
 
