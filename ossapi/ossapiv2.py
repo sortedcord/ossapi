@@ -1,5 +1,5 @@
 from typing import get_type_hints, get_origin, get_args, Union, TypeVar
-from dataclasses import is_dataclass
+import dataclasses
 import logging
 import webbrowser
 import socket
@@ -11,8 +11,12 @@ from requests_oauthlib import OAuth2Session
 from oauthlib.oauth2 import BackendApplicationClient
 
 from ossapi.models import (Beatmap, BeatmapUserScore, ForumTopicAndPosts,
-    Search, BeatmapExtended, CommentBundle, ReplayScore)
+    Search, BeatmapExtended, CommentBundle, ReplayScore, Cursor)
 
+def is_model_type(obj):
+    # almost every model we have is a dataclass, but we do have a unique one,
+    # ``Cursor``, which we also need to consider as a model type.
+    return obj is Cursor or dataclasses.is_dataclass(obj)
 
 class OssapiV2:
     TOKEN_URL = "https://osu.ppy.sh/oauth/token"
@@ -25,6 +29,14 @@ class OssapiV2:
         self.session = self.authenticate(client_id, client_secret, redirect_uri,
             scope)
         self.log = logging.getLogger(__name__)
+        # api responses often differ from their documentation. I'm not going to
+        # go and reverse engineer every endpoint (which could change at any
+        # moment), so instead we have this stopgap: we consider every attribute
+        # to be nullable, so if it's missing from the api response we just give
+        # it a value of ``None``. Normally this only happens for ``Optional[X]``
+        # type hints. TODO turn this off when the api is more stable or has
+        # better documentation.
+        self.consider_everything_nullable = True
 
     def authenticate(self, client_id, client_secret, redirect_uri, scope):
         # Prefer saved sessions to re-authenticating. Furthermore, prefer the
@@ -155,7 +167,7 @@ class OssapiV2:
                 origin = get_origin(type_)
                 args = get_args(type_)
 
-            if origin is list and (is_dataclass(args[0]) or isinstance(args[0], TypeVar)):
+            if origin is list and (is_model_type(args[0]) or isinstance(args[0], TypeVar)):
                 assert len(args) == 1
                 is_list = True
                 # check if the list has been instantiated generically; if so,
@@ -176,7 +188,7 @@ class OssapiV2:
             # a special indexed type (eg ``type_ == SearchResult[UserCompact]``,
             # ``origin == UserCompact``). In either case we want to instantiate
             # ``type_``.
-            if is_dataclass(type_) or is_dataclass(origin) or is_list:
+            if is_model_type(type_) or is_model_type(origin) or is_list:
                 # special handling for lists; otherwise, just instantiate with
                 # the actual value of ``value``.
                 if is_list:
@@ -216,8 +228,13 @@ class OssapiV2:
         # for each optional attribute of our models, since the default will
         # always be ``None``.
         for attribute, annotation in type_hints.items():
-            # TODO turn off ignoring optional type hints when api is more stable
-            if True or self._is_optional(annotation):
+            # see the comment in ``def __init__`` for more on
+            # ``consider_everything_nullable``.
+            # Cursor is special because it defines annotations in
+            # ``__annotations__`` for which we don't want to give a value, so
+            # ignore it even if we consider everything nullable.
+            if ((self.consider_everything_nullable and type_ is not Cursor) or
+                self._is_optional(annotation)):
                 if attribute not in kwargs:
                     kwargs[attribute] = None
         return type_(**kwargs)

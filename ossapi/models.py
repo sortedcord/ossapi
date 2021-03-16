@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Optional, TypeVar, Generic
 from datetime import datetime
 from enum import Enum
+from types import SimpleNamespace
 
 class ProfilePage(Enum):
     ME = "me"
@@ -232,13 +233,16 @@ class Comment:
     user_id: int
     votes_count: int
 
-@dataclass
-class Cursor:
-    created_at: datetime
-    id: int
-    # why in the world is this here? call ``api.comment(1)`` while using the
-    # authorization code flow to reproduce.
-    votes_count: int
+# Cursors are an interesting case. As I understand it, they don't have a
+# predefined set of attributes across all endpoints, but instead differ per
+# endpoint. I don't want to have dozens of different cursor classes (although
+# that would perhaps be the proper way to go about this), so just allow
+# any attribute.
+# We do, however, have to tell our code what type each attribute is, if we
+# receive that atttribute. So ``__annotations`` will need updating as we
+# encounter new cursor attributes.
+class Cursor(SimpleNamespace):
+    __annotations__ = {"created_at": datetime, "id": int, "votes_count": int}
 
 @dataclass
 class CommentBundle:
