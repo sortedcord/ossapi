@@ -15,9 +15,9 @@ pip install ossapi
 To use:
 
 ```python
-from ossapi import ossapi
+from ossapi import Ossapi
 
-api = ossapi("API_KEY")
+api = Ossapi("API_KEY")
 json = api.get_replay({"m": "0", "b": "1776628", "u": "3256299"})
 # either strings or ints will work. Returns something like `{"content":"XQAAIA....3fISw=","encoding":"base64"}`
 ```
