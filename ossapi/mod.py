@@ -228,11 +228,12 @@ class Mod(ModCombination):
 
     Parameters
     ----------
-    value: int or str
+    value: int or str or list
         A representation of the desired mod. This can either be its integer
         representation such as ``64`` for ``DT`` and ``72`` (``64`` + ``8``) for
         ``HDDT``, or a string such as ``"DT"`` for ``DT`` and ``"HDDT"`` (or
-        ``DTHD``) for ``HDDT``.
+        ``DTHD``) for ``HDDT``, or a list of strings such as ``["HD", "DT"]``
+        for ``HDDT``.
         |br|
         If used, the string must be composed of two-letter acronyms for mods,
         in any order.
@@ -316,4 +317,9 @@ class Mod(ModCombination):
     def __init__(self, value):
         if isinstance(value, str):
             value = ModCombination._parse_mod_string(value)
+        if isinstance(value, list):
+            mod = Mod.NM
+            for mod_str in value:
+                mod += Mod(mod_str)
+            value = mod.value
         super().__init__(value)
