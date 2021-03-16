@@ -321,7 +321,6 @@ class BeatmapSearchResult:
     recommended_difficulty: float
     error: Optional[str]
     total: int
-# 'cursor': {'approved_date': '1615570940000', '_id': '1385279'}, 'recommended_difficulty': 6.106446268384076, 'error': None, 'total': 27056}
 
 
 # the get replay endpoint
