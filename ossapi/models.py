@@ -370,3 +370,98 @@ class BeatmapSearchResult:
     recommended_difficulty: float
     error: Optional[str]
     total: int
+
+@dataclass
+class BeatmapDiscussionVote:
+    # TODO figure out other atttributes if there are any?
+    # https://github.com/ppy/osu-web/blob/master/app/Models/BeatmapDiscussionVote.php#L148
+    user_id: int
+    score: int
+
+@dataclass
+class BeatmapDiscussionPost:
+    # https://github.com/ppy/osu-web/blob/master/app/Models/BeatmapDiscussionPost.php
+    # https://github.com/ppy/osu-web/blob/master/app/Transformers/BeatmapDiscussionPostTransformer.php
+    id: int
+    beatmap_discussion_id: int
+    user_id: Optional[int]
+    last_editor_id: Optional[int]
+    deleted_by_id: Optional[int]
+    system: bool
+    message: str
+    created_at: Optional[datetime]
+    updated_at: Optional[datetime]
+    deleted_at: Optional[datetime]
+    beatmap_discussion: Optional[Any] # Optional[BeatmapDiscussion]
+
+@dataclass
+class BeatmapDiscussion:
+    # TODO https://github.com/ppy/osu-web/blob/master/app/Models/BeatmapDiscussion.php
+    # https://github.com/ppy/osu-web/blob/master/app/Transformers/BeatmapDiscussionTransformer.php
+    id: int
+    beatmapset_id: int
+    beatmap_id: Optional[int]
+    user_id: Optional[int]
+    deleted_by_id: Optional[int]
+    message_type: Optional[str] # Shouldn't be str (int|null on osu-web)
+    parent_id: Optional[int]
+    timestamp: Optional[int] # this is timestamp of map in ms
+    resolved: bool
+    can_be_resolved: bool
+    can_grant_kudosu: bool
+    created_at: Optional[datetime]
+    updated_at: Optional[datetime]
+    deleted_at: Optional[datetime]
+    last_post_at: Optional[datetime]
+    kudosu_denied: bool
+    starting_post: Optional[BeatmapDiscussionPost]
+    posts: Optional[List[BeatmapDiscussionPost]]
+    beatmap: Optional[BeatmapCompact]
+    beatmapset: Optional[BeatmapsetCompact]
+
+    # Not in transformer
+    # kudosu_denied_by_id: Optional[int]
+    # resolver_id: Optional[int]
+    # user: Optional[User]
+
+@dataclass
+class BeatmapsetDiscussionReview:
+    # TODO https://github.com/ppy/osu-web/blob/master/app/Libraries/BeatmapsetDiscussionReview.php
+    max_blocks: int
+
+@dataclass
+class BeatmapsetEventComment:
+    # TODO make this better, everything is optional...
+    beatmap_discussion_id: Optional[int]
+    beatmap_discussion_post_id: Optional[int]
+    new_vote: Optional[BeatmapDiscussionVote]
+    votes: Optional[List[BeatmapDiscussionVote]]
+    modes: Optional[str]
+    # The types change based on event type...
+    old: Optional[Any]
+    new: Optional[Any]
+    reason: Optional[str]
+
+@dataclass
+class BeatmapsetEvent:
+    # https://github.com/ppy/osu-web/blob/master/app/Models/BeatmapsetEvent.php
+    # https://github.com/ppy/osu-web/blob/master/app/Transformers/BeatmapsetEventTransformer.php
+    beatmapset: Optional[BeatmapsetCompact]
+    comment: Optional[BeatmapsetEventComment] # TODO use object? although it is the same on osu-web https://github.com/ppy/osu-web/blob/master/resources/assets/lib/interfaces/beatmapset-event-json.ts#L9
+    created_at: Optional[datetime]
+    id: int
+    type: Optional[str] # int|null on osu-web
+    user_id: Optional[int]
+    discussion: Optional[BeatmapDiscussion]
+
+    # Not in the transformer
+    # beatmapset_id: int
+    # updated_at: Optional[datetime]
+    # user: User
+
+@dataclass
+class ModdingHistoryEventsBundle:
+    # TODO https://github.com/ppy/osu-web/blob/master/app/Libraries/ModdingHistoryEventsBundle.php#L84
+    events: List[BeatmapsetEvent]
+    reviewsConfig: BeatmapsetDiscussionReview # TODO not sure if it should be done like this
+    users: List[UserCompact]

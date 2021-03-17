@@ -13,7 +13,7 @@ from requests_oauthlib import OAuth2Session
 from oauthlib.oauth2 import BackendApplicationClient
 
 from ossapi.models import (Beatmap, BeatmapUserScore, ForumTopicAndPosts,
-    Search, CommentBundle, Cursor, Score, BeatmapSearchResult)
+    Search, CommentBundle, Cursor, Score, BeatmapSearchResult, ModdingHistoryEventsBundle)
 from ossapi.mod import Mod
 
 def is_model_type(obj):
@@ -403,3 +403,14 @@ class OssapiV2:
 
     def search_beatmaps(self, filters):
         return self._get(BeatmapSearchResult, f"/beatmapsets/search/{filters}")
+
+    def beatmapsets_events(self, limit=None, page=None, user=None, types=None, min_date=None, max_date=None):
+        """
+        Beatmap history
+
+        https://osu.ppy.sh/beatmapsets/events
+        """
+        # limit is 5-50
+        # types listed here - https://github.com/ppy/osu-web/blob/master/app/Models/BeatmapsetEvent.php#L185
+        params = {"limit": limit, "page": page, "user": user, "types": types, "min_date": min_date, "max_date": max_date}
+        return self._get(ModdingHistoryEventsBundle, "/beatmapsets/events", params)

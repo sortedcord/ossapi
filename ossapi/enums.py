@@ -103,7 +103,7 @@ class UserGroup:
     short_name: str
     description: str
     colour: str
-    playmodes: Optional[list[GameMode]]
+    playmodes: Optional[List[GameMode]]
 
 @dataclass
 class Covers:
