@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from enum import Enum
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 
 class ProfilePage(Enum):
     ME = "me"
@@ -58,8 +58,8 @@ class UserAccountHistoryType(Enum):
 
 @dataclass
 class Failtimes:
-    exit: Optional[list[int]]
-    fail: Optional[list[int]]
+    exit: Optional[List[int]]
+    fail: Optional[List[int]]
 
 @dataclass
 class Country:
