@@ -65,6 +65,34 @@ class MessageType(Enum):
     REVIEW = "review"
     SUGGESTION = "suggestion"
 
+class BeatmapsetEventType(Enum):
+    APPROVE =  "approve"
+    DISCUSSION_DELETE =  "discussion_delete"
+    DISCUSSION_LOCK =  "discussion_lock"
+    DISCUSSION_POST_DELETE =  "discussion_post_delete"
+    DISCUSSION_POST_RESTORE =  "discussion_post_restore"
+    DISCUSSION_RESTORE =  "discussion_restore"
+    DISCUSSION_UNLOCK = "discussion_unlock"
+    DISQUALIFY = "disqualify"
+    DISQUALIFY_LEGACY = "disqualify_legacy"
+    GENRE_EDIT = "genre_edit"
+    ISSUE_REOPEN = "issue_reopen"
+    ISSUE_RESOLVE = "issue_resolve"
+    KUDOSU_ALLOW = "kudosu_allow"
+    KUDOSU_DENY = "kudosu_deny"
+    KUDOSU_GAIN = "kudosu_gain"
+    KUDOSU_LOST = "kudosu_lost"
+    KUDOSU_RECALCULATE = "kudosu_recalculate"
+    LANGUAGE_EDIT = "language_edit"
+    LOVE = "love"
+    NOMINATE = "nominate"
+    NOMINATE_MODES = "nominate_modes"
+    NOMINATION_RESET = "nomination_reset"
+    QUALIFY = "qualify"
+    RANK = "rank"
+    REMOVE_FROM_LOVED = "remove_from_loved"
+    NSFW_TOGGLE = "nsfw_toggle"
+
 @dataclass
 class Failtimes:
     exit: Optional[List[int]]

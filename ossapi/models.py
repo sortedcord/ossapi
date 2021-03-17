@@ -5,8 +5,9 @@ from types import SimpleNamespace
 
 from ossapi.mod import Mod
 from ossapi.enums import (Country, Cover, ProfilePage, UserAccountHistory,
-    UserBadge, ProfileBanner, UserGroup, GameMode, RankStatus, Failtimes,
-    Covers, Statistics, Availability, Hype, Nominations)
+    MessageType, BeatmapsetEventType, UserBadge, ProfileBanner, UserGroup,
+    GameMode, RankStatus, Failtimes, Covers, Statistics, Availability, Hype,
+    Nominations)
 
 T = TypeVar("T")
 
@@ -452,13 +453,13 @@ class BeatmapsetEventComment:
 class BeatmapsetEvent:
     # https://github.com/ppy/osu-web/blob/master/app/Models/BeatmapsetEvent.php
     # https://github.com/ppy/osu-web/blob/master/app/Transformers/BeatmapsetEventTransformer.php
-    beatmapset: Optional[BeatmapsetCompact]
+    id: int
+    type: BeatmapsetEventType
     comment: Optional[BeatmapsetEventComment]
     created_at: Optional[datetime]
-    id: int
-    # should be ``Optional[int]`` but api returns a string instead
-    type: Optional[str]
+
     user_id: Optional[int]
+    beatmapset: Optional[BeatmapsetCompact]
     discussion: Optional[BeatmapDiscussion]
 
 
