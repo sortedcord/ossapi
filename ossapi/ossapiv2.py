@@ -14,7 +14,8 @@ from requests_oauthlib import OAuth2Session
 from oauthlib.oauth2 import BackendApplicationClient
 
 from ossapi.models import (Beatmap, BeatmapUserScore, ForumTopicAndPosts,
-    Search, CommentBundle, Cursor, Score, BeatmapSearchResult, ModdingHistoryEventsBundle)
+    Search, CommentBundle, Cursor, Score, BeatmapSearchResult,
+    ModdingHistoryEventsBundle)
 from ossapi.mod import Mod
 
 def is_model_type(obj):
@@ -26,7 +27,6 @@ class OssapiV2:
     TOKEN_URL = "https://osu.ppy.sh/oauth/token"
     AUTH_CODE_URL = "https://osu.ppy.sh/oauth/authorize"
     BASE_URL = "https://osu.ppy.sh/api/v2"
-    SCOPE = ["public"]
 
     def __init__(self, client_id, client_secret, redirect_uri=None,
         scope=["public"]):
@@ -108,8 +108,8 @@ class OssapiV2:
         serversocket.close()
 
         code = data.split("code=")[1].split("&state=")[0]
-        token = oauth.fetch_token("https://osu.ppy.sh/oauth/token",
-            client_id=client_id, client_secret=client_secret, code=code)
+        token = oauth.fetch_token(self.TOKEN_URL, client_id=client_id,
+            client_secret=client_secret, code=code)
         self._save_token(token, "auth")
 
         return oauth
@@ -413,7 +413,8 @@ class OssapiV2:
         return self._get(Score, f"/scores/{mode}/{score_id}")
 
     def download_score(self, mode, score_id):
-        r = self.session.get(f"{self.BASE_URL}/scores/{mode}/{score_id}/download")
+        r = self.session.get(f"{self.BASE_URL}/scores/{mode}/{score_id}"
+            "/download")
 
         tempfile = NamedTemporaryFile(mode="wb", delete=False)
         with tempfile as f:
@@ -424,13 +425,17 @@ class OssapiV2:
     def search_beatmaps(self, filters):
         return self._get(BeatmapSearchResult, f"/beatmapsets/search/{filters}")
 
-    def beatmapsets_events(self, limit=None, page=None, user=None, types=None, min_date=None, max_date=None):
+    def beatmapsets_events(self, limit=None, page=None, user=None, types=None,
+        min_date=None, max_date=None):
         """
         Beatmap history
 
         https://osu.ppy.sh/beatmapsets/events
         """
         # limit is 5-50
-        # types listed here - https://github.com/ppy/osu-web/blob/master/app/Models/BeatmapsetEvent.php#L185
-        params = {"limit": limit, "page": page, "user": user, "types": types, "min_date": min_date, "max_date": max_date}
-        return self._get(ModdingHistoryEventsBundle, "/beatmapsets/events", params)
+        # types listed here
+        # https://github.com/ppy/osu-web/blob/master/app/Models/BeatmapsetEvent.php#L185
+        params = {"limit": limit, "page": page, "user": user, "types": types,
+            "min_date": min_date, "max_date": max_date}
+        return self._get(ModdingHistoryEventsBundle, "/beatmapsets/events",
+            params)
