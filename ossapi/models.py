@@ -194,7 +194,7 @@ class BeatmapsetCompact:
     ratings: Optional[Any]
     recent_favourites: Optional[Any]
     related_users: Optional[Any]
-    user: Optional[Any]
+    user: Optional[UserCompact]
 
 @dataclass
 class Beatmapset(BeatmapsetCompact):
