@@ -15,18 +15,6 @@ is, not that the api actually lets any type be returned there.
 """
 
 @dataclass
-class UserRelation:
-    # undocumented (and not a class on osu-web)
-    # https://github.com/ppy/osu-web/blob/master/app/Transformers/UserRelationTransformer.php#L16
-    target_id: int
-    relation_type: UserRelationType
-    mutual: bool
-
-    # optional fields
-    # ---------------
-    target: Optional[Any] # Optional[UserCompact]
-
-@dataclass
 class UserCompact:
     """
     https://osu.ppy.sh/docs/index.html#usercompact
@@ -53,14 +41,14 @@ class UserCompact:
     active_tournament_banner: Optional[ProfileBanner]
     badges: Optional[List[UserBadge]]
     beatmap_playcounts_count: Optional[int]
-    blocks: Optional[UserRelation]
+    blocks: Optional[Any] # Optional[UserRelation]
     country: Optional[Country]
     cover: Optional[Cover]
     favourite_beatmapset_count: Optional[int]
     # undocumented
     follow_user_mapping: Optional[List[int]]
     follower_count: Optional[int]
-    friends: Optional[List[UserRelation]]
+    friends: Optional[List[Any]]  # Optional[List[UserRelation]]
     graveyard_beatmapset_count: Optional[int]
     groups: Optional[List[UserGroup]]
     is_admin: Optional[bool]
@@ -91,10 +79,6 @@ class UserCompact:
     user_achievements: Optional[UserAchievement]
     user_preferences: Optional[UserProfileCustomization]
     rank_history: Optional[RankHistory]
-
-# pylint: disable=no-member
-UserRelation.__annotations__["target"] = Optional[UserCompact]
-# pylint: enable=no-member
 
 @dataclass
 class User(UserCompact):
@@ -233,10 +217,8 @@ class Beatmapset(BeatmapsetCompact):
 
 
 # see the comment on BeatmapCompact.beatmapset for reasoning
-# pylint: disable=no-member
-BeatmapCompact.__annotations__["beatmapset"] = Optional[BeatmapsetCompact]
-Beatmap.__annotations__["beatmapset"] = Optional[Beatmapset]
-# pylint: enable=no-member
+BeatmapCompact.__annotations__["beatmapset"] = Optional[BeatmapsetCompact] # pylint: disable=no-member
+Beatmap.__annotations__["beatmapset"] = Optional[Beatmapset] # pylint: disable=no-member
 
 @dataclass
 class Match:
@@ -493,3 +475,18 @@ class ModdingHistoryEventsBundle:
     events: List[BeatmapsetEvent]
     reviewsConfig: BeatmapsetDiscussionReview
     users: List[UserCompact]
+
+@dataclass
+class UserRelation:
+    # undocumented (and not a class on osu-web)
+    # https://github.com/ppy/osu-web/blob/master/app/Transformers/UserRelationTransformer.php#L16
+    target_id: int
+    relation_type: UserRelationType
+    mutual: bool
+
+    # optional fields
+    # ---------------
+    target: Optional[UserCompact]
+
+UserRelation.__annotations__["blocks"] = Optional[UserRelation] # pylint: disable=no-member
+UserRelation.__annotations__["friends"] = Optional[List[UserRelation]] # pylint: disable=no-member
