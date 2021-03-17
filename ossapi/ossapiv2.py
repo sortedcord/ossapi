@@ -26,7 +26,6 @@ class OssapiV2:
     TOKEN_URL = "https://osu.ppy.sh/oauth/token"
     AUTH_CODE_URL = "https://osu.ppy.sh/oauth/authorize"
     BASE_URL = "https://osu.ppy.sh/api/v2"
-    SCOPE = ["public"]
 
     def __init__(self, client_id, client_secret, redirect_uri=None,
         scope=["public"]):
@@ -108,8 +107,8 @@ class OssapiV2:
         serversocket.close()
 
         code = data.split("code=")[1].split("&state=")[0]
-        token = oauth.fetch_token("https://osu.ppy.sh/oauth/token",
-            client_id=client_id, client_secret=client_secret, code=code)
+        token = oauth.fetch_token(self.TOKEN_URL, client_id=client_id,
+            client_secret=client_secret, code=code)
         self._save_token(token, "auth")
 
         return oauth
