@@ -1,7 +1,11 @@
 from dataclasses import dataclass
 from enum import Enum
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional, List, Any
+
+# ================
+# Documented Enums
+# ================
 
 class ProfilePage(Enum):
     ME = "me"
@@ -17,6 +21,13 @@ class GameMode(Enum):
     TAIKO  = "taiko"
     CTB    = "fruits"
     MANIA  = "mania"
+
+class PlayStyles(Enum):
+    # this should be bitwise enum
+    MOUSE = "mouse" # 1
+    KEYBOARD = "keyboard" # 2
+    TABLET = "tablet" # 4
+    TOUCH = "touch" # 8
 
 class RankStatus(Enum):
     GRAVEYARD = -2
@@ -93,18 +104,71 @@ class BeatmapsetEventType(Enum):
     REMOVE_FROM_LOVED = "remove_from_loved"
     NSFW_TOGGLE = "nsfw_toggle"
 
+class BeatmapsetDownload(Enum):
+    ALL = "all"
+    NO_VIDEO = "no_video"
+    DIRECT ="direct"
+
+class UserListFilters(Enum):
+    ALL = "all"
+    ONLINE = "online"
+    OFFLINE ="offline"
+
+class UserListSorts(Enum):
+    LAST_VISIT = "last_visit"
+    RANK = "rank"
+    USERNAME ="username"
+
+class UserListViews(Enum):
+    CARD = "card"
+    LIST = "list"
+    BRICK ="brick"
+
+
+# ==================
+# Undocumented Enums
+# ==================
+
+
+class UserRelationType(Enum):
+    # undocumented
+    # https://github.com/ppy/osu-web/blob/master/app/Transformers/UserRelationTransformer.php#L20
+    FRIEND = "friend"
+    BLOCK = "block"
+
+
+# =================
+# Documented Models
+# =================
+
+
 @dataclass
 class Failtimes:
     exit: Optional[List[int]]
     fail: Optional[List[int]]
 
 @dataclass
+class Ranking:
+    # https://github.com/ppy/osu-web/blob/master/app/Transformers/CountryTransformer.php#L30
+    active_users: int
+    play_count: int
+    ranked_score: int
+    performance: int
+
+@dataclass
 class Country:
+    # https://github.com/ppy/osu-web/blob/master/app/Transformers/CountryTransformer.php#L10
     code: str
     name: str
 
+    # optional fields
+    # ---------------
+    display: Optional[int]
+    ranking: Optional[Ranking]
+
 @dataclass
 class Cover:
+    # https://github.com/ppy/osu-web/blob/master/app/Transformers/UserCompactTransformer.php#L158
     custom_url: str
     url: str
     id: int
@@ -133,14 +197,15 @@ class UserBadge:
 
 @dataclass
 class UserGroup:
+    # https://github.com/ppy/osu-web/blob/master/app/Transformers/UserGroupTransformer.php#L10
     id: int
     identifier: str
-    is_probationary: bool
     name: str
     short_name: str
     description: str
     colour: str
     playmodes: Optional[List[GameMode]]
+    is_probationary: bool
 
 @dataclass
 class Covers:
@@ -179,3 +244,117 @@ class Hype:
 class Nominations:
     current: int
     required: int
+
+@dataclass
+class Kudosu:
+    total: int
+    available: int
+
+
+# ===================
+# Undocumented Models
+# ===================
+
+@dataclass
+class UserMonthlyPlaycount:
+    # undocumented
+    # https://github.com/ppy/osu-web/blob/master/app/Transformers/UserMonthlyPlaycountTransformer.php
+    start_date: datetime
+    count: int
+
+@dataclass
+class UserPage:
+    # undocumented (and not a class on osu-web)
+    # https://github.com/ppy/osu-web/blob/master/app/Transformers/UserCompactTransformer.php#L270
+    html: str
+    raw: str
+
+@dataclass
+class UserLevel:
+    # undocumented (and not a class on osu-web)
+    # https://github.com/ppy/osu-web/blob/master/app/Transformers/UserStatisticsTransformer.php#L27
+    current: int
+    progress: int
+
+@dataclass
+class UserGradeCounts:
+    # undocumented (and not a class on osu-web)
+    # https://github.com/ppy/osu-web/blob/master/app/Transformers/UserStatisticsTransformer.php#L43
+    ss: int
+    ssh: int
+    s: int
+    sh: int
+    a: int
+
+@dataclass
+class UserReplaysWatchedCount:
+    # undocumented
+    # https://github.com/ppy/osu-web/blob/master/app/Transformers/UserReplaysWatchedCountTransformer.php
+    start_date: datetime
+    count: int
+
+@dataclass
+class UserAchievement:
+    # undocumented
+    # https://github.com/ppy/osu-web/blob/master/app/Transformers/UserAchievementTransformer.php#L10
+    achieved_at: datetime
+    achievement_id: int
+
+@dataclass
+class UserProfileCustomization:
+    # undocumented
+    # https://github.com/ppy/osu-web/blob/master/app/Transformers/UserCompactTransformer.php#L363
+    # https://github.com/ppy/osu-web/blob/master/app/Models/UserProfileCustomization.php
+    audio_autoplay: Optional[bool]
+    audio_muted: Optional[bool]
+    audio_volume: Optional[int]
+    beatmapset_download: Optional[BeatmapsetDownload]
+    beatmapset_show_nsfw: Optional[bool]
+    beatmapset_title_show_original: Optional[bool]
+    comments_show_deleted: Optional[bool]
+    forum_posts_show_deleted: bool
+    ranking_expanded: bool
+    user_list_filter: Optional[UserListFilters]
+    user_list_sort: Optional[UserListSorts]
+    user_list_view: Optional[UserListViews]
+
+@dataclass
+class UserStatistics:
+    # undocumented
+    # https://github.com/ppy/osu-web/blob/master/app/Transformers/UserStatisticsTransformer.php
+    level: UserLevel
+    global_rank: int
+    pp: float
+    ranked_score: int
+    hit_accuracy: float
+    play_count: int
+    play_time: int
+    total_score: int
+    total_hits: int
+    maximum_combo: int
+    replays_watched_by_others: int
+    is_ranked: bool
+    grade_counts: UserGradeCounts
+
+    # optional fields
+    # ---------------
+    country_rank: Optional[int]
+    rank: Optional[int]
+    user: Optional[Any]
+    variants: Optional[Any]
+
+@dataclass
+class UserStatisticsRulesets:
+    # undocumented
+    # https://github.com/ppy/osu-web/blob/master/app/Transformers/UserStatisticsRulesetsTransformer.php
+    osu: Optional[UserStatistics]
+    taiko: Optional[UserStatistics]
+    fruits: Optional[UserStatistics]
+    mania: Optional[UserStatistics]
+
+@dataclass
+class RankHistory:
+    # undocumented
+    # https://github.com/ppy/osu-web/blob/master/app/Transformers/RankHistoryTransformer.php
+    mode: GameMode
+    data: List[int]

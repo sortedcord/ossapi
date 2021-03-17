@@ -4,10 +4,7 @@ from datetime import datetime
 from types import SimpleNamespace
 
 from ossapi.mod import Mod
-from ossapi.enums import (Country, Cover, ProfilePage, UserAccountHistory,
-    MessageType, BeatmapsetEventType, UserBadge, ProfileBanner, UserGroup,
-    GameMode, RankStatus, Failtimes, Covers, Statistics, Availability, Hype,
-    Nominations)
+from ossapi.enums import *
 
 T = TypeVar("T")
 
@@ -16,6 +13,10 @@ T = TypeVar("T")
 a type hint of ``Optional[Any]`` or ``Any`` means that I don't know what type it
 is, not that the api actually lets any type be returned there.
 """
+
+# =================
+# Documented Models
+# =================
 
 @dataclass
 class UserCompact:
@@ -44,12 +45,14 @@ class UserCompact:
     active_tournament_banner: Optional[ProfileBanner]
     badges: Optional[List[UserBadge]]
     beatmap_playcounts_count: Optional[int]
-    blocks: Optional[Any]
+    blocks: Optional[Any] # Optional[UserRelation]
     country: Optional[Country]
     cover: Optional[Cover]
     favourite_beatmapset_count: Optional[int]
+    # undocumented
+    follow_user_mapping: Optional[List[int]]
     follower_count: Optional[int]
-    friends: Optional[Any]
+    friends: Optional[List[Any]]  # Optional[List[UserRelation]]
     graveyard_beatmapset_count: Optional[int]
     groups: Optional[List[UserGroup]]
     is_admin: Optional[bool]
@@ -62,41 +65,47 @@ class UserCompact:
     is_restricted: Optional[bool]
     is_silenced: Optional[bool]
     loved_beatmapset_count: Optional[int]
-    monthly_playcounts: Optional[List[None]]
-    page: Optional[Any]
-    previous_usernames: Optional[Any]
-    ranked_and_approved_beatmapset_count: Optional[Any]
-    replays_watched_counts: Optional[Any]
+    # undocumented
+    mapping_follower_count: Optional[int]
+    monthly_playcounts: Optional[List[UserMonthlyPlaycount]]
+    page: Optional[UserPage]
+    previous_usernames: Optional[List[str]]
+    ranked_and_approved_beatmapset_count: Optional[int]
+    replays_watched_counts: Optional[List[UserReplaysWatchedCount]]
     scores_best_count: Optional[int]
     scores_first_count: Optional[int]
     scores_recent_count: Optional[int]
-    statistics: Optional[Any]
-    statistics_rulesets: Optional[Any]
-    support_level: Optional[Any]
-    unranked_beatmapset_count: Optional[Any]
-    unread_pm_count: Optional[Any]
-    user_achievements: Optional[Any]
-    user_preferences: Optional[Any]
-    rank_history: Optional[Any]
-
+    statistics: Optional[UserStatistics]
+    statistics_rulesets: Optional[UserStatisticsRulesets]
+    support_level: Optional[int]
+    unranked_beatmapset_count: Optional[int]
+    unread_pm_count: Optional[int]
+    user_achievements: Optional[List[UserAchievement]]
+    user_preferences: Optional[UserProfileCustomization]
+    rank_history: Optional[RankHistory]
+    # this is deprecated, TODO remove when the api does
+    rankHistory: Optional[RankHistory]
 
 @dataclass
 class User(UserCompact):
+    comments_count: int
     cover_url: str
     discord: Optional[str]
     has_supported: bool
     interests: Optional[str]
     join_date: datetime
-    kudosu: Any
+    kudosu: Kudosu
     location: Optional[str]
     max_blocks: int
     max_friends: int
     occupation: Optional[str]
     playmode: str
-    playstyle: List[str]
+    playstyle: Optional[List[PlayStyles]]
     post_count: int
     profile_order: List[ProfilePage]
     title: Optional[str]
+    # undocumented
+    title_url: Optional[Any]
     twitter: Optional[str]
     website: Optional[str]
 
@@ -177,7 +186,7 @@ class BeatmapsetCompact:
     # documented as being in ``Beatmapset`` only, but returned by
     # ``api.beatmapset_events`` which uses a ``BeatmapsetCompact``.
     hype: Hype
-    # entirely undocumented
+    # undocumented
     nsfw: bool
 
     # optional fields
@@ -216,10 +225,8 @@ class Beatmapset(BeatmapsetCompact):
 
 
 # see the comment on BeatmapCompact.beatmapset for reasoning
-# pylint: disable=no-member
-BeatmapCompact.__annotations__["beatmapset"] = Optional[BeatmapsetCompact]
-Beatmap.__annotations__["beatmapset"] = Optional[Beatmapset]
-# pylint: enable=no-member
+BeatmapCompact.__annotations__["beatmapset"] = Optional[BeatmapsetCompact] # pylint: disable=no-member
+Beatmap.__annotations__["beatmapset"] = Optional[Beatmapset] # pylint: disable=no-member
 
 @dataclass
 class Match:
@@ -269,7 +276,7 @@ class CommentableMeta:
     title: str
     type: Optional[str]
     url: Optional[str]
-    # undocumented but still returned,
+    # undocumented
     owner_id: Optional[int]
     owner_title: Optional[str]
 
@@ -326,7 +333,7 @@ class CommentBundle:
     user_follow: bool
     user_votes: List[int]
     users: List[UserCompact]
-    # undocumented but still returned
+    # undocumented
     cursor: Cursor
 
 
@@ -476,3 +483,18 @@ class ModdingHistoryEventsBundle:
     events: List[BeatmapsetEvent]
     reviewsConfig: BeatmapsetDiscussionReview
     users: List[UserCompact]
+
+@dataclass
+class UserRelation:
+    # undocumented (and not a class on osu-web)
+    # https://github.com/ppy/osu-web/blob/master/app/Transformers/UserRelationTransformer.php#L16
+    target_id: int
+    relation_type: UserRelationType
+    mutual: bool
+
+    # optional fields
+    # ---------------
+    target: Optional[UserCompact]
+
+UserRelation.__annotations__["blocks"] = Optional[UserRelation] # pylint: disable=no-member
+UserRelation.__annotations__["friends"] = Optional[List[UserRelation]] # pylint: disable=no-member

@@ -15,7 +15,7 @@ from oauthlib.oauth2 import BackendApplicationClient
 
 from ossapi.models import (Beatmap, BeatmapUserScore, ForumTopicAndPosts,
     Search, CommentBundle, Cursor, Score, BeatmapSearchResult,
-    ModdingHistoryEventsBundle)
+    ModdingHistoryEventsBundle, User)
 from ossapi.mod import Mod
 
 def is_model_type(obj):
@@ -226,10 +226,10 @@ class OssapiV2:
                 setattr(obj, attr, value)
                 continue
             if type_ is datetime:
-                # the api returns two three of timestamps: two ISO 8601 formats
-                # (eg "2018-09-11T08:45:49.000000Z" and
-                # "2014-05-18T17:22:23+00:00") and a unix timestamp (eg
-                # 1615385278000). We handle each case below.
+                # the api returns a bunch of different timestamps: two ISO 8601
+                # formats (eg "2018-09-11T08:45:49.000000Z" and
+                # "2014-05-18T17:22:23+00:00"), a unix timestamp (eg
+                # 1615385278000), and others. We handle each case below.
                 # Fully compliant ISO 8601 parsing is apparently a pain, and
                 # the proper way to do this would be to use a third party
                 # library, but I don't want to add any dependencies. This
@@ -238,18 +238,17 @@ class OssapiV2:
                 # see https://stackoverflow.com/q/969285.
                 if value.endswith("Z"):
                     value = datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%f%z")
-                else:
-                    try:
-                        # see if it's an int first, if so it's a unix timestamp.
-                        # the api returns the timestamp in milliseconds but
-                        # ``datetime.utcfromtimestamp`` expects it in seconds,
-                        # so divide by 1000 to convert.
-                        value = int(value) / 1000
-                        value = datetime.utcfromtimestamp(value)
-                    except ValueError:
-                        # if it's not an int, assume it's the second form of ISO
-                        # 8601
-                        value = datetime.strptime(value, "%Y-%m-%dT%H:%M:%S%z")
+                elif value.isdigit():
+                    # see if it's an int first, if so it's a unix timestamp. The
+                    # api returns the timestamp in milliseconds but
+                    # ``datetime.utcfromtimestamp`` expects it in seconds, so
+                    # divide by 1000 to convert.
+                    value = int(value) / 1000
+                    value = datetime.utcfromtimestamp(value)
+                elif self._matches_datetime(value, "%Y-%m-%dT%H:%M:%S%z"):
+                    value = datetime.strptime(value, "%Y-%m-%dT%H:%M:%S%z")
+                elif self._matches_datetime(value, "%Y-%m-%d"):
+                    value = datetime.strptime(value, "%Y-%m-%d")
                 setattr(obj, attr, value)
                 continue
 
@@ -359,6 +358,13 @@ class OssapiV2:
         """
         return get_origin(type_) is Union and get_args(type_)[1] is type(None)
 
+    def _matches_datetime(self, value, format_):
+        try:
+            _ = datetime.strptime(value, format_)
+        except ValueError:
+            return False
+        return True
+
     def beatmap_lookup(self, checksum=None, filename=None, beatmap_id=None):
         params = {"checksum": checksum, "filename": filename, "id": beatmap_id}
         return self._get(Beatmap, "/beatmaps/lookup", params)
@@ -439,3 +445,6 @@ class OssapiV2:
             "min_date": min_date, "max_date": max_date}
         return self._get(ModdingHistoryEventsBundle, "/beatmapsets/events",
             params)
+
+    def user(self, user_id, mode=None):
+        return self._get(User, f"/users/{user_id}/{mode if mode else ''}")
