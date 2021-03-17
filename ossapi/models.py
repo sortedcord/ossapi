@@ -371,6 +371,10 @@ class BeatmapSearchResult:
     error: Optional[str]
     total: int
 
+
+# Undocumented Models
+# ===================
+
 @dataclass
 class BeatmapDiscussionVote:
     # TODO figure out other atttributes if there are any?
@@ -424,6 +428,10 @@ class BeatmapDiscussion:
     # resolver_id: Optional[int]
     # user: Optional[User]
 
+# pylint: disable=no-member
+BeatmapDiscussionPost.__annotations__["beatmap_discussion"] = Optional[BeatmapDiscussion]
+# pylint: enable=no-member
+
 @dataclass
 class BeatmapsetDiscussionReview:
     # TODO https://github.com/ppy/osu-web/blob/master/app/Libraries/BeatmapsetDiscussionReview.php
@@ -447,7 +455,9 @@ class BeatmapsetEvent:
     # https://github.com/ppy/osu-web/blob/master/app/Models/BeatmapsetEvent.php
     # https://github.com/ppy/osu-web/blob/master/app/Transformers/BeatmapsetEventTransformer.php
     beatmapset: Optional[BeatmapsetCompact]
-    comment: Optional[BeatmapsetEventComment] # TODO use object? although it is the same on osu-web https://github.com/ppy/osu-web/blob/master/resources/assets/lib/interfaces/beatmapset-event-json.ts#L9
+    # TODO use object? although it is the same on osu-web
+    # https://github.com/ppy/osu-web/blob/master/resources/assets/lib/interfaces/beatmapset-event-json.ts#L9
+    comment: Optional[BeatmapsetEventComment]
     created_at: Optional[datetime]
     id: int
     type: Optional[str] # int|null on osu-web
@@ -463,5 +473,5 @@ class BeatmapsetEvent:
 class ModdingHistoryEventsBundle:
     # TODO https://github.com/ppy/osu-web/blob/master/app/Libraries/ModdingHistoryEventsBundle.php#L84
     events: List[BeatmapsetEvent]
-    reviewsConfig: BeatmapsetDiscussionReview # TODO not sure if it should be done like this
+    reviewsConfig: BeatmapsetDiscussionReview
     users: List[UserCompact]
