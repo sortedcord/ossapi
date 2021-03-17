@@ -377,7 +377,6 @@ class BeatmapSearchResult:
 
 @dataclass
 class BeatmapDiscussionVote:
-    # TODO figure out other atttributes if there are any?
     # https://github.com/ppy/osu-web/blob/master/app/Models/BeatmapDiscussionVote.php#L148
     user_id: int
     score: int
@@ -410,7 +409,8 @@ class BeatmapDiscussion:
     # should be ``Optional[int]`` but api returns a string instead
     message_type: Optional[str]
     parent_id: Optional[int]
-    timestamp: Optional[int] # this is timestamp of map in ms
+    # a point of time which is ``timestamp`` milliseconds into the map
+    timestamp: Optional[int]
     resolved: bool
     can_be_resolved: bool
     can_grant_kudosu: bool
