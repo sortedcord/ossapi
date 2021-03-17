@@ -281,6 +281,12 @@ class OssapiV2:
                     new_value = []
                     for entry in value:
                         entry = self._instantiate(type_, **entry)
+                        # if the list entry is a model type, we need to resolve
+                        # it instead of just sticking it into the list, since
+                        # its children might still be dicts and not model
+                        # instances
+                        if is_model_type(type_):
+                            entry = self._resolve_annotations(entry)
                         new_value.append(entry)
                     value = new_value
                 else:
