@@ -15,7 +15,7 @@ from oauthlib.oauth2 import BackendApplicationClient
 
 from ossapi.models import (Beatmap, BeatmapUserScore, ForumTopicAndPosts,
     Search, CommentBundle, Cursor, Score, BeatmapSearchResult,
-    ModdingHistoryEventsBundle)
+    ModdingHistoryEventsBundle, User)
 from ossapi.mod import Mod
 
 def is_model_type(obj):
@@ -439,3 +439,6 @@ class OssapiV2:
             "min_date": min_date, "max_date": max_date}
         return self._get(ModdingHistoryEventsBundle, "/beatmapsets/events",
             params)
+
+    def user(self, user_id, mode=None):
+        return self._get(User, f"/users/{user_id}/{mode if mode else ''}")
