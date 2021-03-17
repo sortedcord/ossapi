@@ -71,7 +71,7 @@ class UserCompact:
     page: Optional[UserPage]
     previous_usernames: Optional[List[str]]
     ranked_and_approved_beatmapset_count: Optional[int]
-    replays_watched_counts: Optional[UserReplaysWatchedCount]
+    replays_watched_counts: Optional[List[UserReplaysWatchedCount]]
     scores_best_count: Optional[int]
     scores_first_count: Optional[int]
     scores_recent_count: Optional[int]
@@ -80,9 +80,11 @@ class UserCompact:
     support_level: Optional[int]
     unranked_beatmapset_count: Optional[int]
     unread_pm_count: Optional[int]
-    user_achievements: Optional[UserAchievement]
+    user_achievements: Optional[List[UserAchievement]]
     user_preferences: Optional[UserProfileCustomization]
     rank_history: Optional[RankHistory]
+    # this is deprecated, TODO remove when the api does
+    rankHistory: Optional[RankHistory]
 
 @dataclass
 class User(UserCompact):
@@ -102,6 +104,8 @@ class User(UserCompact):
     post_count: int
     profile_order: List[ProfilePage]
     title: Optional[str]
+    # undocumented
+    title_url: Optional[Any]
     twitter: Optional[str]
     website: Optional[str]
 

@@ -335,6 +335,8 @@ class UserStatistics:
     replays_watched_by_others: int
     is_ranked: bool
     grade_counts: UserGradeCounts
+    country_rank: int
+    rank: int
 
 @dataclass
 class UserStatisticsRulesets:
