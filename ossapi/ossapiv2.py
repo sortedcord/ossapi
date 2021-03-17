@@ -208,6 +208,18 @@ class OssapiV2:
             origin = get_origin(type_)
             args = get_args(type_)
 
+            # if this type is an optional, "unwrap" it to get the true type.
+            # We don't care about the optional annotation in this context
+            # because if we got here that means we were passed a value for this
+            # attribute, so we know it's defined and not optional.
+            if self._is_optional(type_):
+                # leaving these assertions in to help me catch errors in my
+                # reasoning until I better understand python's typing.
+                assert len(args) == 2
+                type_ = args[0]
+                origin = get_origin(type_)
+                args = get_args(type_)
+
             # TODO is this the right place to do this conversion for these
             # types? Should it happen lower down in our
             # ``if is_model_type(type_) or is_model_type(origin) or is_list:``
@@ -251,18 +263,6 @@ class OssapiV2:
                     value = datetime.strptime(value, "%Y-%m-%d")
                 setattr(obj, attr, value)
                 continue
-
-            # if this type is an optional, "unwrap" it to get the true type.
-            # We don't care about the optional annotation in this context
-            # because if we got here that means we were passed a value for this
-            # attribute, so we know it's defined and not optional.
-            if self._is_optional(type_):
-                # leaving these assertions in to help me catch errors in my
-                # reasoning until I better understand python's typing.
-                assert len(args) == 2
-                type_ = args[0]
-                origin = get_origin(type_)
-                args = get_args(type_)
 
             if (origin is list and (is_model_type(args[0]) or
                 isinstance(args[0], TypeVar))):
