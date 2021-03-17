@@ -100,7 +100,7 @@ class User(UserCompact):
     max_friends: int
     occupation: Optional[str]
     playmode: str
-    playstyle: Optional[List[PlayStyles]]
+    playstyle: Optional[PlayStyles]
     post_count: int
     profile_order: List[ProfilePage]
     title: Optional[str]

@@ -1,7 +1,9 @@
 from dataclasses import dataclass
-from enum import Enum
+from enum import Enum, IntFlag
 from datetime import datetime
 from typing import Optional, List, Any
+
+from ossapi.utils import ListEnumMeta
 
 # ================
 # Documented Enums
@@ -22,12 +24,28 @@ class GameMode(Enum):
     CTB    = "fruits"
     MANIA  = "mania"
 
-class PlayStyles(Enum):
-    # this should be bitwise enum
-    MOUSE = "mouse" # 1
-    KEYBOARD = "keyboard" # 2
-    TABLET = "tablet" # 4
-    TOUCH = "touch" # 8
+class PlayStyles(IntFlag, metaclass=ListEnumMeta):
+    MOUSE = 1
+    KEYBOARD = 2
+    TABLET = 4
+    TOUCH = 8
+
+    @classmethod
+    def _missing_(cls, value):
+        """
+        Our backing values are ints (which is necessary for us to use a flag)
+        but we also want to be able to instantiate with the strings the api
+        returns.
+        """
+        if value == "mouse":
+            return PlayStyles.MOUSE
+        if value == "keyboard":
+            return PlayStyles.KEYBOARD
+        if value == "tablet":
+            return PlayStyles.TABLET
+        if value == "touch":
+            return PlayStyles.TOUCH
+        return super()._missing_(value)
 
 class RankStatus(Enum):
     GRAVEYARD = -2
@@ -42,7 +60,7 @@ class RankStatus(Enum):
     def _missing_(cls, value):
         """
         The api can return ``RankStatus`` values as either an int or a string,
-        so if we try to instantiatte with a string, return the corresponding
+        so if we try to instantiate with a string, return the corresponding
         enum attribute.
         """
         if value == "graveyard":
