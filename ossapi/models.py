@@ -6,8 +6,12 @@ from types import SimpleNamespace
 from ossapi.mod import Mod
 from ossapi.enums import (Country, Cover, ProfilePage, UserAccountHistory,
     MessageType, BeatmapsetEventType, UserBadge, ProfileBanner, UserGroup,
-    GameMode, RankStatus, Failtimes, Covers, Statistics, Availability, Hype,
-    Nominations)
+    GameMode, PlayStyles, RankStatus, Failtimes, Covers, Statistics,
+    Availability, Hype, Nominations, BeatmapsetDownload, UserListFilters,
+    UserListSorts, UserListViews, Ranking, UserMonthlyPlaycount, UserPage,
+    UserLevel, UserGradeCounts, UserReplaysWatchedCount, UserAchievement,
+    UserProfileCustomization, UserStatistics, UserStatisticsRulesets,
+    RankHistory, Kudosu)
 
 T = TypeVar("T")
 
@@ -16,6 +20,18 @@ T = TypeVar("T")
 a type hint of ``Optional[Any]`` or ``Any`` means that I don't know what type it
 is, not that the api actually lets any type be returned there.
 """
+
+@dataclass
+class UserRelation:
+    # undocumented (and not a class on osu-web)
+    # https://github.com/ppy/osu-web/blob/master/app/Transformers/UserRelationTransformer.php
+    target_id: int
+    relation_type: str
+    mutual: bool
+
+    # optional fields
+    # ---------------
+    target: Optional[Any] #Optional[UserCompact]
 
 @dataclass
 class UserCompact:
@@ -44,12 +60,13 @@ class UserCompact:
     active_tournament_banner: Optional[ProfileBanner]
     badges: Optional[List[UserBadge]]
     beatmap_playcounts_count: Optional[int]
-    blocks: Optional[Any]
+    blocks: Optional[UserRelation]
     country: Optional[Country]
     cover: Optional[Cover]
     favourite_beatmapset_count: Optional[int]
+    follow_user_mapping: Optional[List[int]] # undocumented
     follower_count: Optional[int]
-    friends: Optional[Any]
+    friends: Optional[List[UserRelation]]
     graveyard_beatmapset_count: Optional[int]
     groups: Optional[List[UserGroup]]
     is_admin: Optional[bool]
@@ -62,38 +79,43 @@ class UserCompact:
     is_restricted: Optional[bool]
     is_silenced: Optional[bool]
     loved_beatmapset_count: Optional[int]
-    monthly_playcounts: Optional[List[None]]
-    page: Optional[Any]
-    previous_usernames: Optional[Any]
-    ranked_and_approved_beatmapset_count: Optional[Any]
-    replays_watched_counts: Optional[Any]
+    mapping_follower_count: Optional[int] # undocumented
+    monthly_playcounts: Optional[List[UserMonthlyPlaycount]]
+    page: Optional[UserPage]
+    previous_usernames: Optional[List[str]]
+    ranked_and_approved_beatmapset_count: Optional[int]
+    replays_watched_counts: Optional[UserReplaysWatchedCount]
     scores_best_count: Optional[int]
     scores_first_count: Optional[int]
     scores_recent_count: Optional[int]
-    statistics: Optional[Any]
-    statistics_rulesets: Optional[Any]
-    support_level: Optional[Any]
-    unranked_beatmapset_count: Optional[Any]
-    unread_pm_count: Optional[Any]
-    user_achievements: Optional[Any]
-    user_preferences: Optional[Any]
-    rank_history: Optional[Any]
+    statistics: Optional[UserStatistics]
+    statistics_rulesets: Optional[UserStatisticsRulesets]
+    support_level: Optional[int]
+    unranked_beatmapset_count: Optional[int]
+    unread_pm_count: Optional[int]
+    user_achievements: Optional[UserAchievement]
+    user_preferences: Optional[UserProfileCustomization]
+    rank_history: Optional[RankHistory]
 
+# pylint: disable=no-member
+UserRelation.__annotations__["target"] = Optional[UserCompact]
+# pylint: enable=no-member
 
 @dataclass
 class User(UserCompact):
+    comments_count: int
     cover_url: str
     discord: Optional[str]
     has_supported: bool
     interests: Optional[str]
     join_date: datetime
-    kudosu: Any
+    kudosu: Kudosu
     location: Optional[str]
     max_blocks: int
     max_friends: int
     occupation: Optional[str]
     playmode: str
-    playstyle: List[str]
+    playstyle: Optional[List[PlayStyles]]
     post_count: int
     profile_order: List[ProfilePage]
     title: Optional[str]
