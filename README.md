@@ -23,12 +23,11 @@ json = api.get_replay({"m": "0", "b": "1776628", "u": "3256299"})
 # `{"content":"XQAAIA....3fISw=","encoding":"base64"}`
 ```
 
-
 ## osu api v2
 
-We also provide support for [api v2](https://osu.ppy.sh/docs/index.html).
+We also provide support for [api v2](https://osu.ppy.sh/docs/index.html). **(Note: requires python 3.8+)**
 
-You can create an oauth client on your settings page (https://osu.ppy.sh/home/account/edit), then use the client's id, secret, and redirect_uri to authenticate.
+You can create an oauth client on your settings page (<https://osu.ppy.sh/home/account/edit>), then use the client's id, secret, and redirect_uri to authenticate.
 
 ```python
 # authenticates with client credentials grant (grants guest user access,
@@ -40,7 +39,8 @@ api = OssapiV2(client_id, client_secret)
 # must also be to a port on localhost (eg `"http://localhost:3918/"`).
 # You will be redirected to an authorization page for the client in your
 # browser the first time you instantiate `OssapiV2`. The token received
-# is used instead for every subsequent instantiation.
+# is used instead for every subsequent instantiation instead of authorizing
+# again.
 api = OssapiV2(client_id, client_secret, redirect_uri)
 
 # example usages of endpoints
