@@ -400,14 +400,15 @@ class BeatmapDiscussionPost:
 
 @dataclass
 class BeatmapDiscussion:
-    # TODO https://github.com/ppy/osu-web/blob/master/app/Models/BeatmapDiscussion.php
+    # https://github.com/ppy/osu-web/blob/master/app/Models/BeatmapDiscussion.php
     # https://github.com/ppy/osu-web/blob/master/app/Transformers/BeatmapDiscussionTransformer.php
     id: int
     beatmapset_id: int
     beatmap_id: Optional[int]
     user_id: Optional[int]
     deleted_by_id: Optional[int]
-    message_type: Optional[str] # Shouldn't be str (int|null on osu-web)
+    # should be ``Optional[int]`` but api returns a string instead
+    message_type: Optional[str]
     parent_id: Optional[int]
     timestamp: Optional[int] # this is timestamp of map in ms
     resolved: bool
@@ -423,18 +424,13 @@ class BeatmapDiscussion:
     beatmap: Optional[BeatmapCompact]
     beatmapset: Optional[BeatmapsetCompact]
 
-    # Not in transformer
-    # kudosu_denied_by_id: Optional[int]
-    # resolver_id: Optional[int]
-    # user: Optional[User]
-
 # pylint: disable=no-member
 BeatmapDiscussionPost.__annotations__["beatmap_discussion"] = Optional[BeatmapDiscussion]
 # pylint: enable=no-member
 
 @dataclass
 class BeatmapsetDiscussionReview:
-    # TODO https://github.com/ppy/osu-web/blob/master/app/Libraries/BeatmapsetDiscussionReview.php
+    # https://github.com/ppy/osu-web/blob/master/app/Libraries/BeatmapsetDiscussionReview.php
     max_blocks: int
 
 @dataclass
@@ -455,23 +451,18 @@ class BeatmapsetEvent:
     # https://github.com/ppy/osu-web/blob/master/app/Models/BeatmapsetEvent.php
     # https://github.com/ppy/osu-web/blob/master/app/Transformers/BeatmapsetEventTransformer.php
     beatmapset: Optional[BeatmapsetCompact]
-    # TODO use object? although it is the same on osu-web
-    # https://github.com/ppy/osu-web/blob/master/resources/assets/lib/interfaces/beatmapset-event-json.ts#L9
     comment: Optional[BeatmapsetEventComment]
     created_at: Optional[datetime]
     id: int
-    type: Optional[str] # int|null on osu-web
+    # should be ``Optional[int]`` but api returns a string instead
+    type: Optional[str]
     user_id: Optional[int]
     discussion: Optional[BeatmapDiscussion]
 
-    # Not in the transformer
-    # beatmapset_id: int
-    # updated_at: Optional[datetime]
-    # user: User
 
 @dataclass
 class ModdingHistoryEventsBundle:
-    # TODO https://github.com/ppy/osu-web/blob/master/app/Libraries/ModdingHistoryEventsBundle.php#L84
+    # https://github.com/ppy/osu-web/blob/master/app/Libraries/ModdingHistoryEventsBundle.php#L84
     events: List[BeatmapsetEvent]
     reviewsConfig: BeatmapsetDiscussionReview
     users: List[UserCompact]
