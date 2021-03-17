@@ -14,7 +14,7 @@ from requests_oauthlib import OAuth2Session
 from oauthlib.oauth2 import BackendApplicationClient
 
 from ossapi.models import (Beatmap, BeatmapUserScore, ForumTopicAndPosts,
-    Search, CommentBundle, Cursor, Score, BeatmapSearchResult)
+    Search, CommentBundle, Cursor, Score, BeatmapSearchResult, ModdingHistoryEventsBundle)
 from ossapi.mod import Mod
 
 def is_model_type(obj):
@@ -294,6 +294,12 @@ class OssapiV2:
                     new_value = []
                     for entry in value:
                         entry = self._instantiate(type_, **entry)
+                        # if the list entry is a model type, we need to resolve
+                        # it instead of just sticking it into the list, since
+                        # its children might still be dicts and not model
+                        # instances
+                        if is_model_type(type_):
+                            entry = self._resolve_annotations(entry)
                         new_value.append(entry)
                     value = new_value
                 else:
@@ -312,6 +318,7 @@ class OssapiV2:
         return obj
 
     def _instantiate(self, type_, **kwargs):
+        self.log.debug(f"instantiating type {type_}")
         # TODO this doesn't work when type_ is a _GenericAlias, which isn't
         # surprising - what is surprising is that it lets us instantiate that
         # type with **kwargs and it works fine. Needs more investigation.
@@ -416,3 +423,14 @@ class OssapiV2:
 
     def search_beatmaps(self, filters):
         return self._get(BeatmapSearchResult, f"/beatmapsets/search/{filters}")
+
+    def beatmapsets_events(self, limit=None, page=None, user=None, types=None, min_date=None, max_date=None):
+        """
+        Beatmap history
+
+        https://osu.ppy.sh/beatmapsets/events
+        """
+        # limit is 5-50
+        # types listed here - https://github.com/ppy/osu-web/blob/master/app/Models/BeatmapsetEvent.php#L185
+        params = {"limit": limit, "page": page, "user": user, "types": types, "min_date": min_date, "max_date": max_date}
+        return self._get(ModdingHistoryEventsBundle, "/beatmapsets/events", params)

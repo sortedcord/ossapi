@@ -5,8 +5,9 @@ from types import SimpleNamespace
 
 from ossapi.mod import Mod
 from ossapi.enums import (Country, Cover, ProfilePage, UserAccountHistory,
-    UserBadge, ProfileBanner, UserGroup, GameMode, RankStatus, Failtimes,
-    Covers, Statistics, Availability, Hype, Nominations)
+    MessageType, BeatmapsetEventType, UserBadge, ProfileBanner, UserGroup,
+    GameMode, RankStatus, Failtimes, Covers, Statistics, Availability, Hype,
+    Nominations)
 
 T = TypeVar("T")
 
@@ -173,6 +174,11 @@ class BeatmapsetCompact:
     title_unicode: str
     user_id: int
     video: str
+    # documented as being in ``Beatmapset`` only, but returned by
+    # ``api.beatmapset_events`` which uses a ``BeatmapsetCompact``.
+    hype: Hype
+    # entirely undocumented
+    nsfw: bool
 
     # optional fields
     # ---------------
@@ -189,7 +195,7 @@ class BeatmapsetCompact:
     ratings: Optional[Any]
     recent_favourites: Optional[Any]
     related_users: Optional[Any]
-    user: Optional[Any]
+    user: Optional[UserCompact]
 
 @dataclass
 class Beatmapset(BeatmapsetCompact):
@@ -198,7 +204,6 @@ class Beatmapset(BeatmapsetCompact):
     can_be_hyped: bool
     discussion_enabled: bool
     discussion_locked: bool
-    hype: Hype
     is_scoreable: bool
     last_updated: datetime
     legacy_thread_url: Optional[str]
@@ -208,8 +213,7 @@ class Beatmapset(BeatmapsetCompact):
     storyboard: bool
     submitted_date: Optional[datetime]
     tags: str
-    # undocumented
-    nsfw: bool
+
 
 # see the comment on BeatmapCompact.beatmapset for reasoning
 # pylint: disable=no-member
@@ -370,3 +374,105 @@ class BeatmapSearchResult:
     recommended_difficulty: float
     error: Optional[str]
     total: int
+
+
+
+
+# ===================
+# Undocumented Models
+# ===================
+
+
+@dataclass
+class BeatmapDiscussionVote:
+    # https://github.com/ppy/osu-web/blob/master/app/Models/BeatmapDiscussionVote.php#L148
+    user_id: int
+    score: int
+
+@dataclass
+class BeatmapDiscussionPost:
+    # https://github.com/ppy/osu-web/blob/master/app/Models/BeatmapDiscussionPost.php
+    # https://github.com/ppy/osu-web/blob/master/app/Transformers/BeatmapDiscussionPostTransformer.php
+    id: int
+    beatmap_discussion_id: int
+    user_id: Optional[int]
+    last_editor_id: Optional[int]
+    deleted_by_id: Optional[int]
+    system: bool
+    message: str
+    created_at: Optional[datetime]
+    updated_at: Optional[datetime]
+    deleted_at: Optional[datetime]
+    beatmap_discussion: Optional[Any] # Optional[BeatmapDiscussion]
+
+@dataclass
+class BeatmapDiscussion:
+    # https://github.com/ppy/osu-web/blob/master/app/Models/BeatmapDiscussion.php
+    # https://github.com/ppy/osu-web/blob/master/app/Transformers/BeatmapDiscussionTransformer.php
+    id: int
+    beatmapset_id: int
+    beatmap_id: Optional[int]
+    user_id: Optional[int]
+    deleted_by_id: Optional[int]
+    message_type: Optional[MessageType]
+    parent_id: Optional[int]
+    # a point of time which is ``timestamp`` milliseconds into the map
+    timestamp: Optional[int]
+    resolved: bool
+    can_be_resolved: bool
+    can_grant_kudosu: bool
+    created_at: Optional[datetime]
+    updated_at: Optional[datetime]
+    deleted_at: Optional[datetime]
+    last_post_at: Optional[datetime]
+    kudosu_denied: bool
+    starting_post: Optional[BeatmapDiscussionPost]
+    posts: Optional[List[BeatmapDiscussionPost]]
+    beatmap: Optional[BeatmapCompact]
+    beatmapset: Optional[BeatmapsetCompact]
+
+# pylint: disable=no-member
+BeatmapDiscussionPost.__annotations__["beatmap_discussion"] = Optional[BeatmapDiscussion]
+# pylint: enable=no-member
+
+@dataclass
+class BeatmapsetDiscussionReview:
+    # https://github.com/ppy/osu-web/blob/master/app/Libraries/BeatmapsetDiscussionReview.php
+    max_blocks: int
+
+@dataclass
+class BeatmapsetEventComment:
+    # the values returned by the api for this class depends on
+    # `BeatmapsetEvent.type`. Until we have a clean way of dealing with that,
+    # mark everything as optional.
+    beatmap_discussion_id: Optional[int]
+    beatmap_discussion_post_id: Optional[int]
+    new_vote: Optional[BeatmapDiscussionVote]
+    votes: Optional[List[BeatmapDiscussionVote]]
+    modes: Optional[str]
+    # Theese types change based on `BeatmapsetEvent.type`, will need to deal
+    # with that as well
+    old: Optional[Any]
+    new: Optional[Any]
+    reason: Optional[str]
+
+@dataclass
+class BeatmapsetEvent:
+    # https://github.com/ppy/osu-web/blob/master/app/Models/BeatmapsetEvent.php
+    # https://github.com/ppy/osu-web/blob/master/app/Transformers/BeatmapsetEventTransformer.php
+    id: int
+    type: BeatmapsetEventType
+    comment: Optional[BeatmapsetEventComment]
+    created_at: Optional[datetime]
+
+    user_id: Optional[int]
+    beatmapset: Optional[BeatmapsetCompact]
+    discussion: Optional[BeatmapDiscussion]
+
+
+@dataclass
+class ModdingHistoryEventsBundle:
+    # https://github.com/ppy/osu-web/blob/master/app/Libraries/ModdingHistoryEventsBundle.php#L84
+    events: List[BeatmapsetEvent]
+    reviewsConfig: BeatmapsetDiscussionReview
+    users: List[UserCompact]
