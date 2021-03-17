@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional, TypeVar, Generic, Any
+from typing import Optional, TypeVar, Generic, Any, List
 from datetime import datetime
 from types import SimpleNamespace
 
@@ -39,9 +39,9 @@ class UserCompact:
 
     # optional fields
     # ---------------
-    account_history: Optional[list[UserAccountHistory]]
+    account_history: Optional[List[UserAccountHistory]]
     active_tournament_banner: Optional[ProfileBanner]
-    badges: Optional[list[UserBadge]]
+    badges: Optional[List[UserBadge]]
     beatmap_playcounts_count: Optional[int]
     blocks: Optional[Any]
     country: Optional[Country]
@@ -50,7 +50,7 @@ class UserCompact:
     follower_count: Optional[int]
     friends: Optional[Any]
     graveyard_beatmapset_count: Optional[int]
-    groups: Optional[list[UserGroup]]
+    groups: Optional[List[UserGroup]]
     is_admin: Optional[bool]
     is_bng: Optional[bool]
     is_full_bn: Optional[bool]
@@ -61,7 +61,7 @@ class UserCompact:
     is_restricted: Optional[bool]
     is_silenced: Optional[bool]
     loved_beatmapset_count: Optional[int]
-    monthly_playcounts: Optional[list[None]]
+    monthly_playcounts: Optional[List[None]]
     page: Optional[Any]
     previous_usernames: Optional[Any]
     ranked_and_approved_beatmapset_count: Optional[Any]
@@ -92,9 +92,9 @@ class User(UserCompact):
     max_friends: int
     occupation: Optional[str]
     playmode: str
-    playstyle: list[str]
+    playstyle: List[str]
     post_count: int
-    profile_order: list[ProfilePage]
+    profile_order: List[ProfilePage]
     title: Optional[str]
     twitter: Optional[str]
     website: Optional[str]
@@ -176,7 +176,7 @@ class BeatmapsetCompact:
 
     # optional fields
     # ---------------
-    beatmaps: Optional[list[Beatmap]]
+    beatmaps: Optional[List[Beatmap]]
     converts: Optional[Any]
     current_user_attributes: Optional[Any]
     description: Optional[Any]
@@ -310,18 +310,18 @@ class Cursor(SimpleNamespace):
 
 @dataclass
 class CommentBundle:
-    commentable_meta: list[CommentableMeta]
-    comments: list[Comment]
+    commentable_meta: List[CommentableMeta]
+    comments: List[Comment]
     has_more: bool
     has_more_id: Optional[int]
-    included_comments: list[Comment]
-    pinned_comments: Optional[list[Comment]]
+    included_comments: List[Comment]
+    pinned_comments: Optional[List[Comment]]
     sort: str
     top_level_count: Optional[int]
     total: Optional[int]
     user_follow: bool
-    user_votes: list[int]
-    users: list[UserCompact]
+    user_votes: List[int]
+    users: List[UserCompact]
     # undocumented but still returned
     cursor: Cursor
 
@@ -339,12 +339,12 @@ class ForumTopic:
 class ForumTopicAndPosts:
     cursor: Cursor
     search: str
-    posts: list[ForumPost]
+    posts: List[ForumPost]
     topic: ForumTopic
 
 @dataclass
 class SearchResult(Generic[T]):
-    data: list[T]
+    data: List[T]
     total: int
 
 
@@ -355,7 +355,7 @@ class WikiPage:
     markdown: str
     path: str
     subtitle: Optional[str]
-    tags: list[str]
+    tags: List[str]
     title: str
 
 @dataclass
@@ -365,7 +365,7 @@ class Search:
 
 @dataclass
 class BeatmapSearchResult:
-    beatmapsets: list[Beatmapset]
+    beatmapsets: List[Beatmapset]
     cursor: Cursor
     recommended_difficulty: float
     error: Optional[str]
