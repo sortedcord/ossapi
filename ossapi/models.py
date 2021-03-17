@@ -1,3 +1,6 @@
+# opt-in to forward type annotations
+# https://docs.python.org/3.7/whatsnew/3.7.html#pep-563-postponed-evaluation-of-annotations
+from __future__ import annotations
 from dataclasses import dataclass
 from typing import Optional, TypeVar, Generic, Any, List
 from datetime import datetime
@@ -45,14 +48,14 @@ class UserCompact:
     active_tournament_banner: Optional[ProfileBanner]
     badges: Optional[List[UserBadge]]
     beatmap_playcounts_count: Optional[int]
-    blocks: Optional[Any] # Optional[UserRelation]
+    blocks: Optional[UserRelation]
     country: Optional[Country]
     cover: Optional[Cover]
     favourite_beatmapset_count: Optional[int]
     # undocumented
     follow_user_mapping: Optional[List[int]]
     follower_count: Optional[int]
-    friends: Optional[List[Any]]  # Optional[List[UserRelation]]
+    friends: Optional[List[UserRelation]]
     graveyard_beatmapset_count: Optional[int]
     groups: Optional[List[UserGroup]]
     is_admin: Optional[bool]
@@ -124,10 +127,7 @@ class BeatmapCompact:
 
     # optional fields
     # ---------------
-    # ``BeatmapCompact`` and ``BeatmapsetCompact`` are mutually dependent, so
-    # set a dummy type here and we'll update it to the real type after
-    # ``BeatmapsetCompact`` is defined.
-    beatmapset: Optional[Any] # Optional[BeatmapsetCompact]
+    beatmapset: Optional[BeatmapsetCompact]
     checksum: Optional[str]
     failtimes: Optional[Failtimes]
     max_combo: Optional[int]
@@ -159,7 +159,7 @@ class Beatmap(BeatmapCompact):
 
     # overridden fields
     # -----------------
-    beatmapset: Optional[Any] # Optional[Beatmapset]
+    beatmapset: Optional[Beatmapset]
 
 
 @dataclass
@@ -223,10 +223,6 @@ class Beatmapset(BeatmapsetCompact):
     submitted_date: Optional[datetime]
     tags: str
 
-
-# see the comment on BeatmapCompact.beatmapset for reasoning
-BeatmapCompact.__annotations__["beatmapset"] = Optional[BeatmapsetCompact] # pylint: disable=no-member
-Beatmap.__annotations__["beatmapset"] = Optional[Beatmapset] # pylint: disable=no-member
 
 @dataclass
 class Match:
@@ -410,7 +406,7 @@ class BeatmapDiscussionPost:
     created_at: Optional[datetime]
     updated_at: Optional[datetime]
     deleted_at: Optional[datetime]
-    beatmap_discussion: Optional[Any] # Optional[BeatmapDiscussion]
+    beatmap_discussion: Optional[BeatmapDiscussion]
 
 @dataclass
 class BeatmapDiscussion:
@@ -437,10 +433,6 @@ class BeatmapDiscussion:
     posts: Optional[List[BeatmapDiscussionPost]]
     beatmap: Optional[BeatmapCompact]
     beatmapset: Optional[BeatmapsetCompact]
-
-# pylint: disable=no-member
-BeatmapDiscussionPost.__annotations__["beatmap_discussion"] = Optional[BeatmapDiscussion]
-# pylint: enable=no-member
 
 @dataclass
 class BeatmapsetDiscussionReview:
@@ -495,6 +487,3 @@ class UserRelation:
     # optional fields
     # ---------------
     target: Optional[UserCompact]
-
-UserRelation.__annotations__["blocks"] = Optional[UserRelation] # pylint: disable=no-member
-UserRelation.__annotations__["friends"] = Optional[List[UserRelation]] # pylint: disable=no-member
