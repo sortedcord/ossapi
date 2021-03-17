@@ -305,6 +305,7 @@ class OssapiV2:
         return obj
 
     def _instantiate(self, type_, **kwargs):
+        self.log.debug(f"instantiating type {type_}")
         # TODO this doesn't work when type_ is a _GenericAlias, which isn't
         # surprising - what is surprising is that it lets us instantiate that
         # type with **kwargs and it works fine. Needs more investigation.
