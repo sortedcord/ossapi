@@ -14,6 +14,10 @@ a type hint of ``Optional[Any]`` or ``Any`` means that I don't know what type it
 is, not that the api actually lets any type be returned there.
 """
 
+# =================
+# Documented Models
+# =================
+
 @dataclass
 class UserCompact:
     """
