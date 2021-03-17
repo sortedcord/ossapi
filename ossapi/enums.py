@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from enum import Enum
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional, List, Any
 
 # ================
 # Documented Enums
@@ -335,8 +335,13 @@ class UserStatistics:
     replays_watched_by_others: int
     is_ranked: bool
     grade_counts: UserGradeCounts
-    country_rank: int
-    rank: int
+
+    # optional fields
+    # ---------------
+    country_rank: Optional[int]
+    rank: Optional[int]
+    user: Optional[Any]
+    variants: Optional[Any]
 
 @dataclass
 class UserStatisticsRulesets:
