@@ -8,6 +8,7 @@ from pathlib import Path
 from tempfile import NamedTemporaryFile
 from datetime import datetime
 from enum import Enum
+from functools import partial
 
 from requests_oauthlib import OAuth2Session
 from oauthlib.oauth2 import BackendApplicationClient
@@ -23,15 +24,16 @@ def is_model_type(obj):
 
 class OssapiV2:
     TOKEN_URL = "https://osu.ppy.sh/oauth/token"
+    AUTH_CODE_URL = "https://osu.ppy.sh/oauth/authorize"
     BASE_URL = "https://osu.ppy.sh/api/v2"
     SCOPE = ["public"]
 
     def __init__(self, client_id, client_secret, redirect_uri=None,
         scope=["public"]):
+        self.log = logging.getLogger(__name__)
 
         self.session = self.authenticate(client_id, client_secret, redirect_uri,
             scope)
-        self.log = logging.getLogger(__name__)
         # api responses sometimes differ from their documentation. I'm not going
         # to go and reverse engineer every endpoint (which could change at any
         # moment), so instead we have this stopgap: we consider every attribute
@@ -48,9 +50,11 @@ class OssapiV2:
         if token_file.is_file():
             with open(token_file, "rb") as f:
                 token = pickle.load(f)
-            return OAuth2Session(client_id, token=token)
+            return self._auth_oauth_session(client_id, client_secret, scope,
+                token=token)
 
         token_file = Path(__file__).parent / "client_credentials.pickle"
+        # TODO I think this breaks if the token is expired?
         if token_file.is_file():
             with open(token_file, "rb") as f:
                 token = pickle.load(f)
@@ -67,29 +71,20 @@ class OssapiV2:
             redirect_uri, scope)
 
     def _client_credentials_grant(self, client_id, client_secret):
-        auto_refresh_kwargs = {
-            "client_id": client_id,
-            "client_secret": client_secret
-        }
         client = BackendApplicationClient(client_id=client_id, scope=["public"])
+        oauth = OAuth2Session(client=client)
 
-        oauth = OAuth2Session(client=client,
-            auto_refresh_kwargs=auto_refresh_kwargs)
-
-        token = oauth.fetch_token(token_url=self.TOKEN_URL, client_id=client_id,
-            client_secret=client_secret)
-        path = Path(__file__).parent / "client_credentials.pickle"
-        with open(path, "wb+") as f:
-            pickle.dump(token, f)
+        token = oauth.fetch_token(token_url=self.TOKEN_URL,
+            client_id=client_id, client_secret=client_secret)
+        self._save_token("client", token)
 
         return oauth
 
     def _authorization_code_grant(self, client_id, client_secret, redirect_uri,
         scope):
-        oauth = OAuth2Session(client_id, redirect_uri=redirect_uri, scope=scope)
-        authorization_url, _state = oauth.authorization_url(
-                "https://osu.ppy.sh/oauth/authorize")
-
+        oauth = self._auth_oauth_session(client_id, client_secret, scope,
+            redirect_uri=redirect_uri)
+        authorization_url, _state = oauth.authorization_url(self.AUTH_CODE_URL)
         webbrowser.open(authorization_url)
 
         # open up a temporary socket so we can receive the GET request to the
@@ -115,11 +110,29 @@ class OssapiV2:
         code = data.split("code=")[1].split("&state=")[0]
         token = oauth.fetch_token("https://osu.ppy.sh/oauth/token",
             client_id=client_id, client_secret=client_secret, code=code)
-        path = Path(__file__).parent / "authorization_code.pickle"
-        with open(path, "wb+") as f:
-            pickle.dump(token, f)
+        self._save_token("auth", token)
 
         return oauth
+
+    def _auth_oauth_session(self, client_id, client_secret, scope, *,
+        token=None, redirect_uri=None):
+        auto_refresh_kwargs = {
+            "client_id": client_id,
+            "client_secret": client_secret
+        }
+        return OAuth2Session(client_id, token=token, redirect_uri=redirect_uri,
+            auto_refresh_url=self.TOKEN_URL,
+            auto_refresh_kwargs=auto_refresh_kwargs,
+            token_updater=lambda: partial(self._save_token, flow="auth"),
+            scope=scope)
+
+    def _save_token(self, token, flow):
+        self.log.info(f"saving token to pickle file for flow {flow}")
+        filename = ("authorization_code.pickle" if flow == "auth" else
+            "client_credentials.pickle")
+        path = Path(__file__).parent / filename
+        with open(path, "wb+") as f:
+            pickle.dump(token, f)
 
     def _get(self, type_, url, params={}):
         r = self.session.get(f"{self.BASE_URL}{url}", params=params)
