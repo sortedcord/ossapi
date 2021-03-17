@@ -409,8 +409,7 @@ class BeatmapDiscussion:
     beatmap_id: Optional[int]
     user_id: Optional[int]
     deleted_by_id: Optional[int]
-    # should be ``Optional[int]`` but api returns a string instead
-    message_type: Optional[str]
+    message_type: Optional[MessageType]
     parent_id: Optional[int]
     # a point of time which is ``timestamp`` milliseconds into the map
     timestamp: Optional[int]
