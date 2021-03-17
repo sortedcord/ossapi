@@ -173,6 +173,11 @@ class BeatmapsetCompact:
     title_unicode: str
     user_id: int
     video: str
+    # documented as being in ``Beatmapset`` only, but returned by
+    # ``api.beatmapset_events`` which uses a ``BeatmapsetCompact``.
+    hype: Hype
+    # entirely undocumented
+    nsfw: bool
 
     # optional fields
     # ---------------
@@ -198,7 +203,6 @@ class Beatmapset(BeatmapsetCompact):
     can_be_hyped: bool
     discussion_enabled: bool
     discussion_locked: bool
-    hype: Hype
     is_scoreable: bool
     last_updated: datetime
     legacy_thread_url: Optional[str]
@@ -208,8 +212,7 @@ class Beatmapset(BeatmapsetCompact):
     storyboard: bool
     submitted_date: Optional[datetime]
     tags: str
-    # undocumented
-    nsfw: bool
+
 
 # see the comment on BeatmapCompact.beatmapset for reasoning
 # pylint: disable=no-member
