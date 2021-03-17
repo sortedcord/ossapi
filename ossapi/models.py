@@ -4,14 +4,7 @@ from datetime import datetime
 from types import SimpleNamespace
 
 from ossapi.mod import Mod
-from ossapi.enums import (Country, Cover, ProfilePage, UserAccountHistory,
-    MessageType, BeatmapsetEventType, UserBadge, ProfileBanner, UserGroup,
-    GameMode, PlayStyles, RankStatus, Failtimes, Covers, Statistics,
-    Availability, Hype, Nominations, BeatmapsetDownload, UserListFilters,
-    UserListSorts, UserListViews, Ranking, UserMonthlyPlaycount, UserPage,
-    UserLevel, UserGradeCounts, UserReplaysWatchedCount, UserAchievement,
-    UserProfileCustomization, UserStatistics, UserStatisticsRulesets,
-    RankHistory, Kudosu)
+from ossapi.enums import *
 
 T = TypeVar("T")
 
@@ -24,14 +17,14 @@ is, not that the api actually lets any type be returned there.
 @dataclass
 class UserRelation:
     # undocumented (and not a class on osu-web)
-    # https://github.com/ppy/osu-web/blob/master/app/Transformers/UserRelationTransformer.php
+    # https://github.com/ppy/osu-web/blob/master/app/Transformers/UserRelationTransformer.php#L16
     target_id: int
-    relation_type: str
+    relation_type: UserRelationType
     mutual: bool
 
     # optional fields
     # ---------------
-    target: Optional[Any] #Optional[UserCompact]
+    target: Optional[Any] # Optional[UserCompact]
 
 @dataclass
 class UserCompact:
@@ -64,7 +57,8 @@ class UserCompact:
     country: Optional[Country]
     cover: Optional[Cover]
     favourite_beatmapset_count: Optional[int]
-    follow_user_mapping: Optional[List[int]] # undocumented
+    # undocumented
+    follow_user_mapping: Optional[List[int]]
     follower_count: Optional[int]
     friends: Optional[List[UserRelation]]
     graveyard_beatmapset_count: Optional[int]
@@ -79,7 +73,8 @@ class UserCompact:
     is_restricted: Optional[bool]
     is_silenced: Optional[bool]
     loved_beatmapset_count: Optional[int]
-    mapping_follower_count: Optional[int] # undocumented
+    # undocumented
+    mapping_follower_count: Optional[int]
     monthly_playcounts: Optional[List[UserMonthlyPlaycount]]
     page: Optional[UserPage]
     previous_usernames: Optional[List[str]]
@@ -199,7 +194,7 @@ class BeatmapsetCompact:
     # documented as being in ``Beatmapset`` only, but returned by
     # ``api.beatmapset_events`` which uses a ``BeatmapsetCompact``.
     hype: Hype
-    # entirely undocumented
+    # undocumented
     nsfw: bool
 
     # optional fields
@@ -291,7 +286,7 @@ class CommentableMeta:
     title: str
     type: Optional[str]
     url: Optional[str]
-    # undocumented but still returned,
+    # undocumented
     owner_id: Optional[int]
     owner_title: Optional[str]
 
@@ -348,7 +343,7 @@ class CommentBundle:
     user_follow: bool
     user_votes: List[int]
     users: List[UserCompact]
-    # undocumented but still returned
+    # undocumented
     cursor: Cursor
 
 
