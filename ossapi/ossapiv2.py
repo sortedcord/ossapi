@@ -76,7 +76,7 @@ class OssapiV2:
 
         token = oauth.fetch_token(token_url=self.TOKEN_URL,
             client_id=client_id, client_secret=client_secret)
-        self._save_token("client", token)
+        self._save_token(token, "client")
 
         return oauth
 
@@ -110,7 +110,7 @@ class OssapiV2:
         code = data.split("code=")[1].split("&state=")[0]
         token = oauth.fetch_token("https://osu.ppy.sh/oauth/token",
             client_id=client_id, client_secret=client_secret, code=code)
-        self._save_token("auth", token)
+        self._save_token(token, "auth")
 
         return oauth
 
