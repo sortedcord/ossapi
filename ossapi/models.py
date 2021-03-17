@@ -375,8 +375,12 @@ class BeatmapSearchResult:
     total: int
 
 
+
+
+# ===================
 # Undocumented Models
 # ===================
+
 
 @dataclass
 class BeatmapDiscussionVote:
@@ -438,13 +442,16 @@ class BeatmapsetDiscussionReview:
 
 @dataclass
 class BeatmapsetEventComment:
-    # TODO make this better, everything is optional...
+    # the values returned by the api for this class depends on
+    # `BeatmapsetEvent.type`. Until we have a clean way of dealing with that,
+    # mark everything as optional.
     beatmap_discussion_id: Optional[int]
     beatmap_discussion_post_id: Optional[int]
     new_vote: Optional[BeatmapDiscussionVote]
     votes: Optional[List[BeatmapDiscussionVote]]
     modes: Optional[str]
-    # The types change based on event type...
+    # Theese types change based on `BeatmapsetEvent.type`, will need to deal
+    # with that as well
     old: Optional[Any]
     new: Optional[Any]
     reason: Optional[str]
