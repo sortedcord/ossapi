@@ -341,7 +341,7 @@ class OssapiV2:
         for key, val in params.items():
             if not val:
                 continue
-            if (isinstance(val, Cursor)  or isinstance(val, dict)):
+            if isinstance(val, (Cursor, dict)):
                 if isinstance(val, Cursor):
                     val = val.__dict__
                 str_params += "&".join([f"{key}[{k}]={self._format_params(v)}" for k,v in val.items()])
@@ -355,7 +355,7 @@ class OssapiV2:
 
     def _format_params(self, val):
         if isinstance(val, datetime):
-            return int(1000 * val.timestamp());
+            return int(1000 * val.timestamp())
         return val
 
     def beatmap_lookup(self, checksum=None, filename=None, beatmap_id=None):
@@ -425,7 +425,7 @@ class OssapiV2:
         # filters should be passed as dict?
         params = {"cursor": cursor}
         params.update(filters)
-        return self._get(BeatmapSearchResult, f"/beatmapsets/search/", params)
+        return self._get(BeatmapSearchResult, "/beatmapsets/search/", params)
 
     def beatmapsets_events(self, limit=None, page=None, user=None, types=None,
         min_date=None, max_date=None):
