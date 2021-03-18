@@ -9,7 +9,6 @@ from tempfile import NamedTemporaryFile
 from datetime import datetime
 from enum import Enum
 from functools import partial
-import json
 
 from requests_oauthlib import OAuth2Session
 from oauthlib.oauth2 import BackendApplicationClient
