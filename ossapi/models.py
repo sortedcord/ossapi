@@ -370,6 +370,13 @@ class Search:
     user: Optional[SearchResult[UserCompact]]
     wiki_page: Optional[SearchResult[WikiPage]]
 
+
+
+# ===================
+# Undocumented Models
+# ===================
+
+
 @dataclass
 class BeatmapSearchResult:
     beatmapsets: List[Beatmapset]
@@ -377,13 +384,6 @@ class BeatmapSearchResult:
     recommended_difficulty: float
     error: Optional[str]
     total: int
-
-
-
-
-# ===================
-# Undocumented Models
-# ===================
 
 
 @dataclass
