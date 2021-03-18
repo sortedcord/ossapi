@@ -143,6 +143,8 @@ class OssapiV2:
             params[key] = self._format_value(value)
             value = self._format_value(value)
             if isinstance(value, list):
+                # we need to pass multiple values for this key, so make its
+                # value a list https://stackoverflow.com/a/62042144
                 params[f"{key}[]"] = []
                 for v in value:
                     params[f"{key}[]"].append(self._format_value(v))
