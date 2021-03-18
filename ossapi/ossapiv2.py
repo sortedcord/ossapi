@@ -335,6 +335,25 @@ class OssapiV2:
 
         return issubclass(type_, (Enum, datetime, Mod))
 
+    def _parse_obj_params(self, obj, name):
+        params = {}
+        if (isinstance(obj, Cursor) or isinstance(obj, dict)):
+            if isinstance(obj, Cursor):
+                obj = obj.__dict__
+            for key, val in obj.items():
+                params[f"{name}[{key}]"] = self._format_params(val)
+
+        if isinstance(obj, list):
+            for val in obj:
+                params[f"{name}[]"] = self._format_params(val)
+
+        return params
+
+    def _format_params(self, val):
+        if isinstance(val, datetime):
+            return int(1000 * val.timestamp());
+        return val
+
     def beatmap_lookup(self, checksum=None, filename=None, beatmap_id=None):
         params = {"checksum": checksum, "filename": filename, "id": beatmap_id}
         return self._get(Beatmap, "/beatmaps/lookup", params)
@@ -398,8 +417,14 @@ class OssapiV2:
 
         return tempfile.name
 
-    def search_beatmaps(self, filters):
-        return self._get(BeatmapSearchResult, f"/beatmapsets/search/{filters}")
+    def search_beatmaps(self, filters=None, cursor=None):
+        # filters should be passed as dict?
+        params = {}
+        if filters:
+            params.update(filters)
+        if cursor:
+            params.update(self._parse_obj_params(cursor, "cursor"))
+        return self._get(BeatmapSearchResult, f"/beatmapsets/search/", params)
 
     def beatmapsets_events(self, limit=None, page=None, user=None, types=None,
         min_date=None, max_date=None):
@@ -411,8 +436,9 @@ class OssapiV2:
         # limit is 5-50
         # types listed here
         # https://github.com/ppy/osu-web/blob/master/app/Models/BeatmapsetEvent.php#L185
-        params = {"limit": limit, "page": page, "user": user, "types": types,
+        params = {"limit": limit, "page": page, "user": user,
             "min_date": min_date, "max_date": max_date}
+        params.update(self._parse_obj_params(types, "types"))
         return self._get(ModdingHistoryEventsBundle, "/beatmapsets/events",
             params)
 
