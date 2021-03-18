@@ -17,6 +17,7 @@ from ossapi.models import (Beatmap, BeatmapUserScore, ForumTopicAndPosts,
     Search, CommentBundle, Cursor, Score, BeatmapSearchResult,
     ModdingHistoryEventsBundle, User)
 from ossapi.mod import Mod
+from ossapi.utils import Formattable
 
 class OssapiV2:
     TOKEN_URL = "https://osu.ppy.sh/oauth/token"
@@ -140,14 +141,24 @@ class OssapiV2:
 
     def _format_params(self, params):
         for key, value in params.copy().items():
-            if key == "cursor" and value is not None:
-                cursor = params["cursor"]
-                for k, v in cursor.__dict__.items():
-                    if isinstance(v, datetime):
-                        v = 1000 * int(v.timestamp())
+            params[key] = self._format_value(value)
+            value = self._format_value(value)
+            if isinstance(value, list):
+                params[f"{key}[]"] = []
+                for v in value:
+                    params[f"{key}[]"].append(self._format_value(v))
+                del params[key]
+            if isinstance(value, Cursor):
+                new_params = self._format_params(value.__dict__)
+                for k, v in new_params.items():
                     params[f"cursor[{k}]"] = v
-                del params["cursor"]
+                del params[key]
         return params
+
+    def _format_value(self, value):
+        if isinstance(value, Formattable):
+            return value.format()
+        return value
 
     def _resolve_annotations(self, obj):
         """
