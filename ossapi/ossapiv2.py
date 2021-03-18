@@ -417,4 +417,4 @@ class OssapiV2:
             params)
 
     def user(self, user_id, mode=None):
-        return self._get(User, f"/users/{user_id}/{mode if mode else ''}")
+        return self._get(User, f"/users/{user_id}/{mode or ''}")
