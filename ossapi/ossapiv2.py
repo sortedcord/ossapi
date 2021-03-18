@@ -323,9 +323,10 @@ class OssapiV2:
     def _is_base_type(self, type_):
         """
         A "base" type is a type that is still instantiable (so not a primitive)
-        but that we don't need to recurse down its members to look for more
-        model types. The base type is responsible for cleaning up and/or
-        modifying the data we give it, and we move on after instantiating it.
+        but one that we don't need to recurse down its members to look for more
+        model types (or more base types). The base type is responsible for
+        cleaning up and/or modifying the data we give it, and we move on after
+        instantiating it.
 
         Examples are enums, mods, and datetimes.
         """
