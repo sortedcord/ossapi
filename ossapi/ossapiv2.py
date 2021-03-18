@@ -140,8 +140,6 @@ class OssapiV2:
 
     def _format_params(self, params):
         for key, value in params.copy().items():
-            params[key] = self._format_value(value)
-            value = self._format_value(value)
             if isinstance(value, list):
                 # we need to pass multiple values for this key, so make its
                 # value a list https://stackoverflow.com/a/62042144
@@ -149,11 +147,15 @@ class OssapiV2:
                 for v in value:
                     params[f"{key}[]"].append(self._format_value(v))
                 del params[key]
-            if isinstance(value, Cursor):
+            elif isinstance(value, Cursor):
                 new_params = self._format_params(value.__dict__)
                 for k, v in new_params.items():
                     params[f"cursor[{k}]"] = v
                 del params[key]
+            elif isinstance(value, datetime):
+                params[key] = 1000 * int(value.timestamp())
+            else:
+                params[key] = self._format_value(value)
         return params
 
     def _format_value(self, value):
@@ -424,8 +426,8 @@ class OssapiV2:
         return tempfile.name
 
     def search_beatmaps(self, filters={}, cursor=None):
-        # filters should be passed as dict?
         params = {"cursor": cursor}
+        # filters should be passed as dict?
         params.update(filters)
         return self._get(BeatmapSearchResult, "/beatmapsets/search/", params)
 
