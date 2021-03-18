@@ -130,12 +130,24 @@ class OssapiV2:
             pickle.dump(token, f)
 
     def _get(self, type_, url, params={}):
-        parsed_params = self._parse_params(params)
-        r = self.session.get(f"{self.BASE_URL}{url}", params=parsed_params)
+        params = self._format_params(params)
+        r = self.session.get(f"{self.BASE_URL}{url}", params=params)
+        self.log.info(f"made request to {r.request.url}")
         json = r.json()
         obj = self._instantiate(type_, **json)
         obj = self._resolve_annotations(obj)
         return obj
+
+    def _format_params(self, params):
+        for key, value in params.copy().items():
+            if key == "cursor" and value is not None:
+                cursor = params["cursor"]
+                for k, v in cursor.__dict__.items():
+                    if isinstance(v, datetime):
+                        v = 1000 * int(v.timestamp())
+                    params[f"cursor[{k}]"] = v
+                del params["cursor"]
+        return params
 
     def _resolve_annotations(self, obj):
         """
@@ -335,28 +347,6 @@ class OssapiV2:
             return False
 
         return issubclass(type_, (Enum, datetime, Mod))
-
-    def _parse_params(self, params):
-        str_params = ""
-        for key, val in params.items():
-            if not val:
-                continue
-            if isinstance(val, (Cursor, dict)):
-                if isinstance(val, Cursor):
-                    val = val.__dict__
-                str_params += "&".join([f"{key}[{k}]={self._format_params(v)}" for k,v in val.items()])
-
-            elif isinstance(val, list):
-                str_params += "&".join([f"{key}[]={self._format_params(v)}" for v in val])
-
-            else:
-                str_params += f"{key}={self._format_params(val)}"
-        return str_params
-
-    def _format_params(self, val):
-        if isinstance(val, datetime):
-            return int(1000 * val.timestamp())
-        return val
 
     def beatmap_lookup(self, checksum=None, filename=None, beatmap_id=None):
         params = {"checksum": checksum, "filename": filename, "id": beatmap_id}
