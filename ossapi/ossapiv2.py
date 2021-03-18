@@ -8,7 +8,6 @@ from pathlib import Path
 from tempfile import NamedTemporaryFile
 from datetime import datetime
 from enum import Enum
-from functools import partial
 
 from requests_oauthlib import OAuth2Session
 from oauthlib.oauth2 import BackendApplicationClient
@@ -118,7 +117,7 @@ class OssapiV2:
         return OAuth2Session(client_id, token=token, redirect_uri=redirect_uri,
             auto_refresh_url=self.TOKEN_URL,
             auto_refresh_kwargs=auto_refresh_kwargs,
-            token_updater=lambda: partial(self._save_token, flow="auth"),
+            token_updater=lambda token: self._save_token(token, "auth"),
             scope=scope)
 
     def _save_token(self, token, flow):
