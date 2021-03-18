@@ -397,7 +397,7 @@ class BeatmapDiscussionPost:
     # https://github.com/ppy/osu-web/blob/master/app/Models/BeatmapDiscussionPost.php
     # https://github.com/ppy/osu-web/blob/master/app/Transformers/BeatmapDiscussionPostTransformer.php
     id: int
-    beatmap_discussion_id: int
+    beatmapset_discussion_id: int
     user_id: Optional[int]
     last_editor_id: Optional[int]
     deleted_by_id: Optional[int]

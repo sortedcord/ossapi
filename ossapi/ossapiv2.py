@@ -16,6 +16,7 @@ from ossapi.models import (Beatmap, BeatmapUserScore, ForumTopicAndPosts,
     Search, CommentBundle, Cursor, Score, BeatmapSearchResult,
     ModdingHistoryEventsBundle, User)
 from ossapi.mod import Mod
+from ossapi.utils import Formattable
 
 class OssapiV2:
     TOKEN_URL = "https://osu.ppy.sh/oauth/token"
@@ -129,11 +130,34 @@ class OssapiV2:
             pickle.dump(token, f)
 
     def _get(self, type_, url, params={}):
+        params = self._format_params(params)
         r = self.session.get(f"{self.BASE_URL}{url}", params=params)
+        self.log.info(f"made request to {r.request.url}")
         json = r.json()
         obj = self._instantiate(type_, **json)
         obj = self._resolve_annotations(obj)
         return obj
+
+    def _format_params(self, params):
+        for key, value in params.copy().items():
+            params[key] = self._format_value(value)
+            value = self._format_value(value)
+            if isinstance(value, list):
+                params[f"{key}[]"] = []
+                for v in value:
+                    params[f"{key}[]"].append(self._format_value(v))
+                del params[key]
+            if isinstance(value, Cursor):
+                new_params = self._format_params(value.__dict__)
+                for k, v in new_params.items():
+                    params[f"cursor[{k}]"] = v
+                del params[key]
+        return params
+
+    def _format_value(self, value):
+        if isinstance(value, Formattable):
+            return value.format()
+        return value
 
     def _resolve_annotations(self, obj):
         """
@@ -397,8 +421,11 @@ class OssapiV2:
 
         return tempfile.name
 
-    def search_beatmaps(self, filters):
-        return self._get(BeatmapSearchResult, f"/beatmapsets/search/{filters}")
+    def search_beatmaps(self, filters={}, cursor=None):
+        # filters should be passed as dict?
+        params = {"cursor": cursor}
+        params.update(filters)
+        return self._get(BeatmapSearchResult, "/beatmapsets/search/", params)
 
     def beatmapsets_events(self, limit=None, page=None, user=None, types=None,
         min_date=None, max_date=None):
@@ -410,8 +437,8 @@ class OssapiV2:
         # limit is 5-50
         # types listed here
         # https://github.com/ppy/osu-web/blob/master/app/Models/BeatmapsetEvent.php#L185
-        params = {"limit": limit, "page": page, "user": user, "types": types,
-            "min_date": min_date, "max_date": max_date}
+        params = {"limit": limit, "page": page, "user": user,
+            "min_date": min_date, "max_date": max_date, "types": types}
         return self._get(ModdingHistoryEventsBundle, "/beatmapsets/events",
             params)
 

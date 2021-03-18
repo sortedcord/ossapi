@@ -1,5 +1,17 @@
-from enum import EnumMeta
+from enum import EnumMeta, Enum
 from datetime import datetime
+from abc import abstractmethod
+
+class Formattable:
+    @abstractmethod
+    def format(self):
+        pass
+
+# "Formattable Enum"
+class FEnum(Formattable, Enum):
+    def format(self):
+        return self.value
+
 
 class ListEnumMeta(EnumMeta):
     """
@@ -26,6 +38,17 @@ class ListEnumMeta(EnumMeta):
             new_val |= val
         return new_val
 
+# "Formattable Datetime"
+class FDatetime(datetime, Formattable):
+    """
+    We can't instantiate ``Datetime`` objects since we don't match
+    ``datetime.__new__``'s signature, so we need a proxy object to instantiate
+    instead which has a proper ``__new__``. That object is this class.
+    """
+    def format(self):
+        return 1000 * int(self.timestamp())
+
+
 class Datetime(datetime):
     """
     Our replacement for the ``datetime`` object that deals with the various
@@ -43,18 +66,18 @@ class Datetime(datetime):
         # the api changes the timestamps they return.
         # see https://stackoverflow.com/q/969285.
         if value.endswith("Z"):
-            return datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%f%z")
+            return FDatetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%f%z")
         if value.isdigit():
             # see if it's an int first, if so it's a unix timestamp. The
             # api returns the timestamp in milliseconds but
             # ``datetime.utcfromtimestamp`` expects it in seconds, so
             # divide by 1000 to convert.
             value = int(value) / 1000
-            return datetime.utcfromtimestamp(value)
+            return FDatetime.utcfromtimestamp(value)
         if cls._matches_datetime(value, "%Y-%m-%dT%H:%M:%S%z"):
-            return datetime.strptime(value, "%Y-%m-%dT%H:%M:%S%z")
+            return FDatetime.strptime(value, "%Y-%m-%dT%H:%M:%S%z")
         if cls._matches_datetime(value, "%Y-%m-%d"):
-            return datetime.strptime(value, "%Y-%m-%d")
+            return FDatetime.strptime(value, "%Y-%m-%d")
 
     @staticmethod
     def _matches_datetime(value, format_):
