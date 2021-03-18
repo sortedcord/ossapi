@@ -124,22 +124,22 @@ class BeatmapsetEventType(FEnum):
 class BeatmapsetDownload(FEnum):
     ALL = "all"
     NO_VIDEO = "no_video"
-    DIRECT ="direct"
+    DIRECT = "direct"
 
 class UserListFilters(FEnum):
     ALL = "all"
     ONLINE = "online"
-    OFFLINE ="offline"
+    OFFLINE = "offline"
 
 class UserListSorts(FEnum):
     LAST_VISIT = "last_visit"
     RANK = "rank"
-    USERNAME ="username"
+    USERNAME = "username"
 
 class UserListViews(FEnum):
     CARD = "card"
     LIST = "list"
-    BRICK ="brick"
+    BRICK = "brick"
 
 
 # ==================
