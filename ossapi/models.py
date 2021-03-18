@@ -3,11 +3,11 @@
 from __future__ import annotations
 from dataclasses import dataclass
 from typing import Optional, TypeVar, Generic, Any, List
-from datetime import datetime
 from types import SimpleNamespace
 
 from ossapi.mod import Mod
 from ossapi.enums import *
+from ossapi.utils import Datetime
 
 T = TypeVar("T")
 
@@ -96,7 +96,7 @@ class User(UserCompact):
     discord: Optional[str]
     has_supported: bool
     interests: Optional[str]
-    join_date: datetime
+    join_date: Datetime
     kudosu: Kudosu
     location: Optional[str]
     max_blocks: int
@@ -150,7 +150,7 @@ class Beatmap(BeatmapCompact):
     drain: int
     hit_length: int
     is_scoreable: bool
-    last_updated: datetime
+    last_updated: Datetime
     mode_int: int
     passcount: int
     playcount: int
@@ -214,13 +214,13 @@ class Beatmapset(BeatmapsetCompact):
     discussion_enabled: bool
     discussion_locked: bool
     is_scoreable: bool
-    last_updated: datetime
+    last_updated: Datetime
     legacy_thread_url: Optional[str]
     nominations_summary: Nominations
     ranked: RankStatus
-    ranked_date: Optional[datetime]
+    ranked_date: Optional[Datetime]
     storyboard: bool
-    submitted_date: Optional[datetime]
+    submitted_date: Optional[Datetime]
     tags: str
 
 
@@ -244,7 +244,7 @@ class Score:
     statistics: Statistics
     pp: float
     rank: int
-    created_at: datetime
+    created_at: Datetime
     mode: GameMode
     mode_int: int
     replay: bool
@@ -280,9 +280,9 @@ class CommentableMeta:
 class Comment:
     commentable_id: int
     commentable_type: str
-    created_at: datetime
-    deleted_at: Optional[datetime]
-    edited_at: Optional[datetime]
+    created_at: Datetime
+    deleted_at: Optional[Datetime]
+    edited_at: Optional[Datetime]
     edited_by_id: Optional[int]
     id: int
     legacy_name: Optional[str]
@@ -291,7 +291,7 @@ class Comment:
     parent_id: Optional[int]
     pinned: bool
     replies_count: int
-    updated_at: datetime
+    updated_at: Datetime
     user_id: int
     votes_count: int
 
@@ -305,11 +305,11 @@ class Comment:
 # encounter new cursor attributes.
 class Cursor(SimpleNamespace):
     __annotations__ = {
-        "created_at": datetime,
+        "created_at": Datetime,
         "id": int,
         "_id": str,
         "queued_at": str,
-        "approved_date": datetime,
+        "approved_date": Datetime,
         "last_update": str,
         "votes_count": int,
         "page": int
@@ -403,9 +403,9 @@ class BeatmapDiscussionPost:
     deleted_by_id: Optional[int]
     system: bool
     message: str
-    created_at: Optional[datetime]
-    updated_at: Optional[datetime]
-    deleted_at: Optional[datetime]
+    created_at: Optional[Datetime]
+    updated_at: Optional[Datetime]
+    deleted_at: Optional[Datetime]
     beatmap_discussion: Optional[BeatmapDiscussion]
 
 @dataclass
@@ -424,10 +424,10 @@ class BeatmapDiscussion:
     resolved: bool
     can_be_resolved: bool
     can_grant_kudosu: bool
-    created_at: Optional[datetime]
-    updated_at: Optional[datetime]
-    deleted_at: Optional[datetime]
-    last_post_at: Optional[datetime]
+    created_at: Optional[Datetime]
+    updated_at: Optional[Datetime]
+    deleted_at: Optional[Datetime]
+    last_post_at: Optional[Datetime]
     kudosu_denied: bool
     starting_post: Optional[BeatmapDiscussionPost]
     posts: Optional[List[BeatmapDiscussionPost]]
@@ -462,7 +462,7 @@ class BeatmapsetEvent:
     id: int
     type: BeatmapsetEventType
     comment: Optional[BeatmapsetEventComment]
-    created_at: Optional[datetime]
+    created_at: Optional[Datetime]
 
     user_id: Optional[int]
     beatmapset: Optional[BeatmapsetCompact]

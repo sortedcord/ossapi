@@ -215,50 +215,11 @@ class OssapiV2:
                 origin = get_origin(type_)
                 args = get_args(type_)
 
-            # TODO is this the right place to do this conversion for these
-            # types? Should it happen lower down in our
-            # ``if self._is_model_type(type_) or self._is_model_type(origin) or
-            # is_list:`` check? Where does our list conversion fit into all
-            # this, is that happening in the right place as well?
-            if type_ is Mod:
-                self.log.debug("Found a mod attribute, converting to a Mod")
-                value = Mod(value)
-                setattr(obj, attr, value)
-                continue
-            # ``issubclass`` only accepts classes so check if it's a class first
-            # https://stackoverflow.com/a/395741
-            if isinstance(type_, type) and issubclass(type_, Enum):
-                # TODO could consolidate this and the above into a single method
+            if self._is_base_type(type_):
+                self.log.debug(f"instantiating base type {type_}")
                 value = type_(value)
                 setattr(obj, attr, value)
                 continue
-            if type_ is datetime:
-                # the api returns a bunch of different timestamps: two ISO 8601
-                # formats (eg "2018-09-11T08:45:49.000000Z" and
-                # "2014-05-18T17:22:23+00:00"), a unix timestamp (eg
-                # 1615385278000), and others. We handle each case below.
-                # Fully compliant ISO 8601 parsing is apparently a pain, and
-                # the proper way to do this would be to use a third party
-                # library, but I don't want to add any dependencies. This
-                # stopgap seems to work for now, but may break in the future if
-                # the api changes the timestamps they return.
-                # see https://stackoverflow.com/q/969285.
-                if value.endswith("Z"):
-                    value = datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%f%z")
-                elif value.isdigit():
-                    # see if it's an int first, if so it's a unix timestamp. The
-                    # api returns the timestamp in milliseconds but
-                    # ``datetime.utcfromtimestamp`` expects it in seconds, so
-                    # divide by 1000 to convert.
-                    value = int(value) / 1000
-                    value = datetime.utcfromtimestamp(value)
-                elif self._matches_datetime(value, "%Y-%m-%dT%H:%M:%S%z"):
-                    value = datetime.strptime(value, "%Y-%m-%dT%H:%M:%S%z")
-                elif self._matches_datetime(value, "%Y-%m-%d"):
-                    value = datetime.strptime(value, "%Y-%m-%d")
-                setattr(obj, attr, value)
-                continue
-
             if (origin is list and (self._is_model_type(args[0]) or
                 isinstance(args[0], TypeVar))):
                 assert len(args) == 1
@@ -355,16 +316,23 @@ class OssapiV2:
         return get_origin(type_) is Union and get_args(type_)[1] is type(None)
 
     def _is_model_type(self, type_):
-        # almost every model we have is a dataclass, but we do have a unique one,
-        # ``Cursor``, which we also need to consider as a model type.
+        # almost every model we have is a dataclass, but we do have a unique
+        # one, ``Cursor``, which we also need to consider as a model type.
         return type_ is Cursor or dataclasses.is_dataclass(type_)
 
-    def _matches_datetime(self, value, format_):
-        try:
-            _ = datetime.strptime(value, format_)
-        except ValueError:
+    def _is_base_type(self, type_):
+        """
+        A "base" type is a type that is still instantiable (so not a primitive)
+        but that we don't need to recurse down its members to look for more
+        model types. The base type is responsible for cleaning up and/or
+        modifying the data we give it, and we move on after instantiating it.
+
+        Examples are enums, mods, and datetimes.
+        """
+        if not isinstance(type_, type):
             return False
-        return True
+
+        return issubclass(type_, (Enum, datetime, Mod))
 
     def beatmap_lookup(self, checksum=None, filename=None, beatmap_id=None):
         params = {"checksum": checksum, "filename": filename, "id": beatmap_id}

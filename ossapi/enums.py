@@ -1,9 +1,8 @@
 from dataclasses import dataclass
 from enum import Enum, IntFlag
-from datetime import datetime
 from typing import Optional, List, Any
 
-from ossapi.utils import ListEnumMeta
+from ossapi.utils import ListEnumMeta, Datetime
 
 # ================
 # Documented Enums
@@ -202,13 +201,13 @@ class ProfileBanner:
 class UserAccountHistory:
     id: int
     type: UserAccountHistoryType
-    timestamp: datetime
+    timestamp: Datetime
     length: int
 
 
 @dataclass
 class UserBadge:
-    awarded_at: datetime
+    awarded_at: Datetime
     description: str
     image_url: str
     url: str
@@ -277,7 +276,7 @@ class Kudosu:
 class UserMonthlyPlaycount:
     # undocumented
     # https://github.com/ppy/osu-web/blob/master/app/Transformers/UserMonthlyPlaycountTransformer.php
-    start_date: datetime
+    start_date: Datetime
     count: int
 
 @dataclass
@@ -308,14 +307,14 @@ class UserGradeCounts:
 class UserReplaysWatchedCount:
     # undocumented
     # https://github.com/ppy/osu-web/blob/master/app/Transformers/UserReplaysWatchedCountTransformer.php
-    start_date: datetime
+    start_date: Datetime
     count: int
 
 @dataclass
 class UserAchievement:
     # undocumented
     # https://github.com/ppy/osu-web/blob/master/app/Transformers/UserAchievementTransformer.php#L10
-    achieved_at: datetime
+    achieved_at: Datetime
     achievement_id: int
 
 @dataclass
