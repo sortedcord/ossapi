@@ -18,11 +18,6 @@ from ossapi.models import (Beatmap, BeatmapUserScore, ForumTopicAndPosts,
     ModdingHistoryEventsBundle, User)
 from ossapi.mod import Mod
 
-def is_model_type(obj):
-    # almost every model we have is a dataclass, but we do have a unique one,
-    # ``Cursor``, which we also need to consider as a model type.
-    return obj is Cursor or dataclasses.is_dataclass(obj)
-
 class OssapiV2:
     TOKEN_URL = "https://osu.ppy.sh/oauth/token"
     AUTH_CODE_URL = "https://osu.ppy.sh/oauth/authorize"
@@ -222,9 +217,9 @@ class OssapiV2:
 
             # TODO is this the right place to do this conversion for these
             # types? Should it happen lower down in our
-            # ``if is_model_type(type_) or is_model_type(origin) or is_list:``
-            # check? Where does our list conversion fit into all this, is that
-            # happening in the right place as well?
+            # ``if self._is_model_type(type_) or self._is_model_type(origin) or
+            # is_list:`` check? Where does our list conversion fit into all
+            # this, is that happening in the right place as well?
             if type_ is Mod:
                 self.log.debug("Found a mod attribute, converting to a Mod")
                 value = Mod(value)
@@ -264,7 +259,7 @@ class OssapiV2:
                 setattr(obj, attr, value)
                 continue
 
-            if (origin is list and (is_model_type(args[0]) or
+            if (origin is list and (self._is_model_type(args[0]) or
                 isinstance(args[0], TypeVar))):
                 assert len(args) == 1
                 is_list = True
@@ -286,7 +281,8 @@ class OssapiV2:
             # a special indexed type (eg ``type_ == SearchResult[UserCompact]``,
             # ``origin == UserCompact``). In either case we want to instantiate
             # ``type_``.
-            if is_model_type(type_) or is_model_type(origin) or is_list:
+            if (self._is_model_type(type_) or self._is_model_type(origin) or
+                is_list):
                 # special handling for lists; otherwise, just instantiate with
                 # the actual value of ``value``.
                 if is_list:
@@ -297,7 +293,7 @@ class OssapiV2:
                         # it instead of just sticking it into the list, since
                         # its children might still be dicts and not model
                         # instances
-                        if is_model_type(type_):
+                        if self._is_model_type(type_):
                             entry = self._resolve_annotations(entry)
                         new_value.append(entry)
                     value = new_value
@@ -357,6 +353,11 @@ class OssapiV2:
         ``Optional[X]`` is equivalent to ``Union[X, None]``.
         """
         return get_origin(type_) is Union and get_args(type_)[1] is type(None)
+
+    def _is_model_type(self, type_):
+        # almost every model we have is a dataclass, but we do have a unique one,
+        # ``Cursor``, which we also need to consider as a model type.
+        return type_ is Cursor or dataclasses.is_dataclass(type_)
 
     def _matches_datetime(self, value, format_):
         try:
