@@ -9,6 +9,7 @@ from tempfile import NamedTemporaryFile
 from datetime import datetime
 from enum import Enum
 from functools import partial
+import json
 
 from requests_oauthlib import OAuth2Session
 from oauthlib.oauth2 import BackendApplicationClient
@@ -130,7 +131,8 @@ class OssapiV2:
             pickle.dump(token, f)
 
     def _get(self, type_, url, params={}):
-        r = self.session.get(f"{self.BASE_URL}{url}", params=params)
+        parsed_params = self._parse_params(params)
+        r = self.session.get(f"{self.BASE_URL}{url}", params=parsed_params)
         json = r.json()
         obj = self._instantiate(type_, **json)
         obj = self._resolve_annotations(obj)
@@ -335,19 +337,22 @@ class OssapiV2:
 
         return issubclass(type_, (Enum, datetime, Mod))
 
-    def _parse_obj_params(self, obj, name):
-        params = {}
-        if (isinstance(obj, Cursor) or isinstance(obj, dict)):
-            if isinstance(obj, Cursor):
-                obj = obj.__dict__
-            for key, val in obj.items():
-                params[f"{name}[{key}]"] = self._format_params(val)
+    def _parse_params(self, params):
+        str_params = ""
+        for key, val in params.items():
+            if not val:
+                continue
+            if (isinstance(val, Cursor)  or isinstance(val, dict)):
+                if isinstance(val, Cursor):
+                    val = val.__dict__
+                str_params += "&".join([f"{key}[{k}]={self._format_params(v)}" for k,v in val.items()])
 
-        if isinstance(obj, list):
-            for val in obj:
-                params[f"{name}[]"] = self._format_params(val)
+            elif isinstance(val, list):
+                str_params += "&".join([f"{key}[]={self._format_params(v)}" for v in val])
 
-        return params
+            else:
+                str_params += f"{key}={self._format_params(val)}"
+        return str_params
 
     def _format_params(self, val):
         if isinstance(val, datetime):
@@ -417,13 +422,10 @@ class OssapiV2:
 
         return tempfile.name
 
-    def search_beatmaps(self, filters=None, cursor=None):
+    def search_beatmaps(self, filters={}, cursor=None):
         # filters should be passed as dict?
-        params = {}
-        if filters:
-            params.update(filters)
-        if cursor:
-            params.update(self._parse_obj_params(cursor, "cursor"))
+        params = {"cursor": cursor}
+        params.update(filters)
         return self._get(BeatmapSearchResult, f"/beatmapsets/search/", params)
 
     def beatmapsets_events(self, limit=None, page=None, user=None, types=None,
@@ -437,8 +439,7 @@ class OssapiV2:
         # types listed here
         # https://github.com/ppy/osu-web/blob/master/app/Models/BeatmapsetEvent.php#L185
         params = {"limit": limit, "page": page, "user": user,
-            "min_date": min_date, "max_date": max_date}
-        params.update(self._parse_obj_params(types, "types"))
+            "min_date": min_date, "max_date": max_date, "types": types}
         return self._get(ModdingHistoryEventsBundle, "/beatmapsets/events",
             params)
 
