@@ -136,7 +136,10 @@ class OssapiV2:
         r = self.session.get(f"{self.BASE_URL}{url}", params=params)
         self.log.info(f"made request to {r.request.url}")
         json = r.json()
-        if "error" in json:
+        # TODO this should just be ``if "erorr" in json``, but for some reason
+        # ``self.search_beatmaps`` always returns an error in the response...
+        # open an issue on osu-web?
+        if len(json) == 1 and "error" in json:
             raise ValueError(f"api returned an error of `{json['error']}` for "
                 f"a request to {unquote(r.request.url)}")
         obj = self._instantiate(type_, **json)
