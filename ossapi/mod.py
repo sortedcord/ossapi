@@ -322,4 +322,6 @@ class Mod(ModCombination):
             for mod_str in value:
                 mod += Mod(mod_str)
             value = mod.value
+        if isinstance(value, ModCombination):
+            value = value.value
         super().__init__(value)
