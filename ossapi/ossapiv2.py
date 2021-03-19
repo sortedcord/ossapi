@@ -1,4 +1,5 @@
-from typing import get_type_hints, get_origin, get_args, Union, TypeVar
+from typing import (get_type_hints, get_origin, get_args, Union, TypeVar,
+    Optional)
 import dataclasses
 import logging
 import webbrowser
@@ -16,6 +17,7 @@ from ossapi.models import (Beatmap, BeatmapUserScore, ForumTopicAndPosts,
     Search, CommentBundle, Cursor, Score, BeatmapSearchResult,
     ModdingHistoryEventsBundle, User)
 from ossapi.mod import Mod
+from ossapi.enums import GameMode
 
 class OssapiV2:
     TOKEN_URL = "https://osu.ppy.sh/oauth/token"
@@ -151,13 +153,13 @@ class OssapiV2:
                 for k, v in new_params.items():
                     params[f"cursor[{k}]"] = v
                 del params[key]
-            elif isinstance(value, datetime):
-                params[key] = 1000 * int(value.timestamp())
             else:
                 params[key] = self._format_value(value)
         return params
 
     def _format_value(self, value):
+        if isinstance(value, datetime):
+            return 1000 * int(value.timestamp())
         if isinstance(value, Enum):
             return value.value
         return value
@@ -361,16 +363,29 @@ class OssapiV2:
 
         return issubclass(type_, (Enum, datetime, Mod))
 
-    def beatmap_lookup(self, checksum=None, filename=None, beatmap_id=None):
+    def beatmap_lookup(self,
+        checksum: Optional[str] = None,
+        filename: Optional[str] = None,
+        beatmap_id: Optional[int] = None
+    ):
         params = {"checksum": checksum, "filename": filename, "id": beatmap_id}
         return self._get(Beatmap, "/beatmaps/lookup", params)
 
-    def beatmap_user_score(self, beatmap_id, user_id, mode=None, mods=None):
+    def beatmap_user_score(self,
+        beatmap_id: int,
+        user_id: int,
+        mode: Optional[Union[GameMode, str]] = None,
+        mods: Optional[Union[Mod, str, int, list]] = None
+    ):
+        # TODO mods param doesn't work here atm, it's not formatted for the api
+        # properly, https://osu.ppy.sh/docs/index.html#get-a-user-beatmap-score
+        mode = GameMode(mode) if mode else None
+        mods = Mod(mods) if mods else None
         params = {"mode": mode, "mods": mods}
         return self._get(BeatmapUserScore,
             f"/beatmaps/{beatmap_id}/scores/users/{user_id}", params)
 
-    def beatmap(self, beatmap_id):
+    def beatmap(self, beatmap_id: int):
         return self._get(Beatmap, f"/beatmaps/{beatmap_id}")
 
     def comments(self, commentable_type=None, commentable_id=None, cursor=None,
@@ -390,14 +405,14 @@ class OssapiV2:
             "parent_id": parent_id, "sort": sort}
         return self._get(CommentBundle, "/comments", params)
 
-    def comment(self, comment_id):
+    def comment(self, comment_id: int):
         """
         https://osu.ppy.sh/docs/index.html#get-a-comment
         """
         return self._get(CommentBundle, f"/comments/{comment_id}")
 
-    def topic(self, topic, cursor=None, sort=None, limit=None, start=None,
-        end=None):
+    def topic(self, topic, cursor: Optional[Cursor] = None, sort=None,
+        limit=None, start=None, end=None):
         """
         A topic and its posts.
 
@@ -411,12 +426,14 @@ class OssapiV2:
         params = {"mode": mode, "query": query, "page": page}
         return self._get(Search, "/search", params)
 
-    def score(self, mode, score_id):
-        return self._get(Score, f"/scores/{mode}/{score_id}")
+    def score(self, mode: Union[GameMode, str], score_id: int):
+        mode = GameMode(mode)
+        return self._get(Score, f"/scores/{mode.value}/{score_id}")
 
-    def download_score(self, mode, score_id):
-        r = self.session.get(f"{self.BASE_URL}/scores/{mode}/{score_id}"
-            "/download")
+    def download_score(self, mode: Union[GameMode, str], score_id: int):
+        mode = GameMode(mode).value
+        r = self.session.get(f"{self.BASE_URL}/scores/{mode}/"
+            f"{score_id}/download")
 
         tempfile = NamedTemporaryFile(mode="wb", delete=False)
         with tempfile as f:
@@ -424,7 +441,7 @@ class OssapiV2:
 
         return tempfile.name
 
-    def search_beatmaps(self, filters={}, cursor=None):
+    def search_beatmaps(self, filters={}, cursor: Optional[Cursor] = None):
         params = {"cursor": cursor}
         # filters should be passed as dict?
         params.update(filters)
@@ -445,5 +462,6 @@ class OssapiV2:
         return self._get(ModdingHistoryEventsBundle, "/beatmapsets/events",
             params)
 
-    def user(self, user_id, mode=None):
-        return self._get(User, f"/users/{user_id}/{mode or ''}")
+    def user(self, user_id: int, mode: Optional[Union[GameMode, str]] = None):
+        mode = GameMode(mode).value if mode else ""
+        return self._get(User, f"/users/{user_id}/{mode}")
