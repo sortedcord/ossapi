@@ -9,6 +9,7 @@ from pathlib import Path
 from tempfile import NamedTemporaryFile
 from datetime import datetime
 from enum import Enum
+from urllib.parse import unquote
 
 from requests_oauthlib import OAuth2Session
 from oauthlib.oauth2 import BackendApplicationClient
@@ -135,6 +136,9 @@ class OssapiV2:
         r = self.session.get(f"{self.BASE_URL}{url}", params=params)
         self.log.info(f"made request to {r.request.url}")
         json = r.json()
+        if "error" in json:
+            raise ValueError(f"api returned an error of `{json['error']}` for "
+                f"a request to {unquote(r.request.url)}")
         obj = self._instantiate(type_, **json)
         obj = self._resolve_annotations(obj)
         return obj
