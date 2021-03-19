@@ -1,17 +1,5 @@
-from enum import EnumMeta, Enum
+from enum import EnumMeta
 from datetime import datetime
-from abc import abstractmethod
-
-class Formattable:
-    @abstractmethod
-    def format(self):
-        pass
-
-# "Formattable Enum"
-class FEnum(Formattable, Enum):
-    def format(self):
-        return self.value
-
 
 class ListEnumMeta(EnumMeta):
     """

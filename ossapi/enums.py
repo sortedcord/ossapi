@@ -1,14 +1,14 @@
 from dataclasses import dataclass
-from enum import IntFlag
+from enum import Enum, IntFlag
 from typing import Optional, List, Any
 
-from ossapi.utils import ListEnumMeta, Datetime, FEnum
+from ossapi.utils import ListEnumMeta, Datetime
 
 # ================
 # Documented Enums
 # ================
 
-class ProfilePage(FEnum):
+class ProfilePage(Enum):
     ME = "me"
     RECENT_ACTIVITY = "recent_activity"
     BEATMAPS = "beatmaps"
@@ -17,13 +17,13 @@ class ProfilePage(FEnum):
     TOP_RANKS = "top_ranks"
     MEDALS = "medals"
 
-class GameMode(FEnum):
+class GameMode(Enum):
     STD    = "osu"
     TAIKO  = "taiko"
     CTB    = "fruits"
     MANIA  = "mania"
 
-class PlayStyles(IntFlag, FEnum, metaclass=ListEnumMeta):
+class PlayStyles(IntFlag, metaclass=ListEnumMeta):
     MOUSE = 1
     KEYBOARD = 2
     TABLET = 4
@@ -46,7 +46,7 @@ class PlayStyles(IntFlag, FEnum, metaclass=ListEnumMeta):
             return PlayStyles.TOUCH
         return super()._missing_(value)
 
-class RankStatus(FEnum):
+class RankStatus(Enum):
     GRAVEYARD = -2
     WIP = -1
     PENDING = 0
@@ -78,12 +78,12 @@ class RankStatus(FEnum):
             return cls(4)
         return super()._missing_(value)
 
-class UserAccountHistoryType(FEnum):
+class UserAccountHistoryType(Enum):
     NOTE = "note"
     RESTRICTION = "restriction"
     SILENCE = "silence"
 
-class MessageType(FEnum):
+class MessageType(Enum):
     DISQUALIFY = "disqualify"
     HYPE = "hype"
     MAPPER_NOTE = "mapper_note"
@@ -93,7 +93,7 @@ class MessageType(FEnum):
     REVIEW = "review"
     SUGGESTION = "suggestion"
 
-class BeatmapsetEventType(FEnum):
+class BeatmapsetEventType(Enum):
     APPROVE =  "approve"
     DISCUSSION_DELETE =  "discussion_delete"
     DISCUSSION_LOCK =  "discussion_lock"
@@ -121,22 +121,22 @@ class BeatmapsetEventType(FEnum):
     REMOVE_FROM_LOVED = "remove_from_loved"
     NSFW_TOGGLE = "nsfw_toggle"
 
-class BeatmapsetDownload(FEnum):
+class BeatmapsetDownload(Enum):
     ALL = "all"
     NO_VIDEO = "no_video"
     DIRECT = "direct"
 
-class UserListFilters(FEnum):
+class UserListFilters(Enum):
     ALL = "all"
     ONLINE = "online"
     OFFLINE = "offline"
 
-class UserListSorts(FEnum):
+class UserListSorts(Enum):
     LAST_VISIT = "last_visit"
     RANK = "rank"
     USERNAME = "username"
 
-class UserListViews(FEnum):
+class UserListViews(Enum):
     CARD = "card"
     LIST = "list"
     BRICK = "brick"
@@ -147,7 +147,7 @@ class UserListViews(FEnum):
 # ==================
 
 
-class UserRelationType(FEnum):
+class UserRelationType(Enum):
     # undocumented
     # https://github.com/ppy/osu-web/blob/master/app/Transformers/UserRelationTransformer.php#L20
     FRIEND = "friend"

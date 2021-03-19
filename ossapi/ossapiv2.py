@@ -16,7 +16,6 @@ from ossapi.models import (Beatmap, BeatmapUserScore, ForumTopicAndPosts,
     Search, CommentBundle, Cursor, Score, BeatmapSearchResult,
     ModdingHistoryEventsBundle, User)
 from ossapi.mod import Mod
-from ossapi.utils import Formattable
 
 class OssapiV2:
     TOKEN_URL = "https://osu.ppy.sh/oauth/token"
@@ -159,8 +158,8 @@ class OssapiV2:
         return params
 
     def _format_value(self, value):
-        if isinstance(value, Formattable):
-            return value.format()
+        if isinstance(value, Enum):
+            return value.value
         return value
 
     def _resolve_annotations(self, obj):
