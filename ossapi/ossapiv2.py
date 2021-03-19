@@ -153,6 +153,9 @@ class OssapiV2:
                 for k, v in new_params.items():
                     params[f"cursor[{k}]"] = v
                 del params[key]
+            elif isinstance(value, Mod):
+                params[f"{key}[]"] = value.decompose()
+                del params[key]
             else:
                 params[key] = self._format_value(value)
         return params
@@ -377,8 +380,6 @@ class OssapiV2:
         mode: Optional[Union[GameMode, str]] = None,
         mods: Optional[Union[Mod, str, int, list]] = None
     ):
-        # TODO mods param doesn't work here atm, it's not formatted for the api
-        # properly, https://osu.ppy.sh/docs/index.html#get-a-user-beatmap-score
         mode = GameMode(mode) if mode else None
         mods = Mod(mods) if mods else None
         params = {"mode": mode, "mods": mods}
