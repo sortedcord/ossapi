@@ -250,7 +250,7 @@ class Score:
     replay: bool
 
     beatmap: Optional[Beatmap]
-    beatmapset: Optional[Beatmapset]
+    beatmapset: Optional[BeatmapsetCompact]
     rank_country: Optional[int]
     rank_global: Optional[int]
     weight: Optional[float]
