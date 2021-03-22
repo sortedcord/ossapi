@@ -142,8 +142,7 @@ class OssapiV2:
         if len(json) == 1 and "error" in json:
             raise ValueError(f"api returned an error of `{json['error']}` for "
                 f"a request to {unquote(r.request.url)}")
-        obj = self._instantiate(type_, **json)
-        obj = self._resolve_annotations(obj)
+        obj = self._instantiate_type(type_, json)
         return obj
 
     def _format_params(self, params):
@@ -232,84 +231,81 @@ class OssapiV2:
                 continue
             self.log.debug(f"resolving attribute {attr}")
 
-            # we need to handle lists specially, as we iterate over the data
-            # and then instantiate ``type_`` with each entry in the data to
-            # form a new list.
-            is_list = False
-
             type_ = annotations[attr]
+            value = self._instantiate_type(type_, value, obj)
+            if not value:
+                continue
+            setattr(obj, attr, value)
+        self.log.debug(f"resolved annotations for type {type(obj)}")
+        return obj
+
+    def _instantiate_type(self, type_, value, obj=None):
+        origin = get_origin(type_)
+        args = get_args(type_)
+
+        # we need to handle lists specially, as we iterate over the data and
+        # then instantiate ``type_`` with each entry in the data to form a new
+        # list.
+        is_list = False
+
+        # if this type is an optional, "unwrap" it to get the true type.
+        # We don't care about the optional annotation in this context
+        # because if we got here that means we were passed a value for this
+        # attribute, so we know it's defined and not optional.
+        if self._is_optional(type_):
+            # leaving these assertions in to help me catch errors in my
+            # reasoning until I better understand python's typing.
+            assert len(args) == 2
+            type_ = args[0]
             origin = get_origin(type_)
             args = get_args(type_)
 
-            # if this type is an optional, "unwrap" it to get the true type.
-            # We don't care about the optional annotation in this context
-            # because if we got here that means we were passed a value for this
-            # attribute, so we know it's defined and not optional.
-            if self._is_optional(type_):
-                # leaving these assertions in to help me catch errors in my
-                # reasoning until I better understand python's typing.
-                assert len(args) == 2
+        if self._is_base_type(type_):
+            self.log.debug(f"instantiating base type {type_}")
+            return type_(value)
+        if origin is list and (self._is_model_type(args[0]) or
+            isinstance(args[0], TypeVar)):
+            assert len(args) == 1
+            is_list = True
+            # check if the list has been instantiated generically; if so,
+            # use the concrete type backing the generic type.
+            if isinstance(args[0], TypeVar):
+                # ``__orig_class__`` is how we can get the concrete type of
+                # a generic. See https://stackoverflow.com/a/60984681 and
+                # https://www.python.org/dev/peps/pep-0560/#mro-entries.
+                type_ = get_args(obj.__orig_class__)[0]
+            # otherwise, it's been instantiated with a concrete model type,
+            # so use that type.
+            else:
                 type_ = args[0]
-                origin = get_origin(type_)
-                args = get_args(type_)
+            origin = get_origin(type_)
+            args = get_args(type_)
 
-            if self._is_base_type(type_):
-                self.log.debug(f"instantiating base type {type_}")
-                value = type_(value)
-                setattr(obj, attr, value)
-                continue
-            if (origin is list and (self._is_model_type(args[0]) or
-                isinstance(args[0], TypeVar))):
-                assert len(args) == 1
-                is_list = True
-                # check if the list has been instantiated generically; if so,
-                # use the concrete type backing the generic type.
-                if isinstance(args[0], TypeVar):
-                    # ``__orig_class__`` is how we can get the concrete type of
-                    # a generic. See https://stackoverflow.com/a/60984681 and
-                    # https://www.python.org/dev/peps/pep-0560/#mro-entries.
-                    type_ = get_args(obj.__orig_class__)[0]
-                # otherwise, it's been instantiated with a concrete model type,
-                # so use that type.
-                else:
-                    type_ = args[0]
-                origin = get_origin(type_)
-                args = get_args(type_)
-
-            # either we ourself are a model type (eg ``Search``), or we are
-            # a special indexed type (eg ``type_ == SearchResult[UserCompact]``,
-            # ``origin == UserCompact``). In either case we want to instantiate
-            # ``type_``.
-            if (self._is_model_type(type_) or self._is_model_type(origin) or
-                is_list):
-                # special handling for lists; otherwise, just instantiate with
-                # the actual value of ``value``.
-                if is_list:
-                    new_value = []
-                    for entry in value:
-                        entry = self._instantiate(type_, **entry)
-                        # if the list entry is a model type, we need to resolve
-                        # it instead of just sticking it into the list, since
-                        # its children might still be dicts and not model
-                        # instances
-                        if self._is_model_type(type_):
-                            entry = self._resolve_annotations(entry)
-                        new_value.append(entry)
-                    value = new_value
-                else:
-                    value = self._instantiate(type_, **value)
-                    # we need to resolve the annotations of any nested model
-                    # types before we set the attribute. This recursion is
-                    # well-defined because the base case is when ``value`` has
-                    # no model types, which will always happen eventually.
-                    # We only want to resolve annotations if our value isn't a
-                    # list. (TODO: why is this true? why can we always resolve
-                    # annotations if we're not a list? are we not also passing
-                    # primitives to ``resolve_annotations`` here?)
-                    value = self._resolve_annotations(value)
-                setattr(obj, attr, value)
-        self.log.debug(f"resolved annotations for type {type(obj)}")
-        return obj
+        # either we ourself are a model type (eg ``Search``), or we are
+        # a special indexed type (eg ``type_ == SearchResult[UserCompact]``,
+        # ``origin == UserCompact``). In either case we want to instantiate
+        # ``type_``.
+        if not self._is_model_type(type_) and not self._is_model_type(origin):
+            return None
+        # special handling for lists; otherwise, just instantiate with the
+        # actual value of ``value``.
+        if is_list:
+            new_value = []
+            for entry in value:
+                entry = self._instantiate(type_, **entry)
+                # if the list entry is a model type, we need to resolve it
+                # instead of just sticking it into the list, since its children
+                # might still be dicts and not model instances.
+                if self._is_model_type(type_):
+                    entry = self._resolve_annotations(entry)
+                new_value.append(entry)
+            return new_value
+        value = self._instantiate(type_, **value)
+        # we need to resolve the annotations of any nested model types before we
+        # set the attribute. This recursion is well-defined because the base
+        # case is when ``value`` has no model types, which will always happen
+        # eventually.
+        return self._resolve_annotations(value)
 
     def _instantiate(self, type_, **kwargs):
         self.log.debug(f"instantiating type {type_}")
