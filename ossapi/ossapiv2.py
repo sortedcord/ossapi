@@ -148,8 +148,7 @@ class OssapiV2:
         if len(json) == 1 and "error" in json:
             raise ValueError(f"api returned an error of `{json['error']}` for "
                 f"a request to {unquote(r.request.url)}")
-        obj = self._instantiate_type(type_, json)
-        return obj
+        return self._instantiate_type(type_, json)
 
     def _format_params(self, params):
         for key, value in params.copy().items():
