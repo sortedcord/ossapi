@@ -228,7 +228,7 @@ class OssapiV2:
             # anything with it now.
             if attr == "__orig_class__":
                 continue
-            # when we do ``self._instantiate(type_, **json)`` above, we are
+            # when we do ``self._instantiate(type_, **entry)`` above, we are
             # explicitly filling in optional attributes with ``None``. This
             # means they're in ``obj.__dict__`` and so we see them here. We
             # don't want to do anything with them, so skip.
