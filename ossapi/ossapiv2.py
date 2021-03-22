@@ -248,11 +248,6 @@ class OssapiV2:
         origin = get_origin(type_)
         args = get_args(type_)
 
-        # we need to handle lists specially, as we iterate over the data and
-        # then instantiate ``type_`` with each entry in the data to form a new
-        # list.
-        is_list = False
-
         # if this type is an optional, "unwrap" it to get the true type.
         # We don't care about the optional annotation in this context
         # because if we got here that means we were passed a value for this
@@ -268,10 +263,10 @@ class OssapiV2:
         if self._is_base_type(type_):
             self.log.debug(f"instantiating base type {type_}")
             return type_(value)
+
         if origin is list and (self._is_model_type(args[0]) or
             isinstance(args[0], TypeVar)):
             assert len(args) == 1
-            is_list = True
             # check if the list has been instantiated generically; if so,
             # use the concrete type backing the generic type.
             if isinstance(args[0], TypeVar):
@@ -283,18 +278,6 @@ class OssapiV2:
             # so use that type.
             else:
                 type_ = args[0]
-            origin = get_origin(type_)
-            args = get_args(type_)
-
-        # either we ourself are a model type (eg ``Search``), or we are
-        # a special indexed type (eg ``type_ == SearchResult[UserCompact]``,
-        # ``origin == UserCompact``). In either case we want to instantiate
-        # ``type_``.
-        if not self._is_model_type(type_) and not self._is_model_type(origin):
-            return None
-        # special handling for lists; otherwise, just instantiate with the
-        # actual value of ``value``.
-        if is_list:
             new_value = []
             for entry in value:
                 entry = self._instantiate(type_, **entry)
@@ -305,6 +288,13 @@ class OssapiV2:
                     entry = self._resolve_annotations(entry)
                 new_value.append(entry)
             return new_value
+
+        # either we ourself are a model type (eg ``Search``), or we are
+        # a special indexed type (eg ``type_ == SearchResult[UserCompact]``,
+        # ``origin == UserCompact``). In either case we want to instantiate
+        # ``type_``.
+        if not self._is_model_type(type_) and not self._is_model_type(origin):
+            return None
         value = self._instantiate(type_, **value)
         # we need to resolve the annotations of any nested model types before we
         # set the attribute. This recursion is well-defined because the base
