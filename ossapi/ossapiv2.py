@@ -1,5 +1,5 @@
 from typing import (get_type_hints, get_origin, get_args, Union, TypeVar,
-    Optional)
+    Optional, List)
 import dataclasses
 import logging
 import webbrowser
@@ -18,7 +18,11 @@ from ossapi.models import (Beatmap, BeatmapUserScore, ForumTopicAndPosts,
     Search, CommentBundle, Cursor, Score, BeatmapSearchResult,
     ModdingHistoryEventsBundle, User)
 from ossapi.mod import Mod
-from ossapi.enums import GameMode
+from ossapi.enums import GameMode, ScoreType
+
+GameModeT = Union[GameMode, str]
+ScoreTypeT = Union[ScoreType, str]
+ModT = Union[Mod, str, int, list]
 
 class OssapiV2:
     TOKEN_URL = "https://osu.ppy.sh/oauth/token"
@@ -380,14 +384,30 @@ class OssapiV2:
     def beatmap_user_score(self,
         beatmap_id: int,
         user_id: int,
-        mode: Optional[Union[GameMode, str]] = None,
-        mods: Optional[Union[Mod, str, int, list]] = None
+        mode: Optional[GameModeT] = None,
+        mods: Optional[ModT] = None
     ):
         mode = GameMode(mode) if mode else None
         mods = Mod(mods) if mods else None
         params = {"mode": mode, "mods": mods}
         return self._get(BeatmapUserScore,
             f"/beatmaps/{beatmap_id}/scores/users/{user_id}", params)
+
+    def user_scores(self,
+        user_id: int,
+        type_: ScoreTypeT,
+        include_fails: Optional[bool] = None,
+        mode: Optional[GameModeT] = None,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None
+    ):
+        type_ = ScoreType(type_).value
+        mode = GameMode(mode) if mode else None
+        params = {"include_fails": include_fails, "mode": mode, "limit": limit,
+            "offset": offset}
+        return self._get(List[Score], f"/users/{user_id}/scores/{type_}",
+            params)
+
 
     def beatmap(self, beatmap_id: int):
         return self._get(Beatmap, f"/beatmaps/{beatmap_id}")
@@ -430,11 +450,11 @@ class OssapiV2:
         params = {"mode": mode, "query": query, "page": page}
         return self._get(Search, "/search", params)
 
-    def score(self, mode: Union[GameMode, str], score_id: int):
+    def score(self, mode: GameModeT, score_id: int):
         mode = GameMode(mode)
         return self._get(Score, f"/scores/{mode.value}/{score_id}")
 
-    def download_score(self, mode: Union[GameMode, str], score_id: int):
+    def download_score(self, mode: GameModeT, score_id: int):
         mode = GameMode(mode).value
         r = self.session.get(f"{self.BASE_URL}/scores/{mode}/"
             f"{score_id}/download")
@@ -466,6 +486,6 @@ class OssapiV2:
         return self._get(ModdingHistoryEventsBundle, "/beatmapsets/events",
             params)
 
-    def user(self, user_id: int, mode: Optional[Union[GameMode, str]] = None):
+    def user(self, user_id: int, mode: Optional[GameModeT] = None):
         mode = GameMode(mode).value if mode else ""
         return self._get(User, f"/users/{user_id}/{mode}")

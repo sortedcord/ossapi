@@ -23,6 +23,11 @@ class GameMode(Enum):
     CTB    = "fruits"
     MANIA  = "mania"
 
+class ScoreType(Enum):
+    BEST = "best"
+    FIRST = "first"
+    RECENT = "recent"
+
 class PlayStyles(IntFlag, metaclass=ListEnumMeta):
     MOUSE = 1
     KEYBOARD = 2
