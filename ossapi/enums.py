@@ -28,6 +28,19 @@ class ScoreType(Enum):
     FIRST = "first"
     RECENT = "recent"
 
+class RankingFilter(Enum):
+    ALL = "all"
+    FRIENDS = "friends"
+
+# these are documented as being uppercased, but the api only accepts lowercased
+# https://osu.ppy.sh/docs/index.html#rankingtype
+class RankingType(Enum):
+    CHARTS = "spotlight"
+    COUNTRY = "country"
+    PERFORMANCE = "performance"
+    SCORE = "score"
+
+
 class PlayStyles(IntFlag, metaclass=ListEnumMeta):
     MOUSE = 1
     KEYBOARD = 2
@@ -339,40 +352,6 @@ class UserProfileCustomization:
     user_list_filter: Optional[UserListFilters]
     user_list_sort: Optional[UserListSorts]
     user_list_view: Optional[UserListViews]
-
-@dataclass
-class UserStatistics:
-    # undocumented
-    # https://github.com/ppy/osu-web/blob/master/app/Transformers/UserStatisticsTransformer.php
-    level: UserLevel
-    global_rank: int
-    pp: float
-    ranked_score: int
-    hit_accuracy: float
-    play_count: int
-    play_time: int
-    total_score: int
-    total_hits: int
-    maximum_combo: int
-    replays_watched_by_others: int
-    is_ranked: bool
-    grade_counts: UserGradeCounts
-
-    # optional fields
-    # ---------------
-    country_rank: Optional[int]
-    rank: Optional[int]
-    user: Optional[Any]
-    variants: Optional[Any]
-
-@dataclass
-class UserStatisticsRulesets:
-    # undocumented
-    # https://github.com/ppy/osu-web/blob/master/app/Transformers/UserStatisticsRulesetsTransformer.php
-    osu: Optional[UserStatistics]
-    taiko: Optional[UserStatistics]
-    fruits: Optional[UserStatistics]
-    mania: Optional[UserStatistics]
 
 @dataclass
 class RankHistory:

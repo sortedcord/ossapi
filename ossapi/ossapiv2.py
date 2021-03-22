@@ -16,13 +16,15 @@ from oauthlib.oauth2 import BackendApplicationClient
 
 from ossapi.models import (Beatmap, BeatmapUserScore, ForumTopicAndPosts,
     Search, CommentBundle, Cursor, Score, BeatmapSearchResult,
-    ModdingHistoryEventsBundle, User)
+    ModdingHistoryEventsBundle, User, Rankings)
 from ossapi.mod import Mod
-from ossapi.enums import GameMode, ScoreType
+from ossapi.enums import GameMode, ScoreType, RankingFilter, RankingType
 
 GameModeT = Union[GameMode, str]
 ScoreTypeT = Union[ScoreType, str]
 ModT = Union[Mod, str, int, list]
+RankingFilterT = Union[RankingFilter, str]
+RankingTypeT = Union[RankingType, str]
 
 class OssapiV2:
     TOKEN_URL = "https://osu.ppy.sh/oauth/token"
@@ -489,3 +491,19 @@ class OssapiV2:
     def user(self, user_id: int, mode: Optional[GameModeT] = None):
         mode = GameMode(mode).value if mode else ""
         return self._get(User, f"/users/{user_id}/{mode}")
+
+    def ranking(self,
+        mode: GameModeT,
+        type_: RankingTypeT,
+        country: Optional[str] = None,
+        cursor: Optional[Cursor] = None,
+        filter_: RankingFilterT = RankingFilter.ALL,
+        spotlight: Optional[int] = None,
+        variant: Optional[str] = None
+    ):
+        mode = GameMode(mode).value
+        type_ = RankingType(type_).value
+        filter_ = RankingFilter(filter_)
+        params = {"country": country, "cursor": cursor, "filter": filter_,
+            "spotlight": spotlight, "variant": variant}
+        return self._get(Rankings, f"/rankings/{mode}/{type_}", params=params)

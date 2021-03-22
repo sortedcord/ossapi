@@ -370,6 +370,23 @@ class Search:
     user: Optional[SearchResult[UserCompact]]
     wiki_page: Optional[SearchResult[WikiPage]]
 
+@dataclass
+class Spotlight:
+    end_date: Datetime
+    id: int
+    mode_specific: int
+    participant_count: Optional[int]
+    name: int
+    start_date: Datetime
+    type: str
+
+@dataclass
+class Rankings:
+    beatmapsets: Optional[List[Beatmapset]]
+    cursor: Cursor
+    ranking: List[UserStatistics]
+    spotlight: Optional[Spotlight]
+    total: int
 
 
 # ===================
@@ -487,3 +504,38 @@ class UserRelation:
     # optional fields
     # ---------------
     target: Optional[UserCompact]
+
+
+@dataclass
+class UserStatistics:
+    # undocumented
+    # https://github.com/ppy/osu-web/blob/master/app/Transformers/UserStatisticsTransformer.php
+    level: UserLevel
+    global_rank: int
+    pp: float
+    ranked_score: int
+    hit_accuracy: float
+    play_count: int
+    play_time: int
+    total_score: int
+    total_hits: int
+    maximum_combo: int
+    replays_watched_by_others: int
+    is_ranked: bool
+    grade_counts: UserGradeCounts
+
+    # optional fields
+    # ---------------
+    country_rank: Optional[int]
+    rank: Optional[int]
+    user: Optional[UserCompact]
+    variants: Optional[Any]
+
+@dataclass
+class UserStatisticsRulesets:
+    # undocumented
+    # https://github.com/ppy/osu-web/blob/master/app/Transformers/UserStatisticsRulesetsTransformer.php
+    osu: Optional[UserStatistics]
+    taiko: Optional[UserStatistics]
+    fruits: Optional[UserStatistics]
+    mania: Optional[UserStatistics]
