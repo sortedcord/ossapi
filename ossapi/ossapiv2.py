@@ -368,7 +368,7 @@ class OssapiV2:
         checksum: Optional[str] = None,
         filename: Optional[str] = None,
         beatmap_id: Optional[int] = None
-    ):
+    ) -> Beatmap:
         params = {"checksum": checksum, "filename": filename, "id": beatmap_id}
         return self._get(Beatmap, "/beatmaps/lookup", params)
 
@@ -377,7 +377,7 @@ class OssapiV2:
         user_id: int,
         mode: Optional[GameModeT] = None,
         mods: Optional[ModT] = None
-    ):
+    ) -> BeatmapUserScore:
         mode = GameMode(mode) if mode else None
         mods = Mod(mods) if mods else None
         params = {"mode": mode, "mods": mods}
@@ -391,7 +391,7 @@ class OssapiV2:
         mode: Optional[GameModeT] = None,
         limit: Optional[int] = None,
         offset: Optional[int] = None
-    ):
+    ) -> List[Score]:
         type_ = ScoreType(type_).value
         mode = GameMode(mode) if mode else None
         params = {"include_fails": include_fails, "mode": mode, "limit": limit,
@@ -400,11 +400,16 @@ class OssapiV2:
             params)
 
 
-    def beatmap(self, beatmap_id: int):
+    def beatmap(self, beatmap_id: int) -> Beatmap:
         return self._get(Beatmap, f"/beatmaps/{beatmap_id}")
 
-    def comments(self, commentable_type=None, commentable_id=None, cursor=None,
-        parent_id=None, sort=None):
+    def comments(self,
+        commentable_type=None,
+        commentable_id=None,
+        cursor=None,
+        parent_id=None,
+        sort=None
+    ) -> CommentBundle:
         """
         A list of comments and their replies, up to 2 levels deep.
 
@@ -420,14 +425,20 @@ class OssapiV2:
             "parent_id": parent_id, "sort": sort}
         return self._get(CommentBundle, "/comments", params)
 
-    def comment(self, comment_id: int):
+    def comment(self, comment_id: int) -> CommentBundle:
         """
         https://osu.ppy.sh/docs/index.html#get-a-comment
         """
         return self._get(CommentBundle, f"/comments/{comment_id}")
 
-    def topic(self, topic, cursor: Optional[Cursor] = None, sort=None,
-        limit=None, start=None, end=None):
+    def topic(self,
+        topic,
+        cursor: Optional[Cursor] = None,
+        sort=None,
+        limit=None,
+        start=None,
+        end=None
+    ) -> ForumTopicAndPosts:
         """
         A topic and its posts.
 
@@ -437,15 +448,19 @@ class OssapiV2:
             "start": start, "end": end}
         return self._get(ForumTopicAndPosts, f"/forums/topics/{topic}", params)
 
-    def search(self, mode="all", query=None, page=None):
+    def search(self,
+        mode="all",
+        query=None,
+        page=None
+    ) -> Search:
         params = {"mode": mode, "query": query, "page": page}
         return self._get(Search, "/search", params)
 
-    def score(self, mode: GameModeT, score_id: int):
+    def score(self, mode: GameModeT, score_id: int) -> Score:
         mode = GameMode(mode)
         return self._get(Score, f"/scores/{mode.value}/{score_id}")
 
-    def download_score(self, mode: GameModeT, score_id: int):
+    def download_score(self, mode: GameModeT, score_id: int) -> str:
         mode = GameMode(mode).value
         r = self.session.get(f"{self.BASE_URL}/scores/{mode}/"
             f"{score_id}/download")
@@ -456,14 +471,23 @@ class OssapiV2:
 
         return tempfile.name
 
-    def search_beatmaps(self, filters={}, cursor: Optional[Cursor] = None):
+    def search_beatmaps(self,
+        filters={},
+        cursor: Optional[Cursor] = None
+    ) -> BeatmapSearchResult:
         params = {"cursor": cursor}
         # filters should be passed as dict?
         params.update(filters)
         return self._get(BeatmapSearchResult, "/beatmapsets/search/", params)
 
-    def beatmapsets_events(self, limit=None, page=None, user=None, types=None,
-        min_date=None, max_date=None):
+    def beatmapsets_events(self,
+        limit=None,
+        page=None,
+        user=None,
+        types=None,
+        min_date=None,
+        max_date=None
+    ) -> ModdingHistoryEventsBundle:
         """
         Beatmap history
 
@@ -477,7 +501,10 @@ class OssapiV2:
         return self._get(ModdingHistoryEventsBundle, "/beatmapsets/events",
             params)
 
-    def user(self, user_id: int, mode: Optional[GameModeT] = None):
+    def user(self,
+        user_id: int,
+        mode: Optional[GameModeT] = None
+    ) -> User:
         mode = GameMode(mode).value if mode else ""
         return self._get(User, f"/users/{user_id}/{mode}")
 
@@ -489,7 +516,7 @@ class OssapiV2:
         filter_: RankingFilterT = RankingFilter.ALL,
         spotlight: Optional[int] = None,
         variant: Optional[str] = None
-    ):
+    ) -> Rankings:
         mode = GameMode(mode).value
         type_ = RankingType(type_).value
         filter_ = RankingFilter(filter_)
