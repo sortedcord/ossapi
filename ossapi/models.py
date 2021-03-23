@@ -388,6 +388,56 @@ class Rankings:
     spotlight: Optional[Spotlight]
     total: int
 
+@dataclass
+class BeatmapsetDiscussionPost:
+    id: int
+    beatmapset_discussion_id: int
+    user_id: int
+    last_editor_id: int
+    deleted_by_id: int
+    system: bool
+    message: str
+    created_at: Datetime
+    updated_at: Datetime
+    deleted_at: Optional[Datetime]
+
+@dataclass
+class BeatmapsetDiscussion:
+    id: int
+    beatmapset_id: int
+    beatmap_id: int
+    user_id: int
+    deleted_by_id: int
+    message_type: MessageType
+    parent_id: Optional[int]
+    # a point of time which is ``timestamp`` milliseconds into the map
+    timestamp: Optional[int]
+    resolved: bool
+    can_be_resolved: bool
+    can_grant_kudosu: bool
+    created_at: Datetime
+    updated_at: Datetime
+    deleted_at: Optional[Datetime]
+    last_post_at: Datetime
+    kudosu_denied: bool
+    starting_post: BeatmapsetDiscussionPost
+    # documented as being non-optional but in reality it's not always returned
+    posts: Optional[List[BeatmapsetDiscussionPost]]
+    beatmap: Optional[BeatmapCompact]
+    beatmapset: Optional[BeatmapsetCompact]
+
+@dataclass
+class BeatmapsetDiscussionVote:
+    score: int
+    user_id: int
+
+    # documented as being returned, but they never are (for the endpoints we've
+    # implemented anyway)
+    # beatmapset_discussion_id: int
+    # created_at: Datetime
+    # id: int
+    # updated_at: Datetime
+
 
 # ===================
 # Undocumented Models
@@ -404,54 +454,6 @@ class BeatmapSearchResult:
 
 
 @dataclass
-class BeatmapDiscussionVote:
-    # https://github.com/ppy/osu-web/blob/master/app/Models/BeatmapDiscussionVote.php#L148
-    user_id: int
-    score: int
-
-@dataclass
-class BeatmapDiscussionPost:
-    # https://github.com/ppy/osu-web/blob/master/app/Models/BeatmapDiscussionPost.php
-    # https://github.com/ppy/osu-web/blob/master/app/Transformers/BeatmapDiscussionPostTransformer.php
-    id: int
-    beatmapset_discussion_id: int
-    user_id: Optional[int]
-    last_editor_id: Optional[int]
-    deleted_by_id: Optional[int]
-    system: bool
-    message: str
-    created_at: Optional[Datetime]
-    updated_at: Optional[Datetime]
-    deleted_at: Optional[Datetime]
-    beatmap_discussion: Optional[BeatmapDiscussion]
-
-@dataclass
-class BeatmapDiscussion:
-    # https://github.com/ppy/osu-web/blob/master/app/Models/BeatmapDiscussion.php
-    # https://github.com/ppy/osu-web/blob/master/app/Transformers/BeatmapDiscussionTransformer.php
-    id: int
-    beatmapset_id: int
-    beatmap_id: Optional[int]
-    user_id: Optional[int]
-    deleted_by_id: Optional[int]
-    message_type: Optional[MessageType]
-    parent_id: Optional[int]
-    # a point of time which is ``timestamp`` milliseconds into the map
-    timestamp: Optional[int]
-    resolved: bool
-    can_be_resolved: bool
-    can_grant_kudosu: bool
-    created_at: Optional[Datetime]
-    updated_at: Optional[Datetime]
-    deleted_at: Optional[Datetime]
-    last_post_at: Optional[Datetime]
-    kudosu_denied: bool
-    starting_post: Optional[BeatmapDiscussionPost]
-    posts: Optional[List[BeatmapDiscussionPost]]
-    beatmap: Optional[BeatmapCompact]
-    beatmapset: Optional[BeatmapsetCompact]
-
-@dataclass
 class BeatmapsetDiscussionReview:
     # https://github.com/ppy/osu-web/blob/master/app/Libraries/BeatmapsetDiscussionReview.php
     max_blocks: int
@@ -463,8 +465,8 @@ class BeatmapsetEventComment:
     # mark everything as optional.
     beatmap_discussion_id: Optional[int]
     beatmap_discussion_post_id: Optional[int]
-    new_vote: Optional[BeatmapDiscussionVote]
-    votes: Optional[List[BeatmapDiscussionVote]]
+    new_vote: Optional[BeatmapsetDiscussionVote]
+    votes: Optional[List[BeatmapsetDiscussionVote]]
     modes: Optional[str]
     # Theese types change based on `BeatmapsetEvent.type`, will need to deal
     # with that as well
@@ -483,7 +485,7 @@ class BeatmapsetEvent:
 
     user_id: Optional[int]
     beatmapset: Optional[BeatmapsetCompact]
-    discussion: Optional[BeatmapDiscussion]
+    discussion: Optional[BeatmapsetDiscussion]
 
 
 @dataclass
