@@ -32,11 +32,11 @@ class OssapiV2:
     BASE_URL = "https://osu.ppy.sh/api/v2"
 
     def __init__(self, client_id, client_secret, redirect_uri=None,
-        scope=["public"]):
+        scopes=["public"]):
         self.log = logging.getLogger(__name__)
 
         self.session = self.authenticate(client_id, client_secret, redirect_uri,
-            scope)
+            scopes)
         # api responses sometimes differ from their documentation. I'm not going
         # to go and reverse engineer every endpoint (which could change at any
         # moment), so instead we have this stopgap: we consider every attribute
@@ -45,7 +45,7 @@ class OssapiV2:
         # type hints.
         self.consider_everything_nullable = False
 
-    def authenticate(self, client_id, client_secret, redirect_uri, scope):
+    def authenticate(self, client_id, client_secret, redirect_uri, scopes):
         # Prefer saved sessions to re-authenticating. Furthermore, prefer the
         # authorization code grant over the client credentials grant if both
         # exist.
@@ -53,7 +53,7 @@ class OssapiV2:
         if token_file.is_file():
             with open(token_file, "rb") as f:
                 token = pickle.load(f)
-            return self._auth_oauth_session(client_id, client_secret, scope,
+            return self._auth_oauth_session(client_id, client_secret, scopes,
                 token=token)
 
         token_file = Path(__file__).parent / "client_credentials.pickle"
@@ -66,12 +66,12 @@ class OssapiV2:
         # if redirect_uri is not passed, assume the user wanted to use the
         # client credentials grant.
         if not redirect_uri:
-            if scope != ["public"]:
-                raise ValueError(f"scope must be ['public'] if the "
-                    f"client credentials grant is used. Got {scope}")
+            if scopes != ["public"]:
+                raise ValueError(f"`scopes` must be ['public'] if the "
+                    f"client credentials grant is used. Got {scopes}")
             return self._client_credentials_grant(client_id, client_secret)
         return self._authorization_code_grant(client_id, client_secret,
-            redirect_uri, scope)
+            redirect_uri, scopes)
 
     def _client_credentials_grant(self, client_id, client_secret):
         client = BackendApplicationClient(client_id=client_id, scope=["public"])
@@ -84,8 +84,8 @@ class OssapiV2:
         return oauth
 
     def _authorization_code_grant(self, client_id, client_secret, redirect_uri,
-        scope):
-        oauth = self._auth_oauth_session(client_id, client_secret, scope,
+        scopes):
+        oauth = self._auth_oauth_session(client_id, client_secret, scopes,
             redirect_uri=redirect_uri)
         authorization_url, _state = oauth.authorization_url(self.AUTH_CODE_URL)
         webbrowser.open(authorization_url)
@@ -117,7 +117,7 @@ class OssapiV2:
 
         return oauth
 
-    def _auth_oauth_session(self, client_id, client_secret, scope, *,
+    def _auth_oauth_session(self, client_id, client_secret, scopes, *,
         token=None, redirect_uri=None):
         auto_refresh_kwargs = {
             "client_id": client_id,
@@ -127,7 +127,7 @@ class OssapiV2:
             auto_refresh_url=self.TOKEN_URL,
             auto_refresh_kwargs=auto_refresh_kwargs,
             token_updater=lambda token: self._save_token(token, "auth"),
-            scope=scope)
+            scope=scopes)
 
     def _save_token(self, token, flow):
         self.log.info(f"saving token to pickle file for flow {flow}")
