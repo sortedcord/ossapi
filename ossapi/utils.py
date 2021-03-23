@@ -7,14 +7,14 @@ class ListEnumMeta(EnumMeta):
     `PlayStyles([1, 8])` is equivalent to `PlayStyles.MOUSE | PlayStyles.TOUCH`.
     """
     def __call__(cls, value, names=None, *, module=None, qualname=None,
-        type=None, start=1):
+        type_=None, start=1):
 
         def _instantiate(value):
             # interestingly, the full form of super is required here (instead of
             # just ``super().__call__``). I guess it's binding to this inner
             # method instead of the class?
             return super(ListEnumMeta, cls).__call__(value, names,
-                module=module, qualname=qualname, type=type, start=start)
+                module=module, qualname=qualname, type=type_, start=start)
 
         if not isinstance(value, list):
             return _instantiate(value)
