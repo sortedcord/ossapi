@@ -431,8 +431,8 @@ class BeatmapsetDiscussionVote:
     score: int
     user_id: int
 
-    # documented as being returned, but they never are (for the endpoints we've
-    # implemented anyway)
+    # all of the following are documented as being returned, but they never are
+    # (for the endpoints we've implemented anyway)
     # beatmapset_discussion_id: int
     # created_at: Datetime
     # id: int
