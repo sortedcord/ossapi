@@ -25,9 +25,17 @@ json = api.get_replay({"m": "0", "b": "1776628", "u": "3256299"})
 
 ## api v2
 
-We also provide support for [api v2](https://osu.ppy.sh/docs/index.html). **(Note: requires python 3.8+)**
+We also provide support for [api v2](https://osu.ppy.sh/docs/index.html) (note: requires python 3.8+).
 
-You can create an oauth client on your settings page (<https://osu.ppy.sh/home/account/edit>), then use the client's id, secret, and redirect_uri to authenticate.
+This support is in beta, so if you would like to use ossapi for v2, you will need to run the following to download the latest beta release:
+
+```bash
+pip install --pre --upgrade ossapi
+```
+
+### Usage
+
+You will need to create an oauth client on your settings page (<https://osu.ppy.sh/home/account/edit>), then use the client's id, secret, and redirect_uri to authenticate.
 
 ```python
 # authenticates with client credentials grant (grants guest user access,
