@@ -66,4 +66,4 @@ print(api.user(12092800).playstyle)
 
 ```
 
-Work on api v2's endpoints is ongoing and unstable. Consider support for it to be in beta.
+Implementing all of api v2's endpoints is a work in progress. Currently, only some are implemented.
