@@ -2,7 +2,7 @@
 
 # ossapi
 
-ossapi (so called to avoid pypi naming conflicts with the existing osuapi) is a minimal python wrapper for the osu! api. This wrapper was created for, and is used in, [circleguard](https://github.com/circleguard/circleguard). Passed params are checked to make sure the api will accept them, and that all required params are present. No attempt is made to check http status codes or retry requests that fail.
+ossapi (so called to avoid pypi naming conflicts with the existing osuapi) is a python wrapper for the osu! api. Ossapi includes support for api v2.
 
 ## Usage
 
@@ -23,7 +23,7 @@ json = api.get_replay({"m": "0", "b": "1776628", "u": "3256299"})
 # `{"content":"XQAAIA....3fISw=","encoding":"base64"}`
 ```
 
-## osu api v2
+## api v2
 
 We also provide support for [api v2](https://osu.ppy.sh/docs/index.html). **(Note: requires python 3.8+)**
 
@@ -44,12 +44,18 @@ api = OssapiV2(client_id, client_secret)
 api = OssapiV2(client_id, client_secret, redirect_uri)
 
 # example usages of endpoints
-print(api.beatmap(beatmap_id=221777).status)
+print(api.ranking("osu", RankingType.PERFORMANCE, country="US").ranking[0].user.username)
+print(api.user_scores(12092800, "best")[0].accuracy)
+print(api.beatmap(beatmap_id=221777).last_updated)
 print(api.beatmap_user_score(beatmap_id=221777, user_id=2757689).score.mods)
 print(api.search(query="peppy").user.data[0].profile_colour)
-print(api.comment(comment_id=1).cursor.created_at)
+print(api.comment(comment_id=1).comments[0].message)
 print(api.download_score(mode="osu", score_id=2797309065))
-print(api.search_beatmaps("the big black").beatmapsets[0].title)
+print(api.search_beatmaps({"title": "the big black"}).beatmapsets[0].title)
+print(api.search_beatmaps(cursor=api.search_beatmaps().cursor).beatmapsets[0].title)
+print(api.beatmapsets_events(types=[BeatmapsetEventType.ISSUE_REOPEN]).events[0].type)
+print(api.user(12092800).playstyle)
+
 ```
 
 Work on api v2's endpoints is ongoing and unstable. Consider support for it to be in beta.
