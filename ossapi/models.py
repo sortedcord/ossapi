@@ -107,7 +107,6 @@ class User(UserCompact):
     post_count: int
     profile_order: List[ProfilePage]
     title: Optional[str]
-    # undocumented
     title_url: Optional[Any]
     twitter: Optional[str]
     website: Optional[str]
@@ -183,11 +182,10 @@ class BeatmapsetCompact:
     title_unicode: str
     user_id: int
     video: str
+    nsfw: bool
     # documented as being in ``Beatmapset`` only, but returned by
     # ``api.beatmapset_events`` which uses a ``BeatmapsetCompact``.
     hype: Hype
-    # undocumented
-    nsfw: bool
 
     # optional fields
     # ---------------
@@ -272,7 +270,7 @@ class CommentableMeta:
     title: str
     type: Optional[str]
     url: Optional[str]
-    # undocumented
+    # both undocumented
     owner_id: Optional[int]
     owner_title: Optional[str]
 
