@@ -32,8 +32,6 @@ class RankingFilter(Enum):
     ALL = "all"
     FRIENDS = "friends"
 
-# these are documented as being uppercased, but the api only accepts lowercased
-# https://osu.ppy.sh/docs/index.html#rankingtype
 class RankingType(Enum):
     CHARTS = "spotlight"
     COUNTRY = "country"
