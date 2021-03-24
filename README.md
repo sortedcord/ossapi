@@ -66,4 +66,4 @@ print(api.user(12092800).playstyle)
 
 ```
 
-Implementing all of api v2's endpoints is a work in progress. Currently, only some are implemented.
+Wrok on api v2's endpoints is ongoing. Some endpoints are not curerntly implemented.
