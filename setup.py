@@ -20,8 +20,7 @@ with open("ossapi/version.py") as f:
 setup(
     name="ossapi",
     version=VERSION,
-    description="A thin python wrapper around the osu! api, delegating error "
-                "handling and rate limiting (among other things) to the user.",
+    description="A python wrapper for the osu! api. Includes api v2 support.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     classifiers=[
