@@ -27,7 +27,7 @@ json = api.get_replay({"m": "0", "b": "1776628", "u": "3256299"})
 
 We also provide support for [api v2](https://osu.ppy.sh/docs/index.html) (note: requires python 3.8+).
 
-This support is in beta, so if you would like to use ossapi for v2, you will need to run the following to download the latest beta release:
+This support is in beta, so if you would like to use ossapi for api v2, you will need to run the following to download the latest beta release:
 
 ```bash
 pip install --pre --upgrade ossapi
