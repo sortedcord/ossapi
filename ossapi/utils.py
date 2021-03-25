@@ -1,5 +1,5 @@
 from enum import EnumMeta
-from datetime import datetime
+from datetime import datetime, timezone
 
 class ListEnumMeta(EnumMeta):
     """
@@ -51,7 +51,7 @@ class Datetime(datetime):
             # ``datetime.utcfromtimestamp`` expects it in seconds, so
             # divide by 1000 to convert.
             value = int(value) / 1000
-            return datetime.utcfromtimestamp(value)
+            return datetime.fromtimestamp(value, tz=timezone.utc)
         if cls._matches_datetime(value, "%Y-%m-%dT%H:%M:%S%z"):
             return datetime.strptime(value, "%Y-%m-%dT%H:%M:%S%z")
         if cls._matches_datetime(value, "%Y-%m-%d"):
