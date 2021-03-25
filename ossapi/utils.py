@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 class ListEnumMeta(EnumMeta):
     """
     Allows an enum to be instantiated with a list of members of the enum. So
-    `PlayStyles([1, 8])` is equivalent to `PlayStyles.MOUSE | PlayStyles.TOUCH`.
+    ``MyEnum([1, 8])`` is equivalent to ``MyEnum(1) | MyEnum(8)``.
     """
     def __call__(cls, value, names=None, *, module=None, qualname=None,
         type_=None, start=1):
