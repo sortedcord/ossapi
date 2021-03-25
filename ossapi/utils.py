@@ -48,7 +48,7 @@ class Datetime(datetime):
         if value.isdigit():
             # see if it's an int first, if so it's a unix timestamp. The
             # api returns the timestamp in milliseconds but
-            # ``datetime.utcfromtimestamp`` expects it in seconds, so
+            # ``datetime.fromtimestamp`` expects it in seconds, so
             # divide by 1000 to convert.
             value = int(value) / 1000
             return datetime.fromtimestamp(value, tz=timezone.utc)
