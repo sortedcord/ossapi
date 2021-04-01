@@ -369,6 +369,9 @@ class OssapiV2:
         filename: Optional[str] = None,
         beatmap_id: Optional[int] = None
     ) -> Beatmap:
+        """
+        https://osu.ppy.sh/docs/index.html#lookup-beatmap
+        """
         params = {"checksum": checksum, "filename": filename, "id": beatmap_id}
         return self._get(Beatmap, "/beatmaps/lookup", params)
 
@@ -378,6 +381,9 @@ class OssapiV2:
         mode: Optional[GameModeT] = None,
         mods: Optional[ModT] = None
     ) -> BeatmapUserScore:
+        """
+        https://osu.ppy.sh/docs/index.html#get-a-user-beatmap-score
+        """
         mode = GameMode(mode) if mode else None
         mods = Mod(mods) if mods else None
         params = {"mode": mode, "mods": mods}
@@ -392,6 +398,9 @@ class OssapiV2:
         limit: Optional[int] = None,
         offset: Optional[int] = None
     ) -> List[Score]:
+        """
+        https://osu.ppy.sh/docs/index.html#get-user-scores
+        """
         type_ = ScoreType(type_).value
         mode = GameMode(mode) if mode else None
         params = {"include_fails": include_fails, "mode": mode, "limit": limit,
@@ -401,6 +410,9 @@ class OssapiV2:
 
 
     def beatmap(self, beatmap_id: int) -> Beatmap:
+        """
+        https://osu.ppy.sh/docs/index.html#get-beatmap
+        """
         return self._get(Beatmap, f"/beatmaps/{beatmap_id}")
 
     def comments(self,
@@ -505,6 +517,9 @@ class OssapiV2:
         user_id: int,
         mode: Optional[GameModeT] = None
     ) -> User:
+        """
+        https://osu.ppy.sh/docs/index.html#get-user
+        """
         mode = GameMode(mode).value if mode else ""
         return self._get(User, f"/users/{user_id}/{mode}")
 
@@ -517,6 +532,9 @@ class OssapiV2:
         spotlight: Optional[int] = None,
         variant: Optional[str] = None
     ) -> Rankings:
+        """
+        https://osu.ppy.sh/docs/index.html#get-ranking
+        """
         mode = GameMode(mode).value
         type_ = RankingType(type_).value
         filter_ = RankingFilter(filter_)
