@@ -66,4 +66,4 @@ print(api.user(12092800).playstyle)
 
 ```
 
-Wrok on api v2's endpoints is ongoing. Some endpoints are not curerntly implemented.
+Wrok on api v2's endpoints is ongoing. Some endpoints are not curerntly implemented. You can find more about what endpoints we have implemented at https://github.com/circleguard/ossapi/issues/14.
