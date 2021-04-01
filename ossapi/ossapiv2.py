@@ -465,6 +465,9 @@ class OssapiV2:
         query=None,
         page=None
     ) -> Search:
+        """
+        https://osu.ppy.sh/docs/index.html#search
+        """
         params = {"mode": mode, "query": query, "page": page}
         return self._get(Search, "/search", params)
 
