@@ -373,6 +373,7 @@ class OssapiV2:
             return True
         return isinstance(value, type_)
 
+
     # =========
     # Endpoints
     # =========
