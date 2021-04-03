@@ -260,6 +260,13 @@ class OssapiV2:
             origin = get_origin(type_)
             args = get_args(type_)
 
+        # validate that the values we're receiving are the types we expect them
+        # to be
+        if self._is_primitive_type(type_):
+            if not self._is_compatible_type(value, type_):
+                raise TypeError(f"expected type {type_} for value {value}, got "
+                    f"type {type(value)}")
+
         if self._is_base_type(type_):
             self.log.debug(f"instantiating base type {type_}")
             return type_(value)
@@ -364,6 +371,20 @@ class OssapiV2:
 
         return issubclass(type_, (Enum, datetime, Mod))
 
+    def _is_primitive_type(self, type_):
+        if not isinstance(type_, type):
+            return False
+
+        return type_ in [int, float, str, bool]
+
+    def _is_compatible_type(self, value, type_):
+        # make an exception for an integer being instantiated as a float. In
+        # the json we receive, eg ``pp`` can have a value of ``15833``, which is
+        # interpreted as an int by our json parser even though ``pp`` is a
+        # float.
+        if type_ is float and isinstance(value, int):
+            return True
+        return isinstance(value, type_)
 
     # =========
     # Endpoints
