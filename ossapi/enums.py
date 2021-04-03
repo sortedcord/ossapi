@@ -204,7 +204,8 @@ class Cover:
     # https://github.com/ppy/osu-web/blob/master/app/Transformers/UserCompactTransformer.php#L158
     custom_url: str
     url: str
-    id: int
+    # api should really return an int here instead...open an issue?
+    id: str
 
 
 @dataclass
@@ -357,3 +358,8 @@ class RankHistory:
     # https://github.com/ppy/osu-web/blob/master/app/Transformers/RankHistoryTransformer.php
     mode: GameMode
     data: List[int]
+
+@dataclass
+class Weight:
+    percentage: float
+    pp: float

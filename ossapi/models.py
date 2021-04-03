@@ -37,7 +37,7 @@ class UserCompact:
     is_deleted: bool
     is_online: bool
     is_supporter: bool
-    last_visit: bool
+    last_visit: Optional[Datetime]
     pm_friends_only: bool
     profile_colour: str
     username: str
@@ -136,24 +136,24 @@ class BeatmapCompact:
 class Beatmap(BeatmapCompact):
     total_length: int
     version: str
-    accuracy: int
-    ar: int
+    accuracy: float
+    ar: float
     beatmapset_id: int
-    bpm: int
+    bpm: float
     convert: bool
     count_circles: int
     count_sliders: int
     count_spinners: int
-    cs: int
-    deleted_at: str
-    drain: int
+    cs: float
+    deleted_at: Optional[Datetime]
+    drain: float
     hit_length: int
     is_scoreable: bool
     last_updated: Datetime
     mode_int: int
     passcount: int
     playcount: int
-    ranked: int
+    ranked: RankStatus
     url: str
 
     # overridden fields
@@ -181,7 +181,8 @@ class BeatmapsetCompact:
     title: str
     title_unicode: str
     user_id: int
-    video: str
+    # documented as being a str, docs should say this is a bool
+    video: bool
     nsfw: bool
     # documented as being in ``Beatmapset`` only, but returned by
     # ``api.beatmapset_events`` which uses a ``BeatmapsetCompact``.
@@ -241,7 +242,8 @@ class Score:
     perfect: bool
     statistics: Statistics
     pp: float
-    rank: int
+    # TODO this needs an enum with A/B/C/S/SS etc
+    rank: str
     created_at: Datetime
     mode: GameMode
     mode_int: int
@@ -251,7 +253,7 @@ class Score:
     beatmapset: Optional[BeatmapsetCompact]
     rank_country: Optional[int]
     rank_global: Optional[int]
-    weight: Optional[float]
+    weight: Optional[Weight]
     user: Optional[UserCompact]
     match: Optional[Match]
 
@@ -527,7 +529,7 @@ class UserStatistics:
     # optional fields
     # ---------------
     country_rank: Optional[int]
-    rank: Optional[int]
+    rank: Optional[Any]
     user: Optional[UserCompact]
     variants: Optional[Any]
 
