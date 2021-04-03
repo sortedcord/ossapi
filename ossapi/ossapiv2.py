@@ -37,13 +37,6 @@ class OssapiV2:
 
         self.session = self.authenticate(client_id, client_secret, redirect_uri,
             scopes)
-        # api responses sometimes differ from their documentation. I'm not going
-        # to go and reverse engineer every endpoint (which could change at any
-        # moment), so instead we have this stopgap: we consider every attribute
-        # to be nullable, so if it's missing from the api response we just give
-        # it a value of ``None``. Normally this only happens for ``Optional[X]``
-        # type hints.
-        self.consider_everything_nullable = False
 
     def authenticate(self, client_id, client_secret, redirect_uri, scopes):
         # Prefer saved sessions to re-authenticating. Furthermore, prefer the
@@ -334,13 +327,7 @@ class OssapiV2:
         # for each optional attribute of our models, since the default will
         # always be ``None``.
         for attribute, annotation in type_hints.items():
-            # see the comment in ``def __init__`` for more on
-            # ``consider_everything_nullable``.
-            # Cursor is special because it defines annotations in
-            # ``__annotations__`` for which we don't want to give a value, so
-            # ignore it even if we consider everything nullable.
-            if ((self.consider_everything_nullable and type_ is not Cursor) or
-                self._is_optional(annotation)):
+            if self._is_optional(annotation):
                 if attribute not in kwargs:
                     kwargs[attribute] = None
         return type_(**kwargs)
