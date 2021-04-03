@@ -466,7 +466,7 @@ class BeatmapsetEventComment:
     beatmap_discussion_post_id: Optional[int]
     new_vote: Optional[BeatmapsetDiscussionVote]
     votes: Optional[List[BeatmapsetDiscussionVote]]
-    modes: Optional[str]
+    modes: Optional[List[GameMode]]
     # Theese types change based on `BeatmapsetEvent.type`, will need to deal
     # with that as well
     old: Optional[Any]
