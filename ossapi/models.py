@@ -242,8 +242,7 @@ class Score:
     perfect: bool
     statistics: Statistics
     pp: float
-    # TODO this needs an enum with A/B/C/S/SS etc
-    rank: str
+    rank: Grade
     created_at: Datetime
     mode: GameMode
     mode_int: int

@@ -169,6 +169,16 @@ class UserRelationType(Enum):
     FRIEND = "friend"
     BLOCK = "block"
 
+class Grade(Enum):
+    SSH = "XH"
+    SS = "X"
+    SH = "SH"
+    S = "S"
+    A = "A"
+    B = "B"
+    C = "C"
+    D = "D"
+    F = "F"
 
 # =================
 # Documented Models
