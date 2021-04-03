@@ -208,7 +208,7 @@ class BeatmapsetCompact:
 @dataclass
 class Beatmapset(BeatmapsetCompact):
     availability: Availability
-    bpm: int
+    bpm: float
     can_be_hyped: bool
     discussion_enabled: bool
     discussion_locked: bool
