@@ -107,7 +107,7 @@ class User(UserCompact):
     post_count: int
     profile_order: List[ProfilePage]
     title: Optional[str]
-    title_url: Optional[Any]
+    title_url: Optional[str]
     twitter: Optional[str]
     website: Optional[str]
 
