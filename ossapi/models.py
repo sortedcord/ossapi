@@ -451,7 +451,7 @@ class BeatmapSearchResult:
     recommended_difficulty: float
     error: Optional[str]
     total: int
-
+    search: Any
 
 @dataclass
 class BeatmapsetDiscussionReview:
