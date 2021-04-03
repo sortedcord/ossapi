@@ -364,6 +364,15 @@ class OssapiV2:
 
         return issubclass(type_, (Enum, datetime, Mod))
 
+
+    # =========
+    # Endpoints
+    # =========
+
+
+    # /beatmaps
+    # ---------
+
     def beatmap_lookup(self,
         checksum: Optional[str] = None,
         filename: Optional[str] = None,
@@ -390,30 +399,15 @@ class OssapiV2:
         return self._get(BeatmapUserScore,
             f"/beatmaps/{beatmap_id}/scores/users/{user_id}", params)
 
-    def user_scores(self,
-        user_id: int,
-        type_: ScoreTypeT,
-        include_fails: Optional[bool] = None,
-        mode: Optional[GameModeT] = None,
-        limit: Optional[int] = None,
-        offset: Optional[int] = None
-    ) -> List[Score]:
-        """
-        https://osu.ppy.sh/docs/index.html#get-user-scores
-        """
-        type_ = ScoreType(type_).value
-        mode = GameMode(mode) if mode else None
-        params = {"include_fails": include_fails, "mode": mode, "limit": limit,
-            "offset": offset}
-        return self._get(List[Score], f"/users/{user_id}/scores/{type_}",
-            params)
-
-
     def beatmap(self, beatmap_id: int) -> Beatmap:
         """
         https://osu.ppy.sh/docs/index.html#get-beatmap
         """
         return self._get(Beatmap, f"/beatmaps/{beatmap_id}")
+
+
+    # /comments
+    # ---------
 
     def comments(self,
         commentable_type=None,
@@ -443,6 +437,10 @@ class OssapiV2:
         """
         return self._get(CommentBundle, f"/comments/{comment_id}")
 
+
+    # /forums
+    # -------
+
     def topic(self,
         topic,
         cursor: Optional[Cursor] = None,
@@ -460,6 +458,10 @@ class OssapiV2:
             "start": start, "end": end}
         return self._get(ForumTopicAndPosts, f"/forums/topics/{topic}", params)
 
+
+    # / ("home")
+    # ----------
+
     def search(self,
         mode="all",
         query=None,
@@ -470,6 +472,65 @@ class OssapiV2:
         """
         params = {"mode": mode, "query": query, "page": page}
         return self._get(Search, "/search", params)
+
+
+    # /rankings
+    # ---------
+
+    def ranking(self,
+        mode: GameModeT,
+        type_: RankingTypeT,
+        country: Optional[str] = None,
+        cursor: Optional[Cursor] = None,
+        filter_: RankingFilterT = RankingFilter.ALL,
+        spotlight: Optional[int] = None,
+        variant: Optional[str] = None
+    ) -> Rankings:
+        """
+        https://osu.ppy.sh/docs/index.html#get-ranking
+        """
+        mode = GameMode(mode).value
+        type_ = RankingType(type_).value
+        filter_ = RankingFilter(filter_)
+        params = {"country": country, "cursor": cursor, "filter": filter_,
+            "spotlight": spotlight, "variant": variant}
+        return self._get(Rankings, f"/rankings/{mode}/{type_}", params=params)
+
+
+    # /users
+    # ------
+
+    def user_scores(self,
+        user_id: int,
+        type_: ScoreTypeT,
+        include_fails: Optional[bool] = None,
+        mode: Optional[GameModeT] = None,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None
+    ) -> List[Score]:
+        """
+        https://osu.ppy.sh/docs/index.html#get-user-scores
+        """
+        type_ = ScoreType(type_).value
+        mode = GameMode(mode) if mode else None
+        params = {"include_fails": include_fails, "mode": mode, "limit": limit,
+            "offset": offset}
+        return self._get(List[Score], f"/users/{user_id}/scores/{type_}",
+            params)
+
+    def user(self,
+        user_id: int,
+        mode: Optional[GameModeT] = None
+    ) -> User:
+        """
+        https://osu.ppy.sh/docs/index.html#get-user
+        """
+        mode = GameMode(mode).value if mode else ""
+        return self._get(User, f"/users/{user_id}/{mode}")
+
+
+    # undocumented
+    # ------------
 
     def score(self, mode: GameModeT, score_id: int) -> Score:
         mode = GameMode(mode)
@@ -515,32 +576,3 @@ class OssapiV2:
             "min_date": min_date, "max_date": max_date, "types": types}
         return self._get(ModdingHistoryEventsBundle, "/beatmapsets/events",
             params)
-
-    def user(self,
-        user_id: int,
-        mode: Optional[GameModeT] = None
-    ) -> User:
-        """
-        https://osu.ppy.sh/docs/index.html#get-user
-        """
-        mode = GameMode(mode).value if mode else ""
-        return self._get(User, f"/users/{user_id}/{mode}")
-
-    def ranking(self,
-        mode: GameModeT,
-        type_: RankingTypeT,
-        country: Optional[str] = None,
-        cursor: Optional[Cursor] = None,
-        filter_: RankingFilterT = RankingFilter.ALL,
-        spotlight: Optional[int] = None,
-        variant: Optional[str] = None
-    ) -> Rankings:
-        """
-        https://osu.ppy.sh/docs/index.html#get-ranking
-        """
-        mode = GameMode(mode).value
-        type_ = RankingType(type_).value
-        filter_ = RankingFilter(filter_)
-        params = {"country": country, "cursor": cursor, "filter": filter_,
-            "spotlight": spotlight, "variant": variant}
-        return self._get(Rankings, f"/rankings/{mode}/{type_}", params=params)
