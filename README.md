@@ -66,4 +66,4 @@ print(api.user(12092800).playstyle)
 
 ```
 
-Work on api v2's endpoints is ongoing. Some endpoints are not curerntly implemented. You can track our progress towards implementing all documented api v2 endpoints here: https://github.com/circleguard/ossapi/issues/14.
+Work on api v2's endpoints is ongoing. Some endpoints are not currently implemented. You can track our progress towards implementing all documented api v2 endpoints here: https://github.com/circleguard/ossapi/issues/14.
