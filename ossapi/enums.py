@@ -226,7 +226,7 @@ class ProfileBanner:
 
 @dataclass
 class UserAccountHistory:
-    description: str
+    description: Optional[str]
     type: UserAccountHistoryType
     timestamp: Datetime
     length: int
