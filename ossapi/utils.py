@@ -1,5 +1,9 @@
-from enum import EnumMeta
+from enum import EnumMeta, Enum
 from datetime import datetime, timezone
+from typing import get_args, get_origin, Union
+import dataclasses
+
+from ossapi.mod import Mod
 
 class ListEnumMeta(EnumMeta):
     """
@@ -64,3 +68,47 @@ class Datetime(datetime):
         except ValueError:
             return False
         return True
+
+# typing utils
+# ------------
+
+def is_optional(type_):
+    """
+    ``Optional[X]`` is equivalent to ``Union[X, None]``.
+    """
+    return get_origin(type_) is Union and get_args(type_)[1] is type(None)
+
+def is_model_type(type_):
+    # almost every model we have is a dataclass, but we do have a unique
+    # one, ``Cursor``, which we also need to consider as a model type.
+
+    # imported here to avoid a circular import
+    from ossapi.models import Cursor
+    return type_ is Cursor or dataclasses.is_dataclass(type_)
+
+def is_base_type(type_):
+    """
+    A "base" type is a type that is still instantiable (so not a primitive)
+    but one that we don't need to recurse down its members to look for more
+    model types (or more base types). The base type is responsible for
+    cleaning up and/or modifying the data we give it, and we move on after
+    instantiating it.
+    Examples are enums, mods, and datetimes.
+    """
+    if not isinstance(type_, type):
+        return False
+    return issubclass(type_, (Enum, datetime, Mod))
+
+def is_primitive_type(type_):
+    if not isinstance(type_, type):
+        return False
+    return type_ in [int, float, str, bool]
+
+def is_compatible_type(value, type_):
+    # make an exception for an integer being instantiated as a float. In
+    # the json we receive, eg ``pp`` can have a value of ``15833``, which is
+    # interpreted as an int by our json parser even though ``pp`` is a
+    # float.
+    if type_ is float and isinstance(value, int):
+        return True
+    return isinstance(value, type_)

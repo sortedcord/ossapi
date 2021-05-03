@@ -1,6 +1,5 @@
 from typing import (get_type_hints, get_origin, get_args, Union, TypeVar,
     Optional, List)
-import dataclasses
 import logging
 import webbrowser
 import socket
@@ -21,6 +20,8 @@ from ossapi.models import (Beatmap, BeatmapUserScore, ForumTopicAndPosts,
 from ossapi.mod import Mod
 from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     UserBeatmapType)
+from ossapi.utils import (is_compatible_type, is_primitive_type, is_base_type,
+    is_model_type, is_optional)
 
 GameModeT = Union[GameMode, str]
 ScoreTypeT = Union[ScoreType, str]
@@ -257,7 +258,7 @@ class OssapiV2:
         # We don't care about the optional annotation in this context
         # because if we got here that means we were passed a value for this
         # attribute, so we know it's defined and not optional.
-        if self._is_optional(type_):
+        if is_optional(type_):
             # leaving these assertions in to help me catch errors in my
             # reasoning until I better understand python's typing.
             assert len(args) == 2
@@ -267,16 +268,16 @@ class OssapiV2:
 
         # validate that the values we're receiving are the types we expect them
         # to be
-        if self._is_primitive_type(type_):
-            if not self._is_compatible_type(value, type_):
+        if is_primitive_type(type_):
+            if not is_compatible_type(value, type_):
                 raise TypeError(f"expected type {type_} for value {value}, got "
                     f"type {type(value)}")
 
-        if self._is_base_type(type_):
+        if is_base_type(type_):
             self.log.debug(f"instantiating base type {type_}")
             return type_(value)
 
-        if origin is list and (self._is_model_type(args[0]) or
+        if origin is list and (is_model_type(args[0]) or
             isinstance(args[0], TypeVar)):
             assert len(args) == 1
             # check if the list has been instantiated generically; if so,
@@ -296,7 +297,7 @@ class OssapiV2:
                 # if the list entry is a model type, we need to resolve it
                 # instead of just sticking it into the list, since its children
                 # might still be dicts and not model instances.
-                if self._is_model_type(type_):
+                if is_model_type(type_):
                     entry = self._resolve_annotations(entry)
                 new_value.append(entry)
             return new_value
@@ -305,7 +306,7 @@ class OssapiV2:
         # a special indexed type (eg ``type_ == SearchResult[UserCompact]``,
         # ``origin == UserCompact``). In either case we want to instantiate
         # ``type_``.
-        if not self._is_model_type(type_) and not self._is_model_type(origin):
+        if not is_model_type(type_) and not is_model_type(origin):
             return None
         value = self._instantiate(type_, **value)
         # we need to resolve the annotations of any nested model types before we
@@ -339,51 +340,10 @@ class OssapiV2:
         # for each optional attribute of our models, since the default will
         # always be ``None``.
         for attribute, annotation in type_hints.items():
-            if self._is_optional(annotation):
+            if is_optional(annotation):
                 if attribute not in kwargs:
                     kwargs[attribute] = None
         return type_(**kwargs)
-
-    def _is_optional(self, type_):
-        """
-        ``Optional[X]`` is equivalent to ``Union[X, None]``.
-        """
-        return get_origin(type_) is Union and get_args(type_)[1] is type(None)
-
-    def _is_model_type(self, type_):
-        # almost every model we have is a dataclass, but we do have a unique
-        # one, ``Cursor``, which we also need to consider as a model type.
-        return type_ is Cursor or dataclasses.is_dataclass(type_)
-
-    def _is_base_type(self, type_):
-        """
-        A "base" type is a type that is still instantiable (so not a primitive)
-        but one that we don't need to recurse down its members to look for more
-        model types (or more base types). The base type is responsible for
-        cleaning up and/or modifying the data we give it, and we move on after
-        instantiating it.
-
-        Examples are enums, mods, and datetimes.
-        """
-        if not isinstance(type_, type):
-            return False
-
-        return issubclass(type_, (Enum, datetime, Mod))
-
-    def _is_primitive_type(self, type_):
-        if not isinstance(type_, type):
-            return False
-
-        return type_ in [int, float, str, bool]
-
-    def _is_compatible_type(self, value, type_):
-        # make an exception for an integer being instantiated as a float. In
-        # the json we receive, eg ``pp`` can have a value of ``15833``, which is
-        # interpreted as an int by our json parser even though ``pp`` is a
-        # float.
-        if type_ is float and isinstance(value, int):
-            return True
-        return isinstance(value, type_)
 
 
     # =========
