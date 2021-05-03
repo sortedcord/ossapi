@@ -574,7 +574,7 @@ class OssapiV2:
         offset: Optional[int] = None
     ) -> List[Score]:
         """
-        https://osu.ppy.sh/docs/index.html#get-user-scores
+        https://osu.ppy.sh/docs/index.html#get-user-beatmaps
         """
         type_ = UserBeatmapType(type_)
         params = {"limit": limit, "offset": offset}
