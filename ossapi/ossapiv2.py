@@ -31,6 +31,10 @@ class OssapiV2:
     AUTH_CODE_URL = "https://osu.ppy.sh/oauth/authorize"
     BASE_URL = "https://osu.ppy.sh/api/v2"
 
+    AUTHORIZATION_TOKEN_FILE = (Path(__file__).parent /
+        "authorization_code.pickle")
+    CLIENT_TOKEN_FILE = Path(__file__).parent / "client_credentials.pickle"
+
     def __init__(self, client_id, client_secret, redirect_uri=None,
         scopes=["public"]):
         self.log = logging.getLogger(__name__)
@@ -42,17 +46,15 @@ class OssapiV2:
         # Prefer saved sessions to re-authenticating. Furthermore, prefer the
         # authorization code grant over the client credentials grant if both
         # exist.
-        token_file = Path(__file__).parent / "authorization_code.pickle"
-        if token_file.is_file():
-            with open(token_file, "rb") as f:
+        if self.AUTHORIZATION_TOKEN_FILE.is_file():
+            with open(self.AUTHORIZATION_TOKEN_FILE, "rb") as f:
                 token = pickle.load(f)
             return self._auth_oauth_session(client_id, client_secret, scopes,
                 token=token)
 
-        token_file = Path(__file__).parent / "client_credentials.pickle"
         # TODO I think this breaks if the token is expired?
-        if token_file.is_file():
-            with open(token_file, "rb") as f:
+        if self.CLIENT_TOKEN_FILE.is_file():
+            with open(self.CLIENT_TOKEN_FILE, "rb") as f:
                 token = pickle.load(f)
             return OAuth2Session(client_id, token=token)
 
@@ -65,6 +67,13 @@ class OssapiV2:
             return self._client_credentials_grant(client_id, client_secret)
         return self._authorization_code_grant(client_id, client_secret,
             redirect_uri, scopes)
+
+    @staticmethod
+    def clear_authentication():
+        if OssapiV2.AUTHORIZATION_TOKEN_FILE.is_file():
+            OssapiV2.AUTHORIZATION_TOKEN_FILE.unlink()
+        if OssapiV2.CLIENT_TOKEN_FILE.is_file():
+            OssapiV2.CLIENT_TOKEN_FILE.unlink()
 
     def _client_credentials_grant(self, client_id, client_secret):
         client = BackendApplicationClient(client_id=client_id, scope=["public"])
