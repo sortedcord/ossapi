@@ -157,6 +157,10 @@ class UserListViews(Enum):
     LIST = "list"
     BRICK = "brick"
 
+class KudosuAction(Enum):
+    GIVE = "give"
+    RESET = "reset"
+    REVOKE = "revoke"
 
 # ==================
 # Undocumented Enums
@@ -294,6 +298,18 @@ class Kudosu:
     total: int
     available: int
 
+@dataclass
+class KudosuGiver:
+    url: str
+    username: str
+
+@dataclass
+class KudosuPost:
+    url: Optional[str]
+    # will be "[deleted beatmap]" for deleted beatmaps. TODO codify this
+    # somehow? another enum perhaps? see
+    # https://osu.ppy.sh/docs/index.html#kudosuhistory
+    title: str
 
 # ===================
 # Undocumented Models

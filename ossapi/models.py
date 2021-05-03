@@ -442,6 +442,17 @@ class BeatmapsetDiscussionVote:
     # id: int
     # updated_at: Datetime
 
+@dataclass
+class KudosuHistory:
+    id: int
+    action: KudosuAction
+    amount: int
+    # TODO enumify this. Described as "Object type which the exchange happened
+    # on (forum_post, etc)." in https://osu.ppy.sh/docs/index.html#kudosuhistory
+    model: str
+    created_at: Datetime
+    giver: Optional[KudosuGiver]
+    post: KudosuPost
 
 # ===================
 # Undocumented Models
