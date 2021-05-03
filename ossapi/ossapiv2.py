@@ -498,12 +498,13 @@ class OssapiV2:
         """
         https://osu.ppy.sh/docs/index.html#get-ranking
         """
-        mode = GameMode(mode).value
-        type_ = RankingType(type_).value
+        mode = GameMode(mode)
+        type_ = RankingType(type_)
         filter_ = RankingFilter(filter_)
         params = {"country": country, "cursor": cursor, "filter": filter_,
             "spotlight": spotlight, "variant": variant}
-        return self._get(Rankings, f"/rankings/{mode}/{type_}", params=params)
+        return self._get(Rankings, f"/rankings/{mode.value}/{type_.value}",
+            params=params)
 
 
     # /users
@@ -520,11 +521,11 @@ class OssapiV2:
         """
         https://osu.ppy.sh/docs/index.html#get-user-scores
         """
-        type_ = ScoreType(type_).value
+        type_ = ScoreType(type_)
         mode = GameMode(mode) if mode else None
         params = {"include_fails": include_fails, "mode": mode, "limit": limit,
             "offset": offset}
-        return self._get(List[Score], f"/users/{user_id}/scores/{type_}",
+        return self._get(List[Score], f"/users/{user_id}/scores/{type_.value}",
             params)
 
     def user(self,
@@ -534,8 +535,8 @@ class OssapiV2:
         """
         https://osu.ppy.sh/docs/index.html#get-user
         """
-        mode = GameMode(mode).value if mode else ""
-        return self._get(User, f"/users/{user_id}/{mode}")
+        mode = GameMode(mode) if mode else None
+        return self._get(User, f"/users/{user_id}/{mode or ''}")
 
 
     # undocumented
@@ -546,8 +547,8 @@ class OssapiV2:
         return self._get(Score, f"/scores/{mode.value}/{score_id}")
 
     def download_score(self, mode: GameModeT, score_id: int) -> str:
-        mode = GameMode(mode).value
-        r = self.session.get(f"{self.BASE_URL}/scores/{mode}/"
+        mode = GameMode(mode)
+        r = self.session.get(f"{self.BASE_URL}/scores/{mode.value}/"
             f"{score_id}/download")
 
         tempfile = NamedTemporaryFile(mode="wb", delete=False)
