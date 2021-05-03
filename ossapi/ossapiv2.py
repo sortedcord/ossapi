@@ -16,15 +16,18 @@ from oauthlib.oauth2 import BackendApplicationClient
 
 from ossapi.models import (Beatmap, BeatmapUserScore, ForumTopicAndPosts,
     Search, CommentBundle, Cursor, Score, BeatmapSearchResult,
-    ModdingHistoryEventsBundle, User, Rankings, BeatmapScores)
+    ModdingHistoryEventsBundle, User, Rankings, BeatmapScores, KudosuHistory,
+    Beatmapset)
 from ossapi.mod import Mod
-from ossapi.enums import GameMode, ScoreType, RankingFilter, RankingType
+from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
+    UserBeatmapType)
 
 GameModeT = Union[GameMode, str]
 ScoreTypeT = Union[ScoreType, str]
 ModT = Union[Mod, str, int, list]
 RankingFilterT = Union[RankingFilter, str]
 RankingTypeT = Union[RankingType, str]
+UserBeatmapTypeT = Union[UserBeatmapType, str]
 
 class OssapiV2:
     TOKEN_URL = "https://osu.ppy.sh/oauth/token"
@@ -563,6 +566,20 @@ class OssapiV2:
             "offset": offset}
         return self._get(List[Score], f"/users/{user_id}/scores/{type_.value}",
             params)
+
+    def user_beatmaps(self,
+        user_id: int,
+        type_: UserBeatmapTypeT,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None
+    ) -> List[Score]:
+        """
+        https://osu.ppy.sh/docs/index.html#get-user-scores
+        """
+        type_ = UserBeatmapType(type_)
+        params = {"limit": limit, "offset": offset}
+        return self._get(List[Beatmapset], f"/users/{user_id}/beatmapsets/"
+            f"{type_.value}", params)
 
     def user(self,
         user_id: int,

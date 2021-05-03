@@ -162,6 +162,15 @@ class KudosuAction(Enum):
     RESET = "reset"
     REVOKE = "revoke"
 
+class UserBeatmapType(Enum):
+    FAVOURITE = "favourite"
+    GRAVEYARD = "graveyard"
+    LOVED = "loved"
+    MOST_PLAYED = "most_played"
+    RANKED_AND_APPROVED = "ranked_and_approved"
+    UNRANKED = "unranked"
+
+
 # ==================
 # Undocumented Enums
 # ==================
