@@ -261,6 +261,11 @@ class BeatmapUserScore:
     position: int
     score: Score
 
+@dataclass
+class BeatmapScores:
+    scores: List[Score]
+    userScore: Optional[BeatmapUserScore]
+
 
 @dataclass
 class CommentableMeta:

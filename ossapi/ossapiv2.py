@@ -16,7 +16,7 @@ from oauthlib.oauth2 import BackendApplicationClient
 
 from ossapi.models import (Beatmap, BeatmapUserScore, ForumTopicAndPosts,
     Search, CommentBundle, Cursor, Score, BeatmapSearchResult,
-    ModdingHistoryEventsBundle, User, Rankings)
+    ModdingHistoryEventsBundle, User, Rankings, BeatmapScores)
 from ossapi.mod import Mod
 from ossapi.enums import GameMode, ScoreType, RankingFilter, RankingType
 
@@ -407,6 +407,22 @@ class OssapiV2:
         params = {"mode": mode, "mods": mods}
         return self._get(BeatmapUserScore,
             f"/beatmaps/{beatmap_id}/scores/users/{user_id}", params)
+
+    def beatmap_scores(self,
+        beatmap_id: int,
+        mode: Optional[GameModeT] = None,
+        mods: Optional[ModT] = None,
+        type_: Optional[RankingTypeT] = None
+    ) -> BeatmapScores:
+        """
+        https://osu.ppy.sh/docs/index.html#get-beatmap-scores
+        """
+        mode = GameMode(mode) if mode else None
+        mods = Mod(mods) if mods else None
+        type_ = RankingType(type_) if type_ else None
+        params = {"mode": mode, "mods": mods, "type": type_}
+        return self._get(BeatmapScores, f"/beatmaps/{beatmap_id}/scores",
+            params)
 
     def beatmap(self, beatmap_id: int) -> Beatmap:
         """
