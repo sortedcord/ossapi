@@ -507,6 +507,17 @@ class OssapiV2:
         params = {"mode": mode, "query": query, "page": page}
         return self._get(Search, "/search", params)
 
+    # /me
+    # ---
+
+    def get_me(self,
+        mode: Optional[GameModeT] = None
+    ):
+        """
+        https://osu.ppy.sh/docs/index.html#get-own-data
+        """
+        mode = GameMode(mode) if mode else None
+        return self._get(User, f"/me/{mode or ''}")
 
     # /rankings
     # ---------
