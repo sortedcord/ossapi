@@ -9,6 +9,7 @@ from tempfile import NamedTemporaryFile
 from datetime import datetime
 from enum import Enum
 from urllib.parse import unquote
+import inspect
 
 from requests_oauthlib import OAuth2Session
 from oauthlib.oauth2 import BackendApplicationClient
@@ -23,12 +24,59 @@ from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
 from ossapi.utils import (is_compatible_type, is_primitive_type, is_base_type,
     is_model_type, is_optional)
 
+# our ``request`` function below relies on the ordering of these types. The
+# base type must come first, with any auxiliary types that the base type accepts
+# cooming after.
+# These types are intended to provide better type hinting for consumers. We
+# want to support the ability to pass ``"osu"`` instead of ``GameMode.STD``,
+# for instance. We automatically convert any value to its base class if the
+# relevant parameter has a type hint of the form below (see ``request`` for
+# details).
 GameModeT = Union[GameMode, str]
 ScoreTypeT = Union[ScoreType, str]
 ModT = Union[Mod, str, int, list]
 RankingFilterT = Union[RankingFilter, str]
 RankingTypeT = Union[RankingType, str]
 UserBeatmapTypeT = Union[UserBeatmapType, str]
+
+
+def request(function):
+    """
+    Automatically instantiates parameters with their type hint if the type hint
+    is a union of a base class. This means, for instance, that a function which
+    accepts a ``ModT`` will have the value of that parameter automatically
+    converted to a ``Mod``, even if the user passes a `str`.
+    """
+    instantiate = {}
+    for name, type_ in function.__annotations__.items():
+        origin = get_origin(type_)
+        args = get_args(type_)
+        if origin is Union and is_base_type(args[0]):
+            instantiate[name] = args[0]
+
+    arg_names = list(inspect.signature(function).parameters)
+
+    def wrapper(*args, **kwargs):
+        # we may need to edit this later so convert from tuple
+        args = list(args)
+
+        # args and kwargs are handled separately, but in a similar fashion.
+        # The difference is that for ``args`` we need to know the name of the
+        # argument so we can look up its type hint and see if it's a parameter
+        # we need to convert.
+        for i, (arg, arg_name) in enumerate(zip(args, arg_names)):
+            if arg_name in instantiate:
+                type_ = instantiate[arg_name]
+                args[i] = type_(arg)
+
+        for arg in kwargs:
+            if arg in instantiate:
+                type_ = instantiate[arg]
+                kwargs[arg] = type_(kwargs[arg])
+
+        return function(*args, **kwargs)
+    return wrapper
+
 
 class OssapiV2:
     TOKEN_URL = "https://osu.ppy.sh/oauth/token"
@@ -354,6 +402,7 @@ class OssapiV2:
     # /beatmaps
     # ---------
 
+    @request
     def beatmap_lookup(self,
         checksum: Optional[str] = None,
         filename: Optional[str] = None,
@@ -365,6 +414,7 @@ class OssapiV2:
         params = {"checksum": checksum, "filename": filename, "id": beatmap_id}
         return self._get(Beatmap, "/beatmaps/lookup", params)
 
+    @request
     def beatmap_user_score(self,
         beatmap_id: int,
         user_id: int,
@@ -374,12 +424,11 @@ class OssapiV2:
         """
         https://osu.ppy.sh/docs/index.html#get-a-user-beatmap-score
         """
-        mode = GameMode(mode) if mode else None
-        mods = Mod(mods) if mods else None
         params = {"mode": mode, "mods": mods}
         return self._get(BeatmapUserScore,
             f"/beatmaps/{beatmap_id}/scores/users/{user_id}", params)
 
+    @request
     def beatmap_scores(self,
         beatmap_id: int,
         mode: Optional[GameModeT] = None,
@@ -389,13 +438,11 @@ class OssapiV2:
         """
         https://osu.ppy.sh/docs/index.html#get-beatmap-scores
         """
-        mode = GameMode(mode) if mode else None
-        mods = Mod(mods) if mods else None
-        type_ = RankingType(type_) if type_ else None
         params = {"mode": mode, "mods": mods, "type": type_}
         return self._get(BeatmapScores, f"/beatmaps/{beatmap_id}/scores",
             params)
 
+    @request
     def beatmap(self, beatmap_id: int) -> Beatmap:
         """
         https://osu.ppy.sh/docs/index.html#get-beatmap
@@ -406,6 +453,7 @@ class OssapiV2:
     # /comments
     # ---------
 
+    @request
     def comments(self,
         commentable_type=None,
         commentable_id=None,
@@ -428,6 +476,7 @@ class OssapiV2:
             "parent_id": parent_id, "sort": sort}
         return self._get(CommentBundle, "/comments", params)
 
+    @request
     def comment(self, comment_id: int) -> CommentBundle:
         """
         https://osu.ppy.sh/docs/index.html#get-a-comment
@@ -438,6 +487,7 @@ class OssapiV2:
     # /forums
     # -------
 
+    @request
     def topic(self,
         topic,
         cursor: Optional[Cursor] = None,
@@ -459,6 +509,7 @@ class OssapiV2:
     # / ("home")
     # ----------
 
+    @request
     def search(self,
         mode="all",
         query=None,
@@ -473,18 +524,19 @@ class OssapiV2:
     # /me
     # ---
 
+    @request
     def get_me(self,
         mode: Optional[GameModeT] = None
     ):
         """
         https://osu.ppy.sh/docs/index.html#get-own-data
         """
-        mode = GameMode(mode) if mode else None
-        return self._get(User, f"/me/{mode or ''}")
+        return self._get(User, f"/me/{mode.value if mode else ''}")
 
     # /rankings
     # ---------
 
+    @request
     def ranking(self,
         mode: GameModeT,
         type_: RankingTypeT,
@@ -497,9 +549,6 @@ class OssapiV2:
         """
         https://osu.ppy.sh/docs/index.html#get-ranking
         """
-        mode = GameMode(mode)
-        type_ = RankingType(type_)
-        filter_ = RankingFilter(filter_)
         params = {"country": country, "cursor": cursor, "filter": filter_,
             "spotlight": spotlight, "variant": variant}
         return self._get(Rankings, f"/rankings/{mode.value}/{type_.value}",
@@ -509,6 +558,7 @@ class OssapiV2:
     # /users
     # ------
 
+    @request
     def user_scores(self,
         user_id: int,
         type_: ScoreTypeT,
@@ -520,13 +570,12 @@ class OssapiV2:
         """
         https://osu.ppy.sh/docs/index.html#get-user-scores
         """
-        type_ = ScoreType(type_)
-        mode = GameMode(mode) if mode else None
         params = {"include_fails": include_fails, "mode": mode, "limit": limit,
             "offset": offset}
         return self._get(List[Score], f"/users/{user_id}/scores/{type_.value}",
             params)
 
+    @request
     def user_beatmaps(self,
         user_id: int,
         type_: UserBeatmapTypeT,
@@ -536,11 +585,11 @@ class OssapiV2:
         """
         https://osu.ppy.sh/docs/index.html#get-user-beatmaps
         """
-        type_ = UserBeatmapType(type_)
         params = {"limit": limit, "offset": offset}
         return self._get(List[Beatmapset], f"/users/{user_id}/beatmapsets/"
             f"{type_.value}", params)
 
+    @request
     def user(self,
         user_id: int,
         mode: Optional[GameModeT] = None
@@ -548,19 +597,18 @@ class OssapiV2:
         """
         https://osu.ppy.sh/docs/index.html#get-user
         """
-        mode = GameMode(mode) if mode else None
         return self._get(User, f"/users/{user_id}/{mode or ''}")
 
 
     # undocumented
     # ------------
 
+    @request
     def score(self, mode: GameModeT, score_id: int) -> Score:
-        mode = GameMode(mode)
         return self._get(Score, f"/scores/{mode.value}/{score_id}")
 
+    @request
     def download_score(self, mode: GameModeT, score_id: int) -> str:
-        mode = GameMode(mode)
         r = self.session.get(f"{self.BASE_URL}/scores/{mode.value}/"
             f"{score_id}/download")
 
@@ -570,6 +618,7 @@ class OssapiV2:
 
         return tempfile.name
 
+    @request
     def search_beatmaps(self,
         filters={},
         cursor: Optional[Cursor] = None
@@ -579,6 +628,7 @@ class OssapiV2:
         params.update(filters)
         return self._get(BeatmapSearchResult, "/beatmapsets/search/", params)
 
+    @request
     def beatmapsets_events(self,
         limit=None,
         page=None,
