@@ -38,6 +38,8 @@ pip install --pre --upgrade ossapi
 You will need to create an oauth client on your settings page (<https://osu.ppy.sh/home/account/edit>), then use the client's id, secret, and redirect_uri to authenticate.
 
 ```python
+from ossapi import *
+
 # authenticates with client credentials grant (grants guest user access,
 # some endpoints are unavailable to you, such as `download_score`)
 api = OssapiV2(client_id, client_secret)
