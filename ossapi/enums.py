@@ -158,9 +158,12 @@ class UserListViews(Enum):
     BRICK = "brick"
 
 class KudosuAction(Enum):
-    GIVE = "give"
-    RESET = "reset"
-    REVOKE = "revoke"
+    # TODO ideally these wouldn't be prefixed with ``vote``. They aren't
+    # documented as such in https://osu.ppy.sh/docs/index.html#kudosuhistory,
+    # but that's what the api returns
+    GIVE = "vote.give"
+    RESET = "vote.reset"
+    REVOKE = "vote.revoke"
 
 class UserBeatmapType(Enum):
     FAVOURITE = "favourite"

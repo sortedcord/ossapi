@@ -453,6 +453,9 @@ class KudosuHistory:
     created_at: Datetime
     giver: Optional[KudosuGiver]
     post: KudosuPost
+    # TODO type hint properly when https://github.com/ppy/osu-web/issues/7549 is
+    # resolved
+    details: Any
 
 # ===================
 # Undocumented Models

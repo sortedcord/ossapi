@@ -559,6 +559,19 @@ class OssapiV2:
     # ------
 
     @request
+    def user_kudosu(self,
+        user_id: int,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None
+    ) -> List[KudosuHistory]:
+        """
+        https://osu.ppy.sh/docs/index.html#get-user-kudosu
+        """
+        params = {"limit": limit, "offset": offset}
+        return self._get(List[KudosuHistory], f"/users/{user_id}/kudosu",
+            params)
+
+    @request
     def user_scores(self,
         user_id: int,
         type_: ScoreTypeT,
