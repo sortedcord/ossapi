@@ -461,6 +461,15 @@ class KudosuHistory:
 # Undocumented Models
 # ===================
 
+# my version of the model returned for getting most played beatmaps of a user.
+# TODO check with the model on osu-web once it's documented (ie once
+# https://github.com/ppy/osu-web/issues/7550 is resolved)
+@dataclass
+class MostPlayedBeatmap:
+    beatmap_id: int
+    count: int
+    beatmap: BeatmapCompact
+    beatmapset: BeatmapsetCompact
 
 @dataclass
 class BeatmapSearchResult:
