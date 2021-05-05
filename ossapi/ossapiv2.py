@@ -17,7 +17,7 @@ from oauthlib.oauth2 import BackendApplicationClient
 from ossapi.models import (Beatmap, BeatmapUserScore, ForumTopicAndPosts,
     Search, CommentBundle, Cursor, Score, BeatmapSearchResult,
     ModdingHistoryEventsBundle, User, Rankings, BeatmapScores, KudosuHistory,
-    Beatmapset, MostPlayedBeatmap, Spotlights)
+    Beatmapset, MostPlayedBeatmap)
 from ossapi.mod import Mod
 from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     UserBeatmapType)
@@ -555,11 +555,13 @@ class OssapiV2:
             params=params)
 
     @request
-    def spotlights(self) -> Spotlights:
+    def spotlights(self) -> List[Spotlight]:
         """
         https://osu.ppy.sh/docs/index.html#get-spotlights
+        This method returns a list of `Spotlight`s rather than a `Spotlights` model,
+        but since that's all the model contains it is functionally equivalent. 
         """
-        return self._get(Spotlights, "/spotlights")
+        return self._get(List[Spotlight], "/spotlights")
 
     # /users
     # ------
