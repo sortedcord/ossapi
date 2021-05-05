@@ -17,7 +17,7 @@ from oauthlib.oauth2 import BackendApplicationClient
 from ossapi.models import (Beatmap, BeatmapUserScore, ForumTopicAndPosts,
     Search, CommentBundle, Cursor, Score, BeatmapSearchResult,
     ModdingHistoryEventsBundle, User, Rankings, BeatmapScores, KudosuHistory,
-    Beatmapset, MostPlayedBeatmap)
+    Beatmapset, MostPlayedBeatmap, Spotlight, Spotlights)
 from ossapi.mod import Mod
 from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     UserBeatmapType)
@@ -554,6 +554,13 @@ class OssapiV2:
         return self._get(Rankings, f"/rankings/{mode.value}/{type_.value}",
             params=params)
 
+    @request
+    def spotlights(self) -> List[Spotlight]:
+        """
+        https://osu.ppy.sh/docs/index.html#get-spotlights
+        """
+        spotlights = self._get(Spotlights, "/spotlights")
+        return spotlights.spotlights
 
     # /users
     # ------
