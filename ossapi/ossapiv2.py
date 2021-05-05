@@ -558,8 +558,6 @@ class OssapiV2:
     def spotlights(self) -> List[Spotlight]:
         """
         https://osu.ppy.sh/docs/index.html#get-spotlights
-        This method returns a list of `Spotlight`s rather than a `Spotlights` model,
-        but since that's all the model contains it is functionally equivalent. 
         """
         spotlights = self._get(Spotlights, "/spotlights")
         return spotlights.spotlights
