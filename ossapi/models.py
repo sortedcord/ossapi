@@ -378,11 +378,15 @@ class Search:
 class Spotlight:
     end_date: Datetime
     id: int
-    mode_specific: int
+    mode_specific: bool
     participant_count: Optional[int]
-    name: int
+    name: str
     start_date: Datetime
     type: str
+
+@dataclass
+class Spotlights:
+    spotlights: List[Spotlight]
 
 @dataclass
 class Rankings:

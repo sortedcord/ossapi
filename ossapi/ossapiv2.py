@@ -554,6 +554,12 @@ class OssapiV2:
         return self._get(Rankings, f"/rankings/{mode.value}/{type_.value}",
             params=params)
 
+    @request
+    def spotlights(self) -> Spotlights:
+        """
+        https://osu.ppy.sh/docs/index.html#get-spotlights
+        """
+        return self._get(Spotlights, "/spotlights")
 
     # /users
     # ------
