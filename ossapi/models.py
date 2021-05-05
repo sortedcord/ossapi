@@ -316,7 +316,8 @@ class Cursor(SimpleNamespace):
         "approved_date": Datetime,
         "last_update": str,
         "votes_count": int,
-        "page": int
+        "page": int,
+        "limit": int
     }
 
 @dataclass
@@ -428,8 +429,9 @@ class BeatmapsetDiscussion:
     deleted_at: Optional[Datetime]
     last_post_at: Datetime
     kudosu_denied: bool
-    starting_post: BeatmapsetDiscussionPost
     # documented as being non-optional but in reality it's not always returned
+    starting_post: Optional[BeatmapsetDiscussionPost]
+    # here too
     posts: Optional[List[BeatmapsetDiscussionPost]]
     beatmap: Optional[BeatmapCompact]
     beatmapset: Optional[BeatmapsetCompact]
@@ -504,6 +506,16 @@ class BeatmapsetEventComment:
     old: Optional[Any]
     new: Optional[Any]
     reason: Optional[str]
+
+@dataclass
+class BeatmapsetDiscussionPostResult:
+    # this doesn't match what https://osu.ppy.sh/docs/index.html#get-beatmapset-discussion-posts
+    # says it will. 
+    beatmapsets: List[BeatmapsetCompact]
+    discussions: List[BeatmapsetDiscussion]
+    cursor: Cursor
+    posts: List[BeatmapsetDiscussionPost]
+    users: List[UserCompact]
 
 @dataclass
 class BeatmapsetEvent:
