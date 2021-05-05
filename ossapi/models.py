@@ -385,6 +385,10 @@ class Spotlight:
     type: str
 
 @dataclass
+class Spotlights:
+    spotlights: List[Spotlight]
+
+@dataclass
 class Rankings:
     beatmapsets: Optional[List[Beatmapset]]
     cursor: Cursor

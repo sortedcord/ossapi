@@ -17,7 +17,7 @@ from oauthlib.oauth2 import BackendApplicationClient
 from ossapi.models import (Beatmap, BeatmapUserScore, ForumTopicAndPosts,
     Search, CommentBundle, Cursor, Score, BeatmapSearchResult,
     ModdingHistoryEventsBundle, User, Rankings, BeatmapScores, KudosuHistory,
-    Beatmapset, MostPlayedBeatmap, Spotlight)
+    Beatmapset, MostPlayedBeatmap, Spotlight, Spotlights)
 from ossapi.mod import Mod
 from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     UserBeatmapType)
@@ -561,7 +561,8 @@ class OssapiV2:
         This method returns a list of `Spotlight`s rather than a `Spotlights` model,
         but since that's all the model contains it is functionally equivalent. 
         """
-        return self._get(List[Spotlight], "/spotlights")
+        spotlights = self._get(Spotlights, "/spotlights")
+        return spotlights.spotlights
 
     # /users
     # ------
