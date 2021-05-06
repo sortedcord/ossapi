@@ -18,7 +18,7 @@ from oauthlib.oauth2 import BackendApplicationClient
 from ossapi.models import (Beatmap, BeatmapUserScore, ForumTopicAndPosts,
     Search, CommentBundle, Cursor, Score, BeatmapSearchResult,
     ModdingHistoryEventsBundle, User, Rankings, BeatmapScores, KudosuHistory,
-    Beatmapset, MostPlayedBeatmap, Spotlight, Spotlights)
+    Beatmapset, MostPlayedBeatmap, Spotlight, Spotlights, _Event)
 from ossapi.mod import Mod
 from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     UserBeatmapType)
@@ -615,6 +615,19 @@ class OssapiV2:
 
         return self._get(return_type, f"/users/{user_id}/beatmapsets/"
             f"{type_.value}", params)
+
+    @request
+    def user_recent_activity(self,
+        user_id: int,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None
+    ) -> List[Score]:
+        """
+        https://osu.ppy.sh/docs/index.html#get-user-recent-activity
+        """
+        params = {"limit": limit, "offset": offset}
+        return self._get(List[_Event], f"/users/{user_id}/recent_activity/",
+            params)
 
     @request
     def user(self,
