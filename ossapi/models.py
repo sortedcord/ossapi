@@ -473,7 +473,7 @@ class KudosuHistory:
 # case changing the class instantiated based on the value of a parameter) before
 # handing control back to the annotation resolution code to continue traversing
 # down our members. This affords us total control over our instantiation while
-# still allowing us to benefit from the annotation resolution for our nested
+# still allowing us to benefit from the annotation resolution of our nested
 # members.
 class _Event:
     def __new__(cls, **data):
