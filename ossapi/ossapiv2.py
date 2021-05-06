@@ -10,6 +10,7 @@ from datetime import datetime
 from enum import Enum
 from urllib.parse import unquote
 import inspect
+import json
 
 from requests_oauthlib import OAuth2Session
 from oauthlib.oauth2 import BackendApplicationClient
@@ -195,14 +196,15 @@ class OssapiV2:
         params = self._format_params(params)
         r = self.session.get(f"{self.BASE_URL}{url}", params=params)
         self.log.info(f"made request to {r.request.url}")
-        json = r.json()
+        json_ = r.json()
+        self.log.debug(f"received json: \n{json.dumps(json_, indent=4)}")
         # TODO this should just be ``if "error" in json``, but for some reason
         # ``self.search_beatmaps`` always returns an error in the response...
         # open an issue on osu-web?
-        if len(json) == 1 and "error" in json:
-            raise ValueError(f"api returned an error of `{json['error']}` for "
+        if len(json_) == 1 and "error" in json_:
+            raise ValueError(f"api returned an error of `{json_['error']}` for "
                 f"a request to {unquote(r.request.url)}")
-        return self._instantiate_type(type_, json)
+        return self._instantiate_type(type_, json_)
 
     def _format_params(self, params):
         for key, value in params.copy().items():
