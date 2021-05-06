@@ -603,7 +603,7 @@ class OssapiV2:
         type_: UserBeatmapTypeT,
         limit: Optional[int] = None,
         offset: Optional[int] = None
-    ) -> List[Score]:
+    ) -> Union[List[Beatmapset], List[MostPlayedBeatmap]]:
         """
         https://osu.ppy.sh/docs/index.html#get-user-beatmaps
         """
@@ -621,7 +621,7 @@ class OssapiV2:
         user_id: int,
         limit: Optional[int] = None,
         offset: Optional[int] = None
-    ) -> List[Score]:
+    ) -> List[_Event]:
         """
         https://osu.ppy.sh/docs/index.html#get-user-recent-activity
         """
