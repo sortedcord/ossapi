@@ -17,7 +17,11 @@ from oauthlib.oauth2 import BackendApplicationClient
 from ossapi.models import (Beatmap, BeatmapUserScore, ForumTopicAndPosts,
     Search, CommentBundle, Cursor, Score, BeatmapSearchResult,
     ModdingHistoryEventsBundle, User, Rankings, BeatmapScores, KudosuHistory,
+<<<<<<< HEAD
     Beatmapset, MostPlayedBeatmap, Spotlight, Spotlights, BeatmapsetDiscussionPostResult)
+=======
+    Beatmapset, MostPlayedBeatmap, Spotlight, Spotlights)
+>>>>>>> upstream/master
 from ossapi.mod import Mod
 from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     UserBeatmapType, SortOrder)
