@@ -40,6 +40,7 @@ ModT = Union[Mod, str, int, list]
 RankingFilterT = Union[RankingFilter, str]
 RankingTypeT = Union[RankingType, str]
 UserBeatmapTypeT = Union[UserBeatmapType, str]
+BeatmapDiscussionPostSortT = Union[BeatmapDiscussionPostSort, str]
 
 
 def request(function):
@@ -460,7 +461,7 @@ class OssapiV2:
         beatmapset_session_id: Optional[int] = None,
         limit: Optional[int] = None,
         page: Optional[int] = None,
-        sort: Optional[BeatmapDiscussionPostSort] = None,
+        sort: Optional[BeatmapDiscussionPostSortT] = None,
         user: Optional[int] = None,
         with_deleted: Optional[bool] = None
     ) -> BeatmapsetDiscussionPostResult:
