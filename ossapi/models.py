@@ -463,6 +463,114 @@ class KudosuHistory:
     # resolved
     details: Any
 
+
+# we use this class to determine which event dataclass to instantiate and
+# return, based on the value of the ``type`` parameter. This class is registered
+# as a model class with our type instantiation logic, so nested models will have
+# their annotations resolved as normal after instantiation.
+# The usage of ``__new__`` here can be thought of as a hook into the annotation
+# resolution process. When we are resolving annotations, we instantiate model
+# classes and then continue traversing down them. With ``__new__`` here, we
+# hook onto that instantiation and perform whatever actions we need to (in our
+# case changing the class instantiated based on the value of a parameter) before
+# handing control back to the annotation resolution code to continue traversing
+# down our members. This affords us total control over our instantiation while
+# still allowing us to benefit from the annotation resolution of our nested
+# members.
+class _Event:
+    def __new__(cls, **data):
+        mapping = {
+            EventType.ACHIEVEMENT: AchievementEvent,
+            EventType.BEATMAP_PLAYCOUNT: BeatmapPlaycountEvent,
+            EventType.BEATMAPSET_APPROVE: BeatmapsetApproveEvent,
+            EventType.BEATMAPSET_DELETE: BeatmapsetDeleteEvent,
+            EventType.BEATMAPSET_REVIVE: BeatmapsetReviveEvent,
+            EventType.BEATMAPSET_UPDATE: BeatmapsetUpdateEvent,
+            EventType.BEATMAPSET_UPLOAD: BeatmapsetUploadEvent,
+            EventType.RANK: RankEvent,
+            EventType.RANK_LOST: RankLostEvent,
+            EventType.USER_SUPPORT_FIRST: UserSupportFirstEvent,
+            EventType.USER_SUPPORT_AGAIN: UserSupportAgainEvent,
+            EventType.USER_SUPPORT_GIFT: UserSupportGiftEvent,
+            EventType.USERNAME_CHANGE: UsernameChangeEvent
+        }
+        type_ = EventType(data["type"])
+        return mapping[type_](**data)
+
+
+@dataclass
+class Event:
+    created_at: Datetime
+    createdAt: Datetime
+    id: int
+    type: EventType
+
+@dataclass
+class AchievementEvent(Event):
+    achievement: EventAchivement
+    user: EventUser
+
+@dataclass
+class BeatmapPlaycountEvent(Event):
+    beatmap: EventBeatmap
+    count: int
+
+@dataclass
+class BeatmapsetApproveEvent(Event):
+    approval: BeatmapsetApproval
+    beatmapset: EventBeatmapset
+    user: EventUser
+
+@dataclass
+class BeatmapsetDeleteEvent(Event):
+    beatmapset: EventBeatmapset
+
+@dataclass
+class BeatmapsetReviveEvent(Event):
+    beatmapset: EventBeatmapset
+    user: EventUser
+
+@dataclass
+class BeatmapsetUpdateEvent(Event):
+    beatmapset: EventBeatmapset
+    user: EventUser
+
+@dataclass
+class BeatmapsetUploadEvent(Event):
+    beatmapset: EventBeatmapset
+    user: EventUser
+
+@dataclass
+class RankEvent(Event):
+    scoreRank: str
+    rank: int
+    mode: GameMode
+    beatmap: EventBeatmap
+    user: EventUser
+
+@dataclass
+class RankLostEvent(Event):
+    mode: GameMode
+    beatmap: EventBeatmap
+    user: EventUser
+
+@dataclass
+class UserSupportFirstEvent(Event):
+    user: EventUser
+
+@dataclass
+class UserSupportAgainEvent(Event):
+    user: EventUser
+
+@dataclass
+class UserSupportGiftEvent(Event):
+    beatmap: EventBeatmap
+
+@dataclass
+class UsernameChangeEvent(Event):
+    user: EventUser
+
+
 # ===================
 # Undocumented Models
 # ===================

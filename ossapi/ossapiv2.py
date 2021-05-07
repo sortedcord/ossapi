@@ -10,6 +10,7 @@ from datetime import datetime
 from enum import Enum
 from urllib.parse import unquote
 import inspect
+import json
 
 from requests_oauthlib import OAuth2Session
 from oauthlib.oauth2 import BackendApplicationClient
@@ -17,7 +18,8 @@ from oauthlib.oauth2 import BackendApplicationClient
 from ossapi.models import (Beatmap, BeatmapUserScore, ForumTopicAndPosts,
     Search, CommentBundle, Cursor, Score, BeatmapSearchResult,
     ModdingHistoryEventsBundle, User, Rankings, BeatmapScores, KudosuHistory,
-    Beatmapset, MostPlayedBeatmap, Spotlight, Spotlights, BeatmapsetDiscussionPostResult)
+    Beatmapset, MostPlayedBeatmap, Spotlight, Spotlights, _Event, Event, 
+    BeatmapsetDiscussionPostResult)
 from ossapi.mod import Mod
 from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     UserBeatmapType, BeatmapDiscussionPostSort)
@@ -195,14 +197,15 @@ class OssapiV2:
         params = self._format_params(params)
         r = self.session.get(f"{self.BASE_URL}{url}", params=params)
         self.log.info(f"made request to {r.request.url}")
-        json = r.json()
+        json_ = r.json()
+        self.log.debug(f"received json: \n{json.dumps(json_, indent=4)}")
         # TODO this should just be ``if "error" in json``, but for some reason
         # ``self.search_beatmaps`` always returns an error in the response...
         # open an issue on osu-web?
-        if len(json) == 1 and "error" in json:
-            raise ValueError(f"api returned an error of `{json['error']}` for "
+        if len(json_) == 1 and "error" in json_:
+            raise ValueError(f"api returned an error of `{json_['error']}` for "
                 f"a request to {unquote(r.request.url)}")
-        return self._instantiate_type(type_, json)
+        return self._instantiate_type(type_, json_)
 
     def _format_params(self, params):
         for key, value in params.copy().items():
@@ -467,7 +470,7 @@ class OssapiV2:
         params = {"beatmapset_session_id": beatmapset_session_id,
             "limit": limit, "page": page, "sort": sort, "user": user,
             "with_deleted": with_deleted}
-        return self._get(BeatmapsetDiscussionPostResult, \
+        return self._get(BeatmapsetDiscussionPostResult,
             "/beatmapsets/discussions/posts", params)
 
     # /comments
@@ -621,7 +624,7 @@ class OssapiV2:
         type_: UserBeatmapTypeT,
         limit: Optional[int] = None,
         offset: Optional[int] = None
-    ) -> List[Score]:
+    ) -> Union[List[Beatmapset], List[MostPlayedBeatmap]]:
         """
         https://osu.ppy.sh/docs/index.html#get-user-beatmaps
         """
@@ -633,6 +636,19 @@ class OssapiV2:
 
         return self._get(return_type, f"/users/{user_id}/beatmapsets/"
             f"{type_.value}", params)
+
+    @request
+    def user_recent_activity(self,
+        user_id: int,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None
+    ) -> List[Event]:
+        """
+        https://osu.ppy.sh/docs/index.html#get-user-recent-activity
+        """
+        params = {"limit": limit, "offset": offset}
+        return self._get(List[_Event], f"/users/{user_id}/recent_activity/",
+            params)
 
     @request
     def user(self,

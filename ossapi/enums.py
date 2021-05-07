@@ -176,6 +176,31 @@ class UserBeatmapType(Enum):
 class BeatmapDiscussionPostSort(Enum):
     NEW = "id_desc"
     OLD = "id_asc"
+    
+class EventType(Enum):
+    ACHIEVEMENT = "achievement"
+    BEATMAP_PLAYCOUNT = "beatmapPlaycount"
+    BEATMAPSET_APPROVE = "beatmapsetApprove"
+    BEATMAPSET_DELETE = "beatmapsetDelete"
+    BEATMAPSET_REVIVE = "beatmapsetRevive"
+    BEATMAPSET_UPDATE = "beatmapsetUpdate"
+    BEATMAPSET_UPLOAD = "beatmapsetUpload"
+    RANK = "rank"
+    RANK_LOST = "rankLost"
+    USER_SUPPORT_FIRST = "userSupportFirst"
+    USER_SUPPORT_AGAIN = "userSupportAgain"
+    USER_SUPPORT_GIFT = "userSupportGift"
+    USERNAME_CHANGE = "usernameChange"
+
+# TODO this is just a subset of ``RankStatus``, and is only (currently) used for
+# ``EventType.BEATMAPSET_APPROVE``. Find some way to de-duplicate? Could move to
+# ``RankStatus``, but then how to enforce taking on only a subset of values?
+class BeatmapsetApproval(Enum):
+    RANKED = "ranked"
+    APPROVED = "approved"
+    QUALIFIED = "qualified"
+    LOVED = "loved"
+
 
 # ==================
 # Undocumented Enums
@@ -325,6 +350,37 @@ class KudosuPost:
     # somehow? another enum perhaps? see
     # https://osu.ppy.sh/docs/index.html#kudosuhistory
     title: str
+
+@dataclass
+class EventUser:
+    username: str
+    url: str
+    previousUsername: Optional[str]
+
+@dataclass
+class EventBeatmap:
+    title: str
+    url: str
+
+@dataclass
+class EventBeatmapset:
+    title: str
+    url: str
+
+@dataclass
+class EventAchivement:
+    icon_url: str
+    id: int
+    name: str
+    # TODO ``grouping`` can probably be enumified (example value: "Dedication"),
+    # need to find full list first though
+    grouping: str
+    ordering: int
+    slug: str
+    description: str
+    mode: GameMode
+    instructions: Optional[Any]
+
 
 # ===================
 # Undocumented Models

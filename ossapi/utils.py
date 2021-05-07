@@ -79,12 +79,12 @@ def is_optional(type_):
     return get_origin(type_) is Union and get_args(type_)[1] is type(None)
 
 def is_model_type(type_):
-    # almost every model we have is a dataclass, but we do have a unique
-    # one, ``Cursor``, which we also need to consider as a model type.
+    # almost every model we have is a dataclass, but we do have a few unique
+    # ones which we also need to consider as a model type.
 
     # imported here to avoid a circular import
-    from ossapi.models import Cursor
-    return type_ is Cursor or dataclasses.is_dataclass(type_)
+    from ossapi.models import Cursor, _Event
+    return type_ in [Cursor, _Event] or dataclasses.is_dataclass(type_)
 
 def is_base_type(type_):
     """
