@@ -173,9 +173,9 @@ class UserBeatmapType(Enum):
     RANKED_AND_APPROVED = "ranked_and_approved"
     UNRANKED = "unranked"
 
-class SortOrder(Enum):
-    NEWEST_FIRST = "id_desc"
-    OLDEST_FIRST = "id_asc"
+class BeatmapDiscussionPostSort(Enum):
+    NEW = "id_desc"
+    OLD = "id_asc"
 
 # ==================
 # Undocumented Enums

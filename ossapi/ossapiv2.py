@@ -20,7 +20,7 @@ from ossapi.models import (Beatmap, BeatmapUserScore, ForumTopicAndPosts,
     Beatmapset, MostPlayedBeatmap, Spotlight, Spotlights, BeatmapsetDiscussionPostResult)
 from ossapi.mod import Mod
 from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
-    UserBeatmapType, SortOrder)
+    UserBeatmapType, BeatmapDiscussionPostSort)
 from ossapi.utils import (is_compatible_type, is_primitive_type, is_base_type,
     is_model_type, is_optional)
 
@@ -450,16 +450,16 @@ class OssapiV2:
         return self._get(Beatmap, f"/beatmaps/{beatmap_id}")
 
     # /beatmapsets
-    # ____________
+    # ------------
 
     @request
     def beatmapset_discussion_posts(self,
-        beatmapset_session_id: int = None,
-        limit: int = None,
-        page: int = None,
-        sort: SortOrder = None,
-        user: int = None,
-        with_deleted: bool = None
+        beatmapset_session_id: Optional[int] = None,
+        limit: Optional[int] = None,
+        page: Optional[int] = None,
+        sort: Optional[BeatmapDiscussionPostSort] = None,
+        user: Optional[int] = None,
+        with_deleted: Optional[bool] = None
     ) -> BeatmapsetDiscussionPostResult:
         """
         https://osu.ppy.sh/docs/index.html#get-beatmapset-discussion-posts
@@ -467,7 +467,8 @@ class OssapiV2:
         params = {"beatmapset_session_id": beatmapset_session_id,
             "limit": limit, "page": page, "sort": sort, "user": user,
             "with_deleted": with_deleted}
-        return self._get(BeatmapsetDiscussionPostResult, "/beatmapsets/discussions/posts", params)
+        return self._get(BeatmapsetDiscussionPostResult, \
+            "/beatmapsets/discussions/posts", params)
 
     # /comments
     # ---------
