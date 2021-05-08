@@ -173,6 +173,10 @@ class UserBeatmapType(Enum):
     RANKED_AND_APPROVED = "ranked_and_approved"
     UNRANKED = "unranked"
 
+class BeatmapDiscussionPostSort(Enum):
+    NEW = "id_desc"
+    OLD = "id_asc"
+    
 class EventType(Enum):
     ACHIEVEMENT = "achievement"
     BEATMAP_PLAYCOUNT = "beatmapPlaycount"

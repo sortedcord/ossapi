@@ -18,10 +18,11 @@ from oauthlib.oauth2 import BackendApplicationClient
 from ossapi.models import (Beatmap, BeatmapUserScore, ForumTopicAndPosts,
     Search, CommentBundle, Cursor, Score, BeatmapSearchResult,
     ModdingHistoryEventsBundle, User, Rankings, BeatmapScores, KudosuHistory,
-    Beatmapset, MostPlayedBeatmap, Spotlight, Spotlights, _Event, Event)
+    Beatmapset, MostPlayedBeatmap, Spotlight, Spotlights, _Event, Event,
+    BeatmapsetDiscussionPostResult)
 from ossapi.mod import Mod
 from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
-    UserBeatmapType)
+    UserBeatmapType, BeatmapDiscussionPostSort)
 from ossapi.utils import (is_compatible_type, is_primitive_type, is_base_type,
     is_model_type, is_optional)
 
@@ -39,6 +40,7 @@ ModT = Union[Mod, str, int, list]
 RankingFilterT = Union[RankingFilter, str]
 RankingTypeT = Union[RankingType, str]
 UserBeatmapTypeT = Union[UserBeatmapType, str]
+BeatmapDiscussionPostSortT = Union[BeatmapDiscussionPostSort, str]
 
 
 def request(function):
@@ -451,6 +453,26 @@ class OssapiV2:
         """
         return self._get(Beatmap, f"/beatmaps/{beatmap_id}")
 
+    # /beatmapsets
+    # ------------
+
+    @request
+    def beatmapset_discussion_posts(self,
+        beatmapset_session_id: Optional[int] = None,
+        limit: Optional[int] = None,
+        page: Optional[int] = None,
+        sort: Optional[BeatmapDiscussionPostSortT] = None,
+        user_id: Optional[int] = None,
+        with_deleted: Optional[bool] = None
+    ) -> BeatmapsetDiscussionPostResult:
+        """
+        https://osu.ppy.sh/docs/index.html#get-beatmapset-discussion-posts
+        """
+        params = {"beatmapset_session_id": beatmapset_session_id,
+            "limit": limit, "page": page, "sort": sort, "user": user_id,
+            "with_deleted": with_deleted}
+        return self._get(BeatmapsetDiscussionPostResult,
+            "/beatmapsets/discussions/posts", params)
 
     # /comments
     # ---------
