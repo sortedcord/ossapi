@@ -617,8 +617,10 @@ class BeatmapsetEventComment:
 
 @dataclass
 class BeatmapsetDiscussionPostResult:
-    # this doesn't match what https://osu.ppy.sh/docs/index.html#get-beatmapset-discussion-posts
-    # says it will. 
+    # This is for the ``/beatmapsets/discussions/posts`` endpoint because
+    # the actual return type of that endpoint doesn't match the docs at
+    # https://osu.ppy.sh/docs/index.html#get-beatmapset-discussion-posts. TODO
+    # open issue?
     beatmapsets: List[BeatmapsetCompact]
     discussions: List[BeatmapsetDiscussion]
     cursor: Cursor
