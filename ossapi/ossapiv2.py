@@ -462,14 +462,14 @@ class OssapiV2:
         limit: Optional[int] = None,
         page: Optional[int] = None,
         sort: Optional[BeatmapDiscussionPostSortT] = None,
-        user: Optional[int] = None,
+        user_id: Optional[int] = None,
         with_deleted: Optional[bool] = None
     ) -> BeatmapsetDiscussionPostResult:
         """
         https://osu.ppy.sh/docs/index.html#get-beatmapset-discussion-posts
         """
         params = {"beatmapset_session_id": beatmapset_session_id,
-            "limit": limit, "page": page, "sort": sort, "user": user,
+            "limit": limit, "page": page, "sort": sort, "user": user_id,
             "with_deleted": with_deleted}
         return self._get(BeatmapsetDiscussionPostResult,
             "/beatmapsets/discussions/posts", params)
