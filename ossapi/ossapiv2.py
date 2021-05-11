@@ -18,7 +18,7 @@ from oauthlib.oauth2 import BackendApplicationClient
 from ossapi.models import (Beatmap, BeatmapUserScore, ForumTopicAndPosts,
     Search, CommentBundle, Cursor, Score, BeatmapSearchResult,
     ModdingHistoryEventsBundle, User, Rankings, BeatmapScores, KudosuHistory,
-    Beatmapset, MostPlayedBeatmap, Spotlight, Spotlights, _Event, Event,
+    Beatmapset, BeatmapPlaycount, Spotlight, Spotlights, _Event, Event,
     BeatmapsetDiscussionPostResult)
 from ossapi.mod import Mod
 from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
@@ -625,7 +625,7 @@ class OssapiV2:
         type_: UserBeatmapTypeT,
         limit: Optional[int] = None,
         offset: Optional[int] = None
-    ) -> Union[List[Beatmapset], List[MostPlayedBeatmap]]:
+    ) -> Union[List[Beatmapset], List[BeatmapPlaycount]]:
         """
         https://osu.ppy.sh/docs/index.html#get-user-beatmaps
         """
@@ -633,7 +633,7 @@ class OssapiV2:
 
         return_type = List[Beatmapset]
         if type_ is UserBeatmapType.MOST_PLAYED:
-            return_type = List[MostPlayedBeatmap]
+            return_type = List[BeatmapPlaycount]
 
         return self._get(return_type, f"/users/{user_id}/beatmapsets/"
             f"{type_.value}", params)

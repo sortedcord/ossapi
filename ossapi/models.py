@@ -463,6 +463,13 @@ class KudosuHistory:
     # resolved
     details: Any
 
+@dataclass
+class BeatmapPlaycount:
+    beatmap_id: int
+    beatmap: Optional[BeatmapCompact]
+    beatmapset: Optional[BeatmapsetCompact]
+    count: int
+
 
 # we use this class to determine which event dataclass to instantiate and
 # return, based on the value of the ``type`` parameter. This class is registered
@@ -574,16 +581,6 @@ class UsernameChangeEvent(Event):
 # ===================
 # Undocumented Models
 # ===================
-
-# my version of the model returned for getting most played beatmaps of a user.
-# TODO check with the model on osu-web once it's documented (ie once
-# https://github.com/ppy/osu-web/issues/7550 is resolved)
-@dataclass
-class MostPlayedBeatmap:
-    beatmap_id: int
-    count: int
-    beatmap: BeatmapCompact
-    beatmapset: BeatmapsetCompact
 
 @dataclass
 class BeatmapSearchResult:
