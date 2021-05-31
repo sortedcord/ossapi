@@ -345,7 +345,10 @@ class OssapiV2:
                 type_ = args[0]
             new_value = []
             for entry in value:
-                entry = self._instantiate(type_, **entry)
+                if is_base_type(type_):
+                    entry = type_(entry)
+                else:
+                    entry = self._instantiate(type_, **entry)
                 # if the list entry is a model type, we need to resolve it
                 # instead of just sticking it into the list, since its children
                 # might still be dicts and not model instances.
