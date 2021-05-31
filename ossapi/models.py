@@ -123,6 +123,7 @@ class BeatmapCompact:
     status: RankStatus
     total_length: int
     version: str
+    user_id: int
 
     # optional fields
     # ---------------
