@@ -602,6 +602,10 @@ class BeatmapsetEventComment:
     # the values returned by the api for this class depends on
     # `BeatmapsetEvent.type`. Until we have a clean way of dealing with that,
     # mark everything as optional.
+    beatmap_id: Optional[int]
+    beatmap_version: Optional[str]
+    new_user_id: Optional[int]
+    new_user_username: Optional[str]
     beatmap_discussion_id: Optional[int]
     beatmap_discussion_post_id: Optional[int]
     new_vote: Optional[BeatmapsetDiscussionVote]
