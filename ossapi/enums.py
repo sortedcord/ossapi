@@ -111,6 +111,7 @@ class MessageType(Enum):
 
 class BeatmapsetEventType(Enum):
     APPROVE =  "approve"
+    BEATMAP_OWNER_CHANGE = "beatmap_owner_change"
     DISCUSSION_DELETE =  "discussion_delete"
     DISCUSSION_LOCK =  "discussion_lock"
     DISCUSSION_POST_DELETE =  "discussion_post_delete"
@@ -176,7 +177,7 @@ class UserBeatmapType(Enum):
 class BeatmapDiscussionPostSort(Enum):
     NEW = "id_desc"
     OLD = "id_asc"
-    
+
 class EventType(Enum):
     ACHIEVEMENT = "achievement"
     BEATMAP_PLAYCOUNT = "beatmapPlaycount"
