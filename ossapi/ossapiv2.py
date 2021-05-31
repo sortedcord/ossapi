@@ -23,8 +23,8 @@ from ossapi.models import (Beatmap, BeatmapUserScore, ForumTopicAndPosts,
 from ossapi.mod import Mod
 from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     UserBeatmapType, BeatmapDiscussionPostSort)
-from ossapi.utils import (is_compatible_type, is_primitive_type, is_base_type,
-    is_model_type, is_optional)
+from ossapi.utils import (is_compatible_type, is_primitive_type, is_optional,
+    is_base_model_type, is_model_type, is_high_model_type)
 
 # our ``request`` function below relies on the ordering of these types. The
 # base type must come first, with any auxiliary types that the base type accepts
@@ -54,7 +54,7 @@ def request(function):
     for name, type_ in function.__annotations__.items():
         origin = get_origin(type_)
         args = get_args(type_)
-        if origin is Union and is_base_type(args[0]):
+        if origin is Union and is_base_model_type(args[0]):
             instantiate[name] = args[0]
 
     arg_names = list(inspect.signature(function).parameters)
@@ -325,7 +325,7 @@ class OssapiV2:
                 raise TypeError(f"expected type {type_} for value {value}, got "
                     f"type {type(value)}")
 
-        if is_base_type(type_):
+        if is_base_model_type(type_):
             self.log.debug(f"instantiating base type {type_}")
             return type_(value)
 
@@ -345,14 +345,17 @@ class OssapiV2:
                 type_ = args[0]
             new_value = []
             for entry in value:
-                if is_base_type(type_):
+                if is_base_model_type(type_):
                     entry = type_(entry)
                 else:
                     entry = self._instantiate(type_, **entry)
-                # if the list entry is a model type, we need to resolve it
-                # instead of just sticking it into the list, since its children
-                # might still be dicts and not model instances.
-                if is_model_type(type_):
+                # if the list entry is a high (non-base) model type, we need to
+                # resolve it instead of just sticking it into the list, since
+                # its children might still be dicts and not model instances.
+                # We don't do this for base types because that type is the one
+                # responsible for resolving its own annotations or doing
+                # whatever else it needs to do, not us.
+                if is_high_model_type(type_):
                     entry = self._resolve_annotations(entry)
                 new_value.append(entry)
             return new_value

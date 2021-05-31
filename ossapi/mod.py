@@ -1,3 +1,5 @@
+from ossapi.utils import BaseModel
+
 int_to_mod = {
     0          : ["NM",       "NoMod"],
     1 << 0     : ["NF",      "NoFail"],
@@ -34,7 +36,7 @@ int_to_mod = {
 }
 
 
-class ModCombination():
+class ModCombination(BaseModel):
     """
     An osu! mod combination.
 

@@ -1,9 +1,65 @@
-from enum import EnumMeta, Enum
+from enum import EnumMeta, Enum, IntFlag
 from datetime import datetime, timezone
 from typing import get_args, get_origin, Union
-import dataclasses
 
-from ossapi.mod import Mod
+
+def is_high_model_type(type_):
+    """
+    Whether ``type_`` is both a model type and not a base model type.
+
+    "high" here is meant to indicate that it is not at the bottom of the model
+    hierarchy, ie not a "base" model.
+    """
+    return is_model_type(type_) and not is_base_model_type(type_)
+
+def is_model_type(type_):
+    """
+    Whether ``type_`` is a subclass of ``Model``.
+    """
+    if not isinstance(type_, type):
+        return False
+    return issubclass(type_, Model)
+
+def is_base_model_type(type_):
+    """
+    Whether ``type_`` is a subclass of ``BaseModel``.
+    """
+    if not isinstance(type_, type):
+        return False
+    return issubclass(type_, BaseModel)
+
+class Model:
+    """
+    Base class for all models in ``ossapi``. If you want a model which handles
+    its own members and cleanup after instantion, subclass ``BaseModel``
+    instead.
+    """
+    pass
+
+class BaseModel(Model):
+    """
+    A model which promises to take care of its own members and cleanup, after we
+    instantiate it.
+
+    Normally, for a high (non-base) model type, we recurse down its members to
+    look for more model types after we instantiate it. We also resolve
+    annotations for its members after instantion. None of that happens with a
+    base model; we hand off the model's data to it and do nothing more.
+
+    A commonly used example of a base model type is an ``Enum``. Enums have
+    their own magic that takes care of cleaning the data upon instantiation
+    (taking a string and converting it into one of a finite set of enum members,
+    for instance). We don't need or want to do anything else with an enum after
+    instantiating it, hence it's defined as a base type.
+    """
+    pass
+
+class EnumModel(BaseModel, Enum):
+    pass
+
+class IntFlagModel(BaseModel, IntFlag):
+    pass
+
 
 class ListEnumMeta(EnumMeta):
     """
@@ -31,7 +87,7 @@ class ListEnumMeta(EnumMeta):
         return new_val
 
 
-class Datetime(datetime):
+class Datetime(datetime, BaseModel):
     """
     Our replacement for the ``datetime`` object that deals with the various
     datetime formats the api returns.
@@ -77,27 +133,6 @@ def is_optional(type_):
     ``Optional[X]`` is equivalent to ``Union[X, None]``.
     """
     return get_origin(type_) is Union and get_args(type_)[1] is type(None)
-
-def is_model_type(type_):
-    # almost every model we have is a dataclass, but we do have a few unique
-    # ones which we also need to consider as a model type.
-
-    # imported here to avoid a circular import
-    from ossapi.models import Cursor, _Event
-    return type_ in [Cursor, _Event] or dataclasses.is_dataclass(type_)
-
-def is_base_type(type_):
-    """
-    A "base" type is a type that is still instantiable (so not a primitive)
-    but one that we don't need to recurse down its members to look for more
-    model types (or more base types). The base type is responsible for
-    cleaning up and/or modifying the data we give it, and we move on after
-    instantiating it.
-    Examples are enums, mods, and datetimes.
-    """
-    if not isinstance(type_, type):
-        return False
-    return issubclass(type_, (Enum, datetime, Mod))
 
 def is_primitive_type(type_):
     if not isinstance(type_, type):

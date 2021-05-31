@@ -7,7 +7,7 @@ from types import SimpleNamespace
 
 from ossapi.mod import Mod
 from ossapi.enums import *
-from ossapi.utils import Datetime
+from ossapi.utils import Datetime, Model
 
 T = TypeVar("T")
 
@@ -22,7 +22,7 @@ is, not that the api actually lets any type be returned there.
 # =================
 
 @dataclass
-class UserCompact:
+class UserCompact(Model):
     """
     https://osu.ppy.sh/docs/index.html#usercompact
     """
@@ -114,7 +114,7 @@ class User(UserCompact):
 
 
 @dataclass
-class BeatmapCompact:
+class BeatmapCompact(Model):
     # required fields
     # ---------------
     difficulty_rating: float
@@ -163,7 +163,7 @@ class Beatmap(BeatmapCompact):
 
 
 @dataclass
-class BeatmapsetCompact:
+class BeatmapsetCompact(Model):
     """
     https://osu.ppy.sh/docs/index.html#beatmapsetcompact
     """
@@ -225,11 +225,11 @@ class Beatmapset(BeatmapsetCompact):
 
 
 @dataclass
-class Match:
+class Match(Model):
     pass
 
 @dataclass
-class Score:
+class Score(Model):
     """
     https://osu.ppy.sh/docs/index.html#score
     """
@@ -258,18 +258,18 @@ class Score:
     match: Optional[Match]
 
 @dataclass
-class BeatmapUserScore:
+class BeatmapUserScore(Model):
     position: int
     score: Score
 
 @dataclass
-class BeatmapScores:
+class BeatmapScores(Model):
     scores: List[Score]
     userScore: Optional[BeatmapUserScore]
 
 
 @dataclass
-class CommentableMeta:
+class CommentableMeta(Model):
     # this class is currently not following the documentation in order to work
     # around https://github.com/ppy/osu-web/issues/7317. Will be updated when
     # that issue is resolved (one way or the other).
@@ -282,7 +282,7 @@ class CommentableMeta:
     owner_title: Optional[str]
 
 @dataclass
-class Comment:
+class Comment(Model):
     commentable_id: int
     commentable_type: str
     created_at: Datetime
@@ -308,7 +308,7 @@ class Comment:
 # We do, however, have to tell our code what type each attribute is, if we
 # receive that atttribute. So ``__annotations`` will need updating as we
 # encounter new cursor attributes.
-class Cursor(SimpleNamespace):
+class Cursor(SimpleNamespace, Model):
     __annotations__ = {
         "created_at": Datetime,
         "id": int,
@@ -322,7 +322,7 @@ class Cursor(SimpleNamespace):
     }
 
 @dataclass
-class CommentBundle:
+class CommentBundle(Model):
     commentable_meta: List[CommentableMeta]
     comments: List[Comment]
     has_more: bool
@@ -340,29 +340,29 @@ class CommentBundle:
 
 
 @dataclass
-class ForumPost:
+class ForumPost(Model):
     pass
 
 @dataclass
-class ForumTopic:
+class ForumTopic(Model):
     pass
 
 
 @dataclass
-class ForumTopicAndPosts:
+class ForumTopicAndPosts(Model):
     cursor: Cursor
     search: str
     posts: List[ForumPost]
     topic: ForumTopic
 
 @dataclass
-class SearchResult(Generic[T]):
+class SearchResult(Generic[T], Model):
     data: List[T]
     total: int
 
 
 @dataclass
-class WikiPage:
+class WikiPage(Model):
     layout: str
     locale: str
     markdown: str
@@ -372,12 +372,12 @@ class WikiPage:
     title: str
 
 @dataclass
-class Search:
+class Search(Model):
     user: Optional[SearchResult[UserCompact]]
     wiki_page: Optional[SearchResult[WikiPage]]
 
 @dataclass
-class Spotlight:
+class Spotlight(Model):
     end_date: Datetime
     id: int
     mode_specific: bool
@@ -387,11 +387,11 @@ class Spotlight:
     type: str
 
 @dataclass
-class Spotlights:
+class Spotlights(Model):
     spotlights: List[Spotlight]
 
 @dataclass
-class Rankings:
+class Rankings(Model):
     beatmapsets: Optional[List[Beatmapset]]
     cursor: Cursor
     ranking: List[UserStatistics]
@@ -399,7 +399,7 @@ class Rankings:
     total: int
 
 @dataclass
-class BeatmapsetDiscussionPost:
+class BeatmapsetDiscussionPost(Model):
     id: int
     beatmapset_discussion_id: int
     user_id: int
@@ -412,7 +412,7 @@ class BeatmapsetDiscussionPost:
     deleted_at: Optional[Datetime]
 
 @dataclass
-class BeatmapsetDiscussion:
+class BeatmapsetDiscussion(Model):
     id: int
     beatmapset_id: int
     beatmap_id: int
@@ -438,7 +438,7 @@ class BeatmapsetDiscussion:
     beatmapset: Optional[BeatmapsetCompact]
 
 @dataclass
-class BeatmapsetDiscussionVote:
+class BeatmapsetDiscussionVote(Model):
     score: int
     user_id: int
 
@@ -450,7 +450,7 @@ class BeatmapsetDiscussionVote:
     # updated_at: Datetime
 
 @dataclass
-class KudosuHistory:
+class KudosuHistory(Model):
     id: int
     action: KudosuAction
     amount: int
@@ -465,7 +465,7 @@ class KudosuHistory:
     details: Any
 
 @dataclass
-class BeatmapPlaycount:
+class BeatmapPlaycount(Model):
     beatmap_id: int
     beatmap: Optional[BeatmapCompact]
     beatmapset: Optional[BeatmapsetCompact]
@@ -485,7 +485,7 @@ class BeatmapPlaycount:
 # down our members. This affords us total control over our instantiation while
 # still allowing us to benefit from the annotation resolution of our nested
 # members.
-class _Event:
+class _Event(Model):
     def __new__(cls, **data):
         mapping = {
             EventType.ACHIEVEMENT: AchievementEvent,
@@ -584,7 +584,7 @@ class UsernameChangeEvent(Event):
 # ===================
 
 @dataclass
-class BeatmapSearchResult:
+class BeatmapSearchResult(Model):
     beatmapsets: List[Beatmapset]
     cursor: Cursor
     recommended_difficulty: float
@@ -593,12 +593,12 @@ class BeatmapSearchResult:
     search: Any
 
 @dataclass
-class BeatmapsetDiscussionReview:
+class BeatmapsetDiscussionReview(Model):
     # https://github.com/ppy/osu-web/blob/master/app/Libraries/BeatmapsetDiscussionReview.php
     max_blocks: int
 
 @dataclass
-class BeatmapsetEventComment:
+class BeatmapsetEventComment(Model):
     # the values returned by the api for this class depends on
     # `BeatmapsetEvent.type`. Until we have a clean way of dealing with that,
     # mark everything as optional.
@@ -618,7 +618,7 @@ class BeatmapsetEventComment:
     reason: Optional[str]
 
 @dataclass
-class BeatmapsetDiscussionPostResult:
+class BeatmapsetDiscussionPostResult(Model):
     # This is for the ``/beatmapsets/discussions/posts`` endpoint because
     # the actual return type of that endpoint doesn't match the docs at
     # https://osu.ppy.sh/docs/index.html#get-beatmapset-discussion-posts. TODO
@@ -630,7 +630,7 @@ class BeatmapsetDiscussionPostResult:
     users: List[UserCompact]
 
 @dataclass
-class BeatmapsetEvent:
+class BeatmapsetEvent(Model):
     # https://github.com/ppy/osu-web/blob/master/app/Models/BeatmapsetEvent.php
     # https://github.com/ppy/osu-web/blob/master/app/Transformers/BeatmapsetEventTransformer.php
     id: int
@@ -644,14 +644,14 @@ class BeatmapsetEvent:
 
 
 @dataclass
-class ModdingHistoryEventsBundle:
+class ModdingHistoryEventsBundle(Model):
     # https://github.com/ppy/osu-web/blob/master/app/Libraries/ModdingHistoryEventsBundle.php#L84
     events: List[BeatmapsetEvent]
     reviewsConfig: BeatmapsetDiscussionReview
     users: List[UserCompact]
 
 @dataclass
-class UserRelation:
+class UserRelation(Model):
     # undocumented (and not a class on osu-web)
     # https://github.com/ppy/osu-web/blob/master/app/Transformers/UserRelationTransformer.php#L16
     target_id: int
@@ -664,7 +664,7 @@ class UserRelation:
 
 
 @dataclass
-class UserStatistics:
+class UserStatistics(Model):
     # undocumented
     # https://github.com/ppy/osu-web/blob/master/app/Transformers/UserStatisticsTransformer.php
     level: UserLevel
@@ -689,7 +689,7 @@ class UserStatistics:
     variants: Optional[Any]
 
 @dataclass
-class UserStatisticsRulesets:
+class UserStatisticsRulesets(Model):
     # undocumented
     # https://github.com/ppy/osu-web/blob/master/app/Transformers/UserStatisticsRulesetsTransformer.php
     osu: Optional[UserStatistics]
