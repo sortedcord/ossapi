@@ -88,6 +88,36 @@ for ranking in response.ranking:
     print(f"global #{ranking.global_rank}: {ranking.user.username}")
 ```
 
+### Pagination
+
+Some endpoints are paginated, and so you may need a way to access the 3rd, 5th, or 25th page of the results. The way to do this is with the `Cursor` class.
+
+For example, the `/rankings/` endpoint is paginated. If we wanted to get the top 1-50 players, we don't need a cursor at all, since paginated endpoints return the first page by default:
+
+```python
+r = api.ranking("osu", RankingType.PERFORMANCE)
+print(r.ranking[-1].global_rank) # 50
+```
+
+Accessing the second page after the first one is such a common use case that all paginated endpoints actually return a `cursor` attribute which is already pre-prepared to retrive the second page of results. Just pass it to a new api call:
+
+```python
+r = api.ranking("osu", RankingType.PERFORMANCE)
+cursor = r.cursor
+print(r.ranking[-1].global_rank) # 50
+
+r = api.ranking("osu", RankingType.PERFORMANCE, cursor=cursor)
+print(r.ranking[-1].global_rank) # 100
+```
+
+However, this doesn't work so well if you want to skip a bunch of pages and go straight to eg the 20th page. To do so, construct your own `Cursor` object and use that:
+
+```python
+cursor = Cursor(page=20)
+r = api.ranking("osu", RankingType.PERFORMANCE, cursor=cursor)
+print(r.ranking[-1].global_rank) # 1000
+```
+
 ## API v1 Usage
 
 ```python
