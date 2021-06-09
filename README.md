@@ -99,7 +99,7 @@ r = api.ranking("osu", RankingType.PERFORMANCE)
 print(r.ranking[-1].global_rank) # 50
 ```
 
-Accessing the second page after the first one is such a common use case that all paginated endpoints return a `cursor` attribute which is already pre-prepared to retrive the second page of results. Just pass it to a new api call:
+Accessing the subsequent page of results immediately afterwards is such a common use case that all paginated endpoints return a `cursor` attribute which is already pre-prepared to retrive the next page. Just pass it to a new api call:
 
 ```python
 r = api.ranking("osu", RankingType.PERFORMANCE)
