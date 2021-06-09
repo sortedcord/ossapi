@@ -1,5 +1,5 @@
 from typing import (get_type_hints, get_origin, get_args, Union, TypeVar,
-    Optional, List)
+    Optional, List, _GenericAlias)
 import logging
 import webbrowser
 import socket
@@ -91,7 +91,8 @@ class OssapiV2:
     CLIENT_TOKEN_FILE = Path(__file__).parent / "client_credentials.pickle"
 
     def __init__(self, client_id, client_secret, redirect_uri=None,
-        scopes=["public"]):
+        scopes=["public"], strict=False):
+        self.strict = strict
         self.log = logging.getLogger(__name__)
 
         self.session = self.authenticate(client_id, client_secret, redirect_uri,
@@ -372,13 +373,22 @@ class OssapiV2:
 
     def _instantiate(self, type_, **kwargs):
         self.log.debug(f"instantiating type {type_}")
-        # TODO this doesn't work when type_ is a _GenericAlias, which isn't
-        # surprising - what is surprising is that it lets us instantiate that
-        # type with **kwargs and it works fine. Needs more investigation.
+        # we need a special case to handle when ``type_`` is a
+        # ``_GenericAlias``. I don't fully understand why this exception is
+        # necessary, and it's likely the result of some error on my part in our
+        # type handling code. Nevertheless, until I dig more deeply into it,
+        # we need to extract the type to use for the init signature and the type
+        # hints from a ``_GenericAlias`` if we see one, as standard methods
+        # won't work.
+
+        signature_type = type_
         try:
             type_hints = get_type_hints(type_)
         except TypeError:
-            return type_(**kwargs)
+            assert type(type_) is _GenericAlias # pylint: disable=unidiomatic-typecheck
+
+            signature_type = get_origin(type_)
+            type_hints = get_type_hints(signature_type)
 
         # replace any key names that are invalid python syntax with a valid
         # one. Note: this is relying on our models replacing an at sign with
@@ -398,7 +408,52 @@ class OssapiV2:
             if is_optional(annotation):
                 if attribute not in kwargs:
                     kwargs[attribute] = None
-        return type_(**kwargs)
+
+        # The osu api often adds new fields to various models, and these are not
+        # considered breaking changes. To make this a non-breaking change on our
+        # end as well, we ignore any unexpected parameters, unless
+        # ``self.strict`` is ``True``. This means that consumers using old
+        # ossapi versions (which aren't up to date with the latest parameters
+        # list) will have new fields silently ignored instead of erroring.
+        # This also means that consumers won't be able to benefit from new
+        # fields unless they upgrade, but this is a conscious decision on our
+        # part to keep things entirely statically typed. Otherwise we would be
+        # going the route of PRAW, which returns dynamic results for all api
+        # queries. I think a statically typed solution is better for the osu!
+        # api, which promises at least some level of stability in its api.
+        parameters = list(inspect.signature(signature_type.__init__).parameters)
+        kwargs_ = {}
+
+        # Some special classes take arbitrary parameters, so we can't evaluate
+        # whether a parameter is unexpected or not until we instantiate it.
+        # TODO This is actually rather problematic for us in the case of
+        # ``_Event``, because ``_Event`` will switch on the input and hand off
+        # instantion to some *other*, more specific, ``Event`` subclass. Ideally
+        # we'd like to be able to determine the parameters from this current
+        # level, but we can't do so without going down to the level of
+        # ``_Event``.
+        # The temporary solution is to ignore ``_Event`` types when checking for
+        # unexpected paramters, but this means that any parameters to ``_Event``
+        # which actually *are* unexpected will error instead of being caught by
+        # us. Not good.
+        # Ideally we'd have some way for ``_Event`` to expose to us what
+        # parameters it expects. That requires formalizing the hooking that
+        # ``_Event`` is currently doing and is not a trivial amount of work, and
+        # may not even be the correct path forward.
+        if isinstance(type_, type) and issubclass(type_, (Cursor, _Event)):
+            kwargs_ = kwargs
+        else:
+            for k, v in kwargs.items():
+                if k in parameters:
+                    kwargs_[k] = v
+                else:
+                    if self.strict:
+                        raise TypeError(f"unexpected parameter `{k}` for type "
+                            f"{type_}")
+                    self.log.info(f"ignoring unexpected parameter `{k}` from api "
+                        f"response for type {type_}")
+
+        return type_(**kwargs_)
 
 
     # =========
