@@ -295,6 +295,8 @@ class UserGroup:
     colour: str
     playmodes: Optional[List[GameMode]]
     is_probationary: bool
+    has_listing: bool
+    has_playmodes: bool
 
 @dataclass
 class Covers:

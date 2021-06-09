@@ -370,6 +370,7 @@ class WikiPage:
     subtitle: Optional[str]
     tags: List[str]
     title: str
+    available_locales: List[str]
 
 @dataclass
 class Search:
