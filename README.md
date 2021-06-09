@@ -4,7 +4,7 @@
 
 ossapi is a python wrapper for the osu! api. ossapi supports both [api v2](https://osu.ppy.sh/docs/index.html) and [api v1](https://github.com/ppy/osu-api/wiki). See [API v2 Usage](#api-v2-usage) for api v2 documentation, or [API v1 Usage](#api-v1-usage) for api v1 documentation.
 
-To install ossapi for api v2:
+To install ossapi for api v2, which is currently in beta:
 
 ```bash
 pip install --pre ossapi
