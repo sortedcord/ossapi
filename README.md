@@ -75,7 +75,7 @@ print(api.beatmap_user_score(beatmap_id=221777, user_id=2757689).score.mods)
 print(api.search(query="peppy").user.data[0].profile_colour)
 print(api.comment(comment_id=1).comments[0].message)
 print(api.download_score(mode="osu", score_id=2797309065))
-print(api.search_beatmaps({"title": "the big black"}).beatmapsets[0].title)
+print(api.search_beatmaps(query="the big black").beatmapsets[0].title)
 print(api.beatmapsets_events(types=[BeatmapsetEventType.ISSUE_REOPEN]).events[0].type)
 print(api.user(12092800).playstyle)
 ```

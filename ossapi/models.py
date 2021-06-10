@@ -318,7 +318,8 @@ class Cursor(SimpleNamespace):
         "last_update": str,
         "votes_count": int,
         "page": int,
-        "limit": int
+        "limit": int,
+        "_score": float
     }
 
 @dataclass

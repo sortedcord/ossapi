@@ -740,13 +740,16 @@ class OssapiV2:
 
     @request
     def search_beatmaps(self,
-        filters={},
+        query: Optional[str] = None,
         cursor: Optional[Cursor] = None
     ) -> BeatmapSearchResult:
-        params = {"cursor": cursor}
-        # filters should be passed as dict?
-        params.update(filters)
-        return self._get(BeatmapSearchResult, "/beatmapsets/search/", params)
+        # Param key names are the same as https://osu.ppy.sh/beatmapsets,
+        # so from eg https://osu.ppy.sh/beatmapsets?q=black&s=any we get that
+        # the query uses ``q`` and the category uses ``s``.
+        # TODO implement all possible queries, or wait for them to be
+        # documented. Currently we only implement the most basic "query" option.
+        params = {"cursor": cursor, "q": query}
+        return self._get(BeatmapSearchResult, f"/beatmapsets/search/", params)
 
     @request
     def beatmapsets_events(self,
