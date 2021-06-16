@@ -56,7 +56,7 @@ api = OssapiV2(client_id, client_secret)
 
 Unlike the authorization code flow, this authentication happens automatically and silently, and does not require user intervention. This is ideal for scripts which need to run without user interaction. As stated above however, this flow grants only guest user access to the api. This means you will not be able to use certain endpoints, like downloading replays.
 
-### List of Endpoints
+### Supported Endpoints
 
 Here is a complete list of endpoints we currently have implemented. You can track our progress towards implementing all documented api v2 endpoints here: <https://github.com/circleguard/ossapi/issues/14>.
 
