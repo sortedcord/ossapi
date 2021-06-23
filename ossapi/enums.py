@@ -285,6 +285,11 @@ class UserBadge:
     url: str
 
 @dataclass
+class GroupDescription:
+    html: str
+    markdown: str
+
+@dataclass
 class UserGroup:
     # https://github.com/ppy/osu-web/blob/master/app/Transformers/UserGroupTransformer.php#L10
     id: int
@@ -292,6 +297,7 @@ class UserGroup:
     name: str
     short_name: str
     colour: str
+    description: Optional[GroupDescription]
     playmodes: Optional[List[GameMode]]
     is_probationary: bool
     has_listing: bool
