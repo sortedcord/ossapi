@@ -171,8 +171,8 @@ class UserBeatmapType(Enum):
     GRAVEYARD = "graveyard"
     LOVED = "loved"
     MOST_PLAYED = "most_played"
-    RANKED_AND_APPROVED = "ranked_and_approved"
-    UNRANKED = "unranked"
+    RANKED = "ranked"
+    PENDING = "pending"
 
 class BeatmapDiscussionPostSort(Enum):
     NEW = "id_desc"
@@ -291,7 +291,6 @@ class UserGroup:
     identifier: str
     name: str
     short_name: str
-    description: str
     colour: str
     playmodes: Optional[List[GameMode]]
     is_probationary: bool
