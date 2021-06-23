@@ -90,7 +90,7 @@ class UserCompact:
     user_achievements: Optional[List[UserAchievement]]
     user_preferences: Optional[UserProfileCustomization]
     rank_history: Optional[RankHistory]
-    # this is deprecated, TODO remove when the api does
+    # deprecated, replaced by rank_history
     rankHistory: Optional[RankHistory]
 
 @dataclass
