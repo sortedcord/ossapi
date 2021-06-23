@@ -73,7 +73,9 @@ class UserCompact(Model):
     monthly_playcounts: Optional[List[UserMonthlyPlaycount]]
     page: Optional[UserPage]
     previous_usernames: Optional[List[str]]
+    # deprecated, replaced by ranked_beatmapset_count
     ranked_and_approved_beatmapset_count: Optional[int]
+    ranked_beatmapset_count: Optional[int]
     replays_watched_counts: Optional[List[UserReplaysWatchedCount]]
     scores_best_count: Optional[int]
     scores_first_count: Optional[int]
@@ -81,12 +83,14 @@ class UserCompact(Model):
     statistics: Optional[UserStatistics]
     statistics_rulesets: Optional[UserStatisticsRulesets]
     support_level: Optional[int]
+    # deprecated, replaced by pending_beatmapset_count
     unranked_beatmapset_count: Optional[int]
+    pending_beatmapset_count: Optional[int]
     unread_pm_count: Optional[int]
     user_achievements: Optional[List[UserAchievement]]
     user_preferences: Optional[UserProfileCustomization]
     rank_history: Optional[RankHistory]
-    # this is deprecated, TODO remove when the api does
+    # deprecated, replaced by rank_history
     rankHistory: Optional[RankHistory]
 
 @dataclass
@@ -318,7 +322,8 @@ class Cursor(SimpleNamespace, Model):
         "last_update": str,
         "votes_count": int,
         "page": int,
-        "limit": int
+        "limit": int,
+        "_score": float
     }
 
 @dataclass
@@ -370,6 +375,7 @@ class WikiPage(Model):
     subtitle: Optional[str]
     tags: List[str]
     title: str
+    available_locales: List[str]
 
 @dataclass
 class Search(Model):

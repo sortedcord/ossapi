@@ -1,0 +1,75 @@
+from unittest import TestCase
+
+from ossapi import RankingType, BeatmapsetEventType
+
+from tests import api
+
+class TestBeatmapsetDiscussionPosts(TestCase):
+    def test_deserialize(self):
+        api.beatmapset_discussion_posts()
+
+class TestUserRecentActivity(TestCase):
+    def test_deserialize(self):
+        api.user_recent_activity(10690090)
+
+class TestSpotlights(TestCase):
+    def test_deserialize(self):
+        api.spotlights()
+
+class TestUserBeatmaps(TestCase):
+    def test_deserialize(self):
+        api.user_beatmaps(user_id=12092800, type_="most_played")
+
+class TestUserKudosu(TestCase):
+    def test_deserialize(self):
+        api.user_kudosu(user_id=3178418)
+
+class TestBeatmapScores(TestCase):
+    def test_deserialize(self):
+        api.beatmap_scores(beatmap_id=1981090)
+
+class TestBeatmap(TestCase):
+    def test_deserialize(self):
+        api.beatmap(beatmap_id=221777)
+
+class TestBeatmapsetEvents(TestCase):
+    def test_deserialize(self):
+        api.beatmapsets_events(types=[BeatmapsetEventType.ISSUE_REOPEN])
+
+class TestRanking(TestCase):
+    def test_deserialize(self):
+        api.ranking("osu", RankingType.PERFORMANCE, country="US")
+
+class TestUserScores(TestCase):
+    def test_deserialize(self):
+        api.user_scores(12092800, "best")
+
+class TestBeatmapUserScore(TestCase):
+    def test_deserialize(self):
+        api.beatmap_user_score(beatmap_id=221777, user_id=2757689, mode="osu")
+
+class TestSearch(TestCase):
+    def test_deserialize(self):
+        api.search(query="peppy")
+
+class TestComment(TestCase):
+    def test_deserialize(self):
+        api.comment(comment_id=1)
+
+class TestDownloadScore(TestCase):
+    def test_deserialize(self):
+        api.download_score(mode="osu", score_id=2797309065)
+
+class TestSearchBeatmaps(TestCase):
+    def test_deserialize(self):
+        api.search_beatmaps(query="the big black")
+
+class TestUser(TestCase):
+    def test_deserialize(self):
+        api.user(10690090)
+
+class TestMe(TestCase):
+    def test_deserialize(self):
+        # TODO: requires another scope to be passed to OssapiV2
+        # api.get_me()
+        pass

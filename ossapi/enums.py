@@ -177,8 +177,8 @@ class UserBeatmapType(EnumModel):
     GRAVEYARD = "graveyard"
     LOVED = "loved"
     MOST_PLAYED = "most_played"
-    RANKED_AND_APPROVED = "ranked_and_approved"
-    UNRANKED = "unranked"
+    RANKED = "ranked"
+    PENDING = "pending"
 
 class BeatmapDiscussionPostSort(EnumModel):
     NEW = "id_desc"
@@ -291,16 +291,23 @@ class UserBadge(Model):
     url: str
 
 @dataclass
+class GroupDescription(Model):
+    html: str
+    markdown: str
+
+@dataclass
 class UserGroup(Model):
     # https://github.com/ppy/osu-web/blob/master/app/Transformers/UserGroupTransformer.php#L10
     id: int
     identifier: str
     name: str
     short_name: str
-    description: str
     colour: str
+    description: Optional[GroupDescription]
     playmodes: Optional[List[GameMode]]
     is_probationary: bool
+    has_listing: bool
+    has_playmodes: bool
 
 @dataclass
 class Covers(Model):
