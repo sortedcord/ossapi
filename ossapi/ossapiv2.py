@@ -754,7 +754,7 @@ class OssapiV2:
         # TODO implement all possible queries, or wait for them to be
         # documented. Currently we only implement the most basic "query" option.
         params = {"cursor": cursor, "q": query}
-        return self._get(BeatmapSearchResult, f"/beatmapsets/search/", params)
+        return self._get(BeatmapSearchResult, "/beatmapsets/search/", params)
 
     @request
     def beatmapsets_events(self,
