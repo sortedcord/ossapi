@@ -38,6 +38,10 @@ class RankingType(EnumModel):
     PERFORMANCE = "performance"
     SCORE = "score"
 
+class UserLookupType(EnumModel):
+    ID = "id"
+    USERNAME = "username"
+
 # for reasons I don't fully understand, we can't do
 # ``PlayStyles(IntFlagModel, metaclass=ListEnumMeta)`` and must instead do this,
 # with two separate classes. Possibly because when using an enum metaclass, its
