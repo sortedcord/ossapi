@@ -35,10 +35,33 @@ class Model:
     instead.
     """
     def override_types(self):
+        """
+        Sometimes, the types of attributes in models depends on the value of
+        other fields in that model. By overriding this method, models can return
+        "override types", which overrides the static annotation of attributes
+        and tells ossapi to use the returned type to instantiate the attribute
+        instead.
+
+        This method should return a mapping of ``attribute_name`` to
+        ``intended_type``.
+        """
         return {}
 
     @classmethod
     def override_class(cls, _data):
+        """
+        This method addressess a shortcoming in ``override_types`` in order to
+        achieve full coverage of the intended feature of overriding types.
+
+        The model that we want to override types for may be at the very top of
+        the hierarchy, meaning we can't go any higher and find a model for which
+        we can override ``override_types`` to customize this class' type.
+
+        A possible solution for this is to create a wrapper class one step above
+        it; however, this is both dirty and may not work (I haven't actually
+        tried it). So this method provides a way for a model to override its
+        *own* type (ie class) at run-time.
+        """
         return None
 
 class BaseModel(Model):
