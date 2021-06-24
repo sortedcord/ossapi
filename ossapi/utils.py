@@ -34,7 +34,12 @@ class Model:
     its own members and cleanup after instantion, subclass ``BaseModel``
     instead.
     """
-    pass
+    def override_types(self):
+        return {}
+
+    @classmethod
+    def override_class(cls, _data):
+        return None
 
 class BaseModel(Model):
     """

@@ -10,6 +10,7 @@ from ossapi.enums import *
 from ossapi.utils import Datetime, Model
 
 T = TypeVar("T")
+S = TypeVar("S")
 
 
 """
@@ -496,7 +497,8 @@ class BeatmapPlaycount(Model):
 # still allowing us to benefit from the annotation resolution of our nested
 # members.
 class _Event(Model):
-    def __new__(cls, **data):
+    @classmethod
+    def override_class(cls, data):
         mapping = {
             EventType.ACHIEVEMENT: AchievementEvent,
             EventType.BEATMAP_PLAYCOUNT: BeatmapPlaycountEvent,
@@ -513,11 +515,10 @@ class _Event(Model):
             EventType.USERNAME_CHANGE: UsernameChangeEvent
         }
         type_ = EventType(data["type"])
-        return mapping[type_](**data)
-
+        return mapping[type_]
 
 @dataclass
-class Event:
+class Event(Model):
     created_at: Datetime
     createdAt: Datetime
     id: int
@@ -608,26 +609,6 @@ class BeatmapsetDiscussionReview(Model):
     max_blocks: int
 
 @dataclass
-class BeatmapsetEventComment(Model):
-    # the values returned by the api for this class depends on
-    # `BeatmapsetEvent.type`. Until we have a clean way of dealing with that,
-    # mark everything as optional.
-    beatmap_id: Optional[int]
-    beatmap_version: Optional[str]
-    new_user_id: Optional[int]
-    new_user_username: Optional[str]
-    beatmap_discussion_id: Optional[int]
-    beatmap_discussion_post_id: Optional[int]
-    new_vote: Optional[BeatmapsetDiscussionVote]
-    votes: Optional[List[BeatmapsetDiscussionVote]]
-    modes: Optional[List[GameMode]]
-    # Theese types change based on `BeatmapsetEvent.type`, will need to deal
-    # with that as well
-    old: Optional[Any]
-    new: Optional[Any]
-    reason: Optional[str]
-
-@dataclass
 class BeatmapsetDiscussionPostResult(Model):
     # This is for the ``/beatmapsets/discussions/posts`` endpoint because
     # the actual return type of that endpoint doesn't match the docs at
@@ -640,17 +621,89 @@ class BeatmapsetDiscussionPostResult(Model):
     users: List[UserCompact]
 
 @dataclass
+class BeatmapsetEventComment(Model):
+    beatmap_discussion_id: int
+    beatmap_discussion_post_id: int
+
+@dataclass
+class BeatmapsetEventCommentChange(Generic[S], BeatmapsetEventComment):
+    old: S
+    new: S
+
+@dataclass
+class BeatmapsetEventCommentLovedRemoval(BeatmapsetEventComment):
+    reason: str
+
+@dataclass
+class BeatmapsetEventCommentKudosuChange(BeatmapsetEventComment):
+    new_vote: KudosuVote
+    votes: List[KudosuVote]
+
+@dataclass
+class BeatmapsetEventCommentOwnerChange(BeatmapsetEventComment):
+    beatmap_id: int
+    beatmap_version: str
+    new_user_id: int
+    new_user_username: str
+
+@dataclass
+class BeatmapsetEventCommentNominate(Model):
+    # for some reason this comment type doesn't have the normal
+    # beatmap_discussion_id and beatmap_discussion_post_id attributes (they're
+    # not even null, just missing). TODO Open an issue on osu-web?
+    modes: List[GameMode]
+
+@dataclass
 class BeatmapsetEvent(Model):
     # https://github.com/ppy/osu-web/blob/master/app/Models/BeatmapsetEvent.php
     # https://github.com/ppy/osu-web/blob/master/app/Transformers/BeatmapsetEventTransformer.php
     id: int
     type: BeatmapsetEventType
-    comment: Optional[BeatmapsetEventComment]
-    created_at: Optional[Datetime]
+    comment: str
+    created_at: Datetime
 
     user_id: Optional[int]
     beatmapset: Optional[BeatmapsetCompact]
     discussion: Optional[BeatmapsetDiscussion]
+
+    def override_types(self):
+        mapping = {
+            BeatmapsetEventType.BEATMAP_OWNER_CHANGE: BeatmapsetEventCommentOwnerChange,
+            BeatmapsetEventType.DISCUSSION_DELETE: BeatmapsetEventComment,
+            # TODO: ``api.beatmapsets_events(types=[BeatmapsetEventType.DISCUSSION_LOCK])``
+            # doesn't seem to be recognized, just returns all events. Was this
+            # type discontinued?
+            # BeatmapsetEventType.DISCUSSION_LOCK: BeatmapsetEventComment,
+            BeatmapsetEventType.DISCUSSION_POST_DELETE: BeatmapsetEventComment,
+            BeatmapsetEventType.DISCUSSION_POST_RESTORE: BeatmapsetEventComment,
+            BeatmapsetEventType.DISCUSSION_RESTORE: BeatmapsetEventComment,
+            # same here
+            # BeatmapsetEventType.DISCUSSION_UNLOCK: BeatmapsetEventComment,
+            BeatmapsetEventType.DISQUALIFY: BeatmapsetEventCommentChange[str],
+            # same here
+            # BeatmapsetEventType.DISQUALIFY_LEGACY: BeatmapsetEventComment
+            BeatmapsetEventType.GENRE_EDIT: BeatmapsetEventCommentChange[str],
+            BeatmapsetEventType.ISSUE_REOPEN: BeatmapsetEventComment,
+            BeatmapsetEventType.ISSUE_RESOLVE: BeatmapsetEventComment,
+            BeatmapsetEventType.KUDOSU_ALLOW: BeatmapsetEventComment,
+            BeatmapsetEventType.KUDOSU_DENY: BeatmapsetEventComment,
+            BeatmapsetEventType.KUDOSU_GAIN: BeatmapsetEventCommentKudosuChange,
+            BeatmapsetEventType.KUDOSU_LOST: BeatmapsetEventCommentKudosuChange,
+            BeatmapsetEventType.KUDOSU_RECALCULATE: BeatmapsetEventComment,
+            BeatmapsetEventType.LANGUAGE_EDIT: BeatmapsetEventCommentChange[str],
+            BeatmapsetEventType.LOVE: type(None),
+            BeatmapsetEventType.NOMINATE: BeatmapsetEventCommentNominate,
+            # same here
+            # BeatmapsetEventType.NOMINATE_MODES: BeatmapsetEventComment,
+            BeatmapsetEventType.NOMINATION_RESET: BeatmapsetEventComment,
+            BeatmapsetEventType.QUALIFY: type(None),
+            BeatmapsetEventType.RANK: type(None),
+            BeatmapsetEventType.REMOVE_FROM_LOVED: BeatmapsetEventCommentLovedRemoval,
+            BeatmapsetEventType.NSFW_TOGGLE: BeatmapsetEventComment,
+        }
+        type_ = BeatmapsetEventType(self.type)
+        return {"comment": mapping[type_]}
+
 
 
 @dataclass

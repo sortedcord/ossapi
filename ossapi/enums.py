@@ -366,6 +366,11 @@ class KudosuPost(Model):
     title: str
 
 @dataclass
+class KudosuVote(Model):
+    user_id: int
+    score: int
+
+@dataclass
 class EventUser(Model):
     username: str
     url: str
