@@ -39,7 +39,9 @@ class UserCompact(Model):
     is_supporter: bool
     last_visit: Optional[Datetime]
     pm_friends_only: bool
-    profile_colour: str
+    # TODO pretty sure this needs to be optional but it's not documented as
+    # such, open an issue?
+    profile_colour: Optional[str]
     username: str
 
     # optional fields
@@ -191,7 +193,7 @@ class BeatmapsetCompact(Model):
     nsfw: bool
     # documented as being in ``Beatmapset`` only, but returned by
     # ``api.beatmapset_events`` which uses a ``BeatmapsetCompact``.
-    hype: Hype
+    hype: Optional[Hype]
 
     # optional fields
     # ---------------
@@ -246,7 +248,9 @@ class Score(Model):
     max_combo: int
     perfect: bool
     statistics: Statistics
-    pp: float
+    # documented as non-optional in docs but broken beatmaps like acid rain
+    # (1981090) have scores with null pp values. TODO open issue
+    pp: Optional[float]
     rank: Grade
     created_at: Datetime
     mode: GameMode

@@ -263,10 +263,10 @@ class Country(Model):
 @dataclass
 class Cover(Model):
     # https://github.com/ppy/osu-web/blob/master/app/Transformers/UserCompactTransformer.php#L158
-    custom_url: str
+    custom_url: Optional[str]
     url: str
     # api should really return an int here instead...open an issue?
-    id: str
+    id: Optional[str]
 
 
 @dataclass
