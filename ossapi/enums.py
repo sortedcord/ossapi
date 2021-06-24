@@ -38,7 +38,7 @@ class RankingType(EnumModel):
     PERFORMANCE = "performance"
     SCORE = "score"
 
-class UserLookupType(EnumModel):
+class UserLookupKey(EnumModel):
     ID = "id"
     USERNAME = "username"
 

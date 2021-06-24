@@ -22,7 +22,7 @@ from ossapi.models import (Beatmap, BeatmapUserScore, ForumTopicAndPosts,
     BeatmapsetDiscussionPostResult)
 from ossapi.mod import Mod
 from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
-    UserBeatmapType, BeatmapDiscussionPostSort, UserLookupType)
+    UserBeatmapType, BeatmapDiscussionPostSort, UserLookupKey)
 from ossapi.utils import (is_compatible_type, is_primitive_type, is_optional,
     is_base_model_type, is_model_type, is_high_model_type)
 
@@ -41,7 +41,7 @@ RankingFilterT = Union[RankingFilter, str]
 RankingTypeT = Union[RankingType, str]
 UserBeatmapTypeT = Union[UserBeatmapType, str]
 BeatmapDiscussionPostSortT = Union[BeatmapDiscussionPostSort, str]
-UserLookupTypeT = Union[UserLookupType, str]
+UserLookupKeyT = Union[UserLookupKey, str]
 
 
 def request(function):
@@ -722,12 +722,12 @@ class OssapiV2:
     def user(self,
         user_id: int,
         mode: Optional[GameModeT] = None,
-        lookup: Optional[UserLookupTypeT] = None
+        key: Optional[UserLookupKeyT] = None
     ) -> User:
         """
         https://osu.ppy.sh/docs/index.html#get-user
         """
-        params = {"type": lookup}
+        params = {"key": key}
         return self._get(User, f"/users/{user_id}/{mode or ''}", params)
 
 
