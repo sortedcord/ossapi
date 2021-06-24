@@ -68,6 +68,13 @@ class TestUser(TestCase):
     def test_deserialize(self):
         api.user(10690090)
 
+    def test_key(self):
+        # make suure it automatically falls back to username if not specified
+        api.user("tybug2")
+        api.user("tybug2", key="username")
+
+        self.assertRaises(Exception, lambda: api.user("tybug2", key="id"))
+
 class TestMe(TestCase):
     def test_deserialize(self):
         # TODO: requires another scope to be passed to OssapiV2
