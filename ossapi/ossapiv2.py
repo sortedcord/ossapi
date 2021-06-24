@@ -456,7 +456,7 @@ class OssapiV2:
                     self.log.info(f"ignoring unexpected parameter `{k}` from api "
                         f"response for type {type_}")
         try:
-            val = type_(**kwargs)
+            val = type_(**kwargs_)
         except TypeError as e:
             raise TypeError(f"type error while instantiating class {type_}: "
                 f"{str(e)}") from e
