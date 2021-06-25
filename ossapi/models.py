@@ -6,7 +6,14 @@ from typing import Optional, TypeVar, Generic, Any, List
 from types import SimpleNamespace
 
 from ossapi.mod import Mod
-from ossapi.enums import *
+from ossapi.enums import (UserAccountHistory, ProfileBanner, UserBadge, Country,
+    Cover, UserGroup, UserMonthlyPlaycount, UserPage, UserReplaysWatchedCount,
+    UserAchievement, UserProfileCustomization, RankHistory, Kudosu, PlayStyles,
+    ProfilePage, GameMode, RankStatus, Failtimes, Covers, Hype, Availability,
+    Nominations, Statistics, Grade, Weight, MessageType, KudosuAction,
+    KudosuGiver, KudosuPost, EventType, EventAchivement, EventUser,
+    EventBeatmap, BeatmapsetApproval, EventBeatmapset, KudosuVote,
+    BeatmapsetEventType, UserRelationType, UserLevel, UserGradeCounts)
 from ossapi.utils import Datetime, Model
 
 T = TypeVar("T")
