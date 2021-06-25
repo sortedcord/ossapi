@@ -78,6 +78,7 @@ print(api.download_score(mode="osu", score_id=2797309065))
 print(api.search_beatmaps(query="the big black").beatmapsets[0].title)
 print(api.beatmapsets_events(types=[BeatmapsetEventType.ISSUE_REOPEN]).events[0].type)
 print(api.user(12092800).playstyle)
+print(api.wiki_page("en", "Welcome").available_locales)
 ```
 
 Note that although this code just prints a single attribute for each endpoint, you can obviously do more complicated things like iterate over arrays:
