@@ -631,21 +631,36 @@ class BeatmapsetEventComment(Model):
     beatmap_discussion_post_id: int
 
 @dataclass
-class BeatmapsetEventCommentChange(Generic[S], BeatmapsetEventComment):
+class BeatmapsetEventCommentNoPost(Model):
+    beatmap_discussion_id: int
+    beatmap_discussion_post_id: None
+
+@dataclass
+class BeatmapsetEventCommentNone(Model):
+    beatmap_discussion_id: None
+    beatmap_discussion_post_id: None
+
+
+@dataclass
+class BeatmapsetEventCommentChange(Generic[S], BeatmapsetEventCommentNone):
     old: S
     new: S
 
 @dataclass
-class BeatmapsetEventCommentLovedRemoval(BeatmapsetEventComment):
+class BeatmapsetEventCommentLovedRemoval(BeatmapsetEventCommentNone):
     reason: str
 
 @dataclass
-class BeatmapsetEventCommentKudosuChange(BeatmapsetEventComment):
+class BeatmapsetEventCommentKudosuChange(BeatmapsetEventCommentNoPost):
     new_vote: KudosuVote
     votes: List[KudosuVote]
 
 @dataclass
-class BeatmapsetEventCommentOwnerChange(BeatmapsetEventComment):
+class BeatmapsetEventCommentKudosuRecalculate(BeatmapsetEventCommentNoPost):
+    new_vote: Optional[KudosuVote]
+
+@dataclass
+class BeatmapsetEventCommentOwnerChange(BeatmapsetEventCommentNone):
     beatmap_id: int
     beatmap_version: str
     new_user_id: int
@@ -674,27 +689,27 @@ class BeatmapsetEvent(Model):
     def override_types(self):
         mapping = {
             BeatmapsetEventType.BEATMAP_OWNER_CHANGE: BeatmapsetEventCommentOwnerChange,
-            BeatmapsetEventType.DISCUSSION_DELETE: BeatmapsetEventComment,
+            BeatmapsetEventType.DISCUSSION_DELETE: BeatmapsetEventCommentNoPost,
             # TODO: ``api.beatmapsets_events(types=[BeatmapsetEventType.DISCUSSION_LOCK])``
             # doesn't seem to be recognized, just returns all events. Was this
             # type discontinued?
             # BeatmapsetEventType.DISCUSSION_LOCK: BeatmapsetEventComment,
             BeatmapsetEventType.DISCUSSION_POST_DELETE: BeatmapsetEventComment,
             BeatmapsetEventType.DISCUSSION_POST_RESTORE: BeatmapsetEventComment,
-            BeatmapsetEventType.DISCUSSION_RESTORE: BeatmapsetEventComment,
+            BeatmapsetEventType.DISCUSSION_RESTORE: BeatmapsetEventCommentNoPost,
             # same here
             # BeatmapsetEventType.DISCUSSION_UNLOCK: BeatmapsetEventComment,
-            BeatmapsetEventType.DISQUALIFY: BeatmapsetEventCommentChange[str],
+            BeatmapsetEventType.DISQUALIFY: BeatmapsetEventComment,
             # same here
             # BeatmapsetEventType.DISQUALIFY_LEGACY: BeatmapsetEventComment
             BeatmapsetEventType.GENRE_EDIT: BeatmapsetEventCommentChange[str],
             BeatmapsetEventType.ISSUE_REOPEN: BeatmapsetEventComment,
             BeatmapsetEventType.ISSUE_RESOLVE: BeatmapsetEventComment,
-            BeatmapsetEventType.KUDOSU_ALLOW: BeatmapsetEventComment,
-            BeatmapsetEventType.KUDOSU_DENY: BeatmapsetEventComment,
+            BeatmapsetEventType.KUDOSU_ALLOW: BeatmapsetEventCommentNoPost,
+            BeatmapsetEventType.KUDOSU_DENY: BeatmapsetEventCommentNoPost,
             BeatmapsetEventType.KUDOSU_GAIN: BeatmapsetEventCommentKudosuChange,
             BeatmapsetEventType.KUDOSU_LOST: BeatmapsetEventCommentKudosuChange,
-            BeatmapsetEventType.KUDOSU_RECALCULATE: BeatmapsetEventComment,
+            BeatmapsetEventType.KUDOSU_RECALCULATE: BeatmapsetEventCommentKudosuRecalculate,
             BeatmapsetEventType.LANGUAGE_EDIT: BeatmapsetEventCommentChange[str],
             BeatmapsetEventType.LOVE: type(None),
             BeatmapsetEventType.NOMINATE: BeatmapsetEventCommentNominate,
@@ -704,7 +719,7 @@ class BeatmapsetEvent(Model):
             BeatmapsetEventType.QUALIFY: type(None),
             BeatmapsetEventType.RANK: type(None),
             BeatmapsetEventType.REMOVE_FROM_LOVED: BeatmapsetEventCommentLovedRemoval,
-            BeatmapsetEventType.NSFW_TOGGLE: BeatmapsetEventComment,
+            BeatmapsetEventType.NSFW_TOGGLE: BeatmapsetEventCommentChange[bool],
         }
         type_ = BeatmapsetEventType(self.type)
         return {"comment": mapping[type_]}
