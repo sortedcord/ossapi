@@ -715,7 +715,7 @@ class OssapiV2:
 
     @request
     def user(self,
-        user_id: int,
+        user_id: Union[int, str],
         mode: Optional[GameModeT] = None,
         key: Optional[UserLookupKeyT] = None
     ) -> User:
