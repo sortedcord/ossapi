@@ -22,7 +22,8 @@ from ossapi.models import (Beatmap, BeatmapUserScore, ForumTopicAndPosts,
     BeatmapsetDiscussionPostResult)
 from ossapi.mod import Mod
 from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
-    UserBeatmapType, BeatmapDiscussionPostSort, UserLookupKey)
+    UserBeatmapType, BeatmapDiscussionPostSort, UserLookupKey,
+    BeatmapsetEventType)
 from ossapi.utils import (is_compatible_type, is_primitive_type, is_optional,
     is_base_model_type, is_model_type, is_high_model_type)
 
@@ -42,6 +43,7 @@ RankingTypeT = Union[RankingType, str]
 UserBeatmapTypeT = Union[UserBeatmapType, str]
 BeatmapDiscussionPostSortT = Union[BeatmapDiscussionPostSort, str]
 UserLookupKeyT = Union[UserLookupKey, str]
+BeatmapsetEventTypeT = Union[BeatmapsetEventType, str]
 
 
 def request(function):
@@ -757,12 +759,12 @@ class OssapiV2:
 
     @request
     def beatmapsets_events(self,
-        limit=None,
-        page=None,
-        user=None,
-        types=None,
-        min_date=None,
-        max_date=None
+        limit: Optional[int] = None,
+        page: Optional[int] = None,
+        user_id: Optional[int] = None,
+        types: Optional[List[BeatmapsetEventTypeT]] = None,
+        min_date: Optional[datetime] = None,
+        max_date: Optional[datetime] = None
     ) -> ModdingHistoryEventsBundle:
         """
         Beatmap history
@@ -770,9 +772,7 @@ class OssapiV2:
         https://osu.ppy.sh/beatmapsets/events
         """
         # limit is 5-50
-        # types listed here
-        # https://github.com/ppy/osu-web/blob/master/app/Models/BeatmapsetEvent.php#L185
-        params = {"limit": limit, "page": page, "user": user,
+        params = {"limit": limit, "page": page, "user": user_id,
             "min_date": min_date, "max_date": max_date, "types": types}
         return self._get(ModdingHistoryEventsBundle, "/beatmapsets/events",
             params)
