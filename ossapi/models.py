@@ -414,8 +414,10 @@ class BeatmapsetDiscussionPost(Model):
     id: int
     beatmapset_discussion_id: int
     user_id: int
-    last_editor_id: int
-    deleted_by_id: int
+    # documented as non-optional
+    last_editor_id: Optional[int]
+    # documented as non-optional
+    deleted_by_id: Optional[int]
     system: bool
     message: str
     created_at: Datetime
@@ -426,9 +428,11 @@ class BeatmapsetDiscussionPost(Model):
 class BeatmapsetDiscussion(Model):
     id: int
     beatmapset_id: int
-    beatmap_id: int
+    # documented as non-optional
+    beatmap_id: Optional[int]
     user_id: int
-    deleted_by_id: int
+    # documented as non-optional
+    deleted_by_id: Optional[int]
     message_type: MessageType
     parent_id: Optional[int]
     # a point of time which is ``timestamp`` milliseconds into the map
@@ -439,11 +443,12 @@ class BeatmapsetDiscussion(Model):
     created_at: Datetime
     updated_at: Datetime
     deleted_at: Optional[Datetime]
-    last_post_at: Datetime
+    # documented as non-optional
+    last_post_at: Optional[Datetime]
     kudosu_denied: bool
-    # documented as being non-optional but in reality it's not always returned
+    # documented as non-optional
     starting_post: Optional[BeatmapsetDiscussionPost]
-    # here too
+    # documented as non-optional
     posts: Optional[List[BeatmapsetDiscussionPost]]
     beatmap: Optional[BeatmapCompact]
     beatmapset: Optional[BeatmapsetCompact]
