@@ -88,3 +88,7 @@ class TestMe(TestCase):
         # TODO: requires another scope to be passed to OssapiV2
         # api.get_me()
         pass
+
+class TestWikiPage(TestCase):
+    def test_deserialize(self):
+        api.wiki_page("en", "Welcome")

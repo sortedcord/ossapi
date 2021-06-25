@@ -18,7 +18,7 @@ from oauthlib.oauth2 import BackendApplicationClient
 from ossapi.models import (Beatmap, BeatmapUserScore, ForumTopicAndPosts,
     Search, CommentBundle, Cursor, Score, BeatmapSearchResult,
     ModdingHistoryEventsBundle, User, Rankings, BeatmapScores, KudosuHistory,
-    Beatmapset, BeatmapPlaycount, Spotlight, Spotlights, _Event, Event,
+    Beatmapset, BeatmapPlaycount, Spotlight, Spotlights, WikiPage, _Event, Event,
     BeatmapsetDiscussionPostResult)
 from ossapi.mod import Mod
 from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
@@ -724,6 +724,16 @@ class OssapiV2:
         """
         params = {"key": key}
         return self._get(User, f"/users/{user_id}/{mode or ''}", params)
+
+    # /wiki
+    # -----
+
+    @request
+    def wiki_page(self, locale: str, path: str) -> WikiPage:
+        """
+        https://osu.ppy.sh/docs/index.html#get-wiki-page
+        """
+        return self._get(WikiPage, f"/wiki/{locale}/{path}")
 
 
     # undocumented
