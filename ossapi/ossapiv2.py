@@ -281,6 +281,8 @@ class OssapiV2:
         # return annotations for attributes defined in ``obj`` and not its
         # inherited attributes.
         annotations = get_type_hints(type(obj))
+        override_annotations = obj.override_types()
+        annotations = {**annotations, **override_annotations}
         self.log.debug(f"resolving annotations for type {type(obj)}")
         for attr, value in obj.__dict__.items():
             # we use this attribute later if we encounter an attribute which
@@ -288,23 +290,26 @@ class OssapiV2:
             # anything with it now.
             if attr == "__orig_class__":
                 continue
+            type_ = annotations[attr]
             # when we instantiate types, we explicitly fill in optional
-            # attributes with ``None``. This means they're in ``obj.__dict__``
-            # and so we see them here. We don't want to do anything with them,
-            # so skip.
-            if value is None:
+            # attributes with ``None``. We want to skip these, but only if the
+            # attribute is actually annotated as optional, otherwise we would be
+            # skipping fields that are null which aren't supposed to be, and
+            # prevent that error from being caught.
+            if value is None and is_optional(type_):
                 continue
             self.log.debug(f"resolving attribute {attr}")
 
-            type_ = annotations[attr]
-            value = self._instantiate_type(type_, value, obj)
+            value = self._instantiate_type(type_, value, obj, attr_name=attr)
             if not value:
                 continue
             setattr(obj, attr, value)
         self.log.debug(f"resolved annotations for type {type(obj)}")
         return obj
 
-    def _instantiate_type(self, type_, value, obj=None):
+    def _instantiate_type(self, type_, value, obj=None, attr_name=None):
+        # ``attr_name`` is purely for debugging, it's the name of the attribute
+        # being instantiated
         origin = get_origin(type_)
         args = get_args(type_)
 
@@ -325,7 +330,8 @@ class OssapiV2:
         if is_primitive_type(type_):
             if not is_compatible_type(value, type_):
                 raise TypeError(f"expected type {type_} for value {value}, got "
-                    f"type {type(value)}")
+                    f"type {type(value)}"
+                    f" (for attribute: {attr_name})" if attr_name else "")
 
         if is_base_model_type(type_):
             self.log.debug(f"instantiating base type {type_}")
@@ -350,7 +356,7 @@ class OssapiV2:
                 if is_base_model_type(type_):
                     entry = type_(entry)
                 else:
-                    entry = self._instantiate(type_, **entry)
+                    entry = self._instantiate(type_, entry)
                 # if the list entry is a high (non-base) model type, we need to
                 # resolve it instead of just sticking it into the list, since
                 # its children might still be dicts and not model instances.
@@ -368,14 +374,14 @@ class OssapiV2:
         # ``type_``.
         if not is_model_type(type_) and not is_model_type(origin):
             return None
-        value = self._instantiate(type_, **value)
+        value = self._instantiate(type_, value)
         # we need to resolve the annotations of any nested model types before we
         # set the attribute. This recursion is well-defined because the base
         # case is when ``value`` has no model types, which will always happen
         # eventually.
         return self._resolve_annotations(value)
 
-    def _instantiate(self, type_, **kwargs):
+    def _instantiate(self, type_, kwargs):
         self.log.debug(f"instantiating type {type_}")
         # we need a special case to handle when ``type_`` is a
         # ``_GenericAlias``. I don't fully understand why this exception is
@@ -384,7 +390,8 @@ class OssapiV2:
         # we need to extract the type to use for the init signature and the type
         # hints from a ``_GenericAlias`` if we see one, as standard methods
         # won't work.
-
+        override_type = type_.override_class(kwargs)
+        type_ = override_type or type_
         signature_type = type_
         try:
             type_hints = get_type_hints(type_)
@@ -430,21 +437,7 @@ class OssapiV2:
 
         # Some special classes take arbitrary parameters, so we can't evaluate
         # whether a parameter is unexpected or not until we instantiate it.
-        # TODO This is actually rather problematic for us in the case of
-        # ``_Event``, because ``_Event`` will switch on the input and hand off
-        # instantion to some *other*, more specific, ``Event`` subclass. Ideally
-        # we'd like to be able to determine the parameters from this current
-        # level, but we can't do so without going down to the level of
-        # ``_Event``.
-        # The temporary solution is to ignore ``_Event`` types when checking for
-        # unexpected paramters, but this means that any parameters to ``_Event``
-        # which actually *are* unexpected will error instead of being caught by
-        # us. Not good.
-        # Ideally we'd have some way for ``_Event`` to expose to us what
-        # parameters it expects. That requires formalizing the hooking that
-        # ``_Event`` is currently doing and is not a trivial amount of work, and
-        # may not even be the correct path forward.
-        if isinstance(type_, type) and issubclass(type_, (Cursor, _Event)):
+        if isinstance(type_, type) and issubclass(type_, Cursor):
             kwargs_ = kwargs
         else:
             for k, v in kwargs.items():
@@ -457,7 +450,7 @@ class OssapiV2:
                     self.log.info(f"ignoring unexpected parameter `{k}` from api "
                         f"response for type {type_}")
         try:
-            val = type_(**kwargs)
+            val = type_(**kwargs_)
         except TypeError as e:
             raise TypeError(f"type error while instantiating class {type_}: "
                 f"{str(e)}") from e

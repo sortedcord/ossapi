@@ -267,10 +267,10 @@ class Country(Model):
 @dataclass
 class Cover(Model):
     # https://github.com/ppy/osu-web/blob/master/app/Transformers/UserCompactTransformer.php#L158
-    custom_url: str
+    custom_url: Optional[str]
     url: str
     # api should really return an int here instead...open an issue?
-    id: str
+    id: Optional[str]
 
 
 @dataclass
@@ -306,7 +306,7 @@ class UserGroup(Model):
     identifier: str
     name: str
     short_name: str
-    colour: str
+    colour: Optional[str]
     description: Optional[GroupDescription]
     playmodes: Optional[List[GameMode]]
     is_probationary: bool
@@ -368,6 +368,11 @@ class KudosuPost(Model):
     # somehow? another enum perhaps? see
     # https://osu.ppy.sh/docs/index.html#kudosuhistory
     title: str
+
+@dataclass
+class KudosuVote(Model):
+    user_id: int
+    score: int
 
 @dataclass
 class EventUser(Model):

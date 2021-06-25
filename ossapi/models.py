@@ -10,6 +10,7 @@ from ossapi.enums import *
 from ossapi.utils import Datetime, Model
 
 T = TypeVar("T")
+S = TypeVar("S")
 
 
 """
@@ -39,7 +40,9 @@ class UserCompact(Model):
     is_supporter: bool
     last_visit: Optional[Datetime]
     pm_friends_only: bool
-    profile_colour: str
+    # TODO pretty sure this needs to be optional but it's not documented as
+    # such, open an issue?
+    profile_colour: Optional[str]
     username: str
 
     # optional fields
@@ -191,7 +194,7 @@ class BeatmapsetCompact(Model):
     nsfw: bool
     # documented as being in ``Beatmapset`` only, but returned by
     # ``api.beatmapset_events`` which uses a ``BeatmapsetCompact``.
-    hype: Hype
+    hype: Optional[Hype]
 
     # optional fields
     # ---------------
@@ -246,7 +249,9 @@ class Score(Model):
     max_combo: int
     perfect: bool
     statistics: Statistics
-    pp: float
+    # documented as non-optional in docs but broken beatmaps like acid rain
+    # (1981090) have scores with null pp values. TODO open issue
+    pp: Optional[float]
     rank: Grade
     created_at: Datetime
     mode: GameMode
@@ -409,8 +414,10 @@ class BeatmapsetDiscussionPost(Model):
     id: int
     beatmapset_discussion_id: int
     user_id: int
-    last_editor_id: int
-    deleted_by_id: int
+    # documented as non-optional
+    last_editor_id: Optional[int]
+    # documented as non-optional
+    deleted_by_id: Optional[int]
     system: bool
     message: str
     created_at: Datetime
@@ -421,9 +428,11 @@ class BeatmapsetDiscussionPost(Model):
 class BeatmapsetDiscussion(Model):
     id: int
     beatmapset_id: int
-    beatmap_id: int
+    # documented as non-optional
+    beatmap_id: Optional[int]
     user_id: int
-    deleted_by_id: int
+    # documented as non-optional
+    deleted_by_id: Optional[int]
     message_type: MessageType
     parent_id: Optional[int]
     # a point of time which is ``timestamp`` milliseconds into the map
@@ -434,11 +443,12 @@ class BeatmapsetDiscussion(Model):
     created_at: Datetime
     updated_at: Datetime
     deleted_at: Optional[Datetime]
-    last_post_at: Datetime
+    # documented as non-optional
+    last_post_at: Optional[Datetime]
     kudosu_denied: bool
-    # documented as being non-optional but in reality it's not always returned
+    # documented as non-optional
     starting_post: Optional[BeatmapsetDiscussionPost]
-    # here too
+    # documented as non-optional
     posts: Optional[List[BeatmapsetDiscussionPost]]
     beatmap: Optional[BeatmapCompact]
     beatmapset: Optional[BeatmapsetCompact]
@@ -492,7 +502,8 @@ class BeatmapPlaycount(Model):
 # still allowing us to benefit from the annotation resolution of our nested
 # members.
 class _Event(Model):
-    def __new__(cls, **data):
+    @classmethod
+    def override_class(cls, data):
         mapping = {
             EventType.ACHIEVEMENT: AchievementEvent,
             EventType.BEATMAP_PLAYCOUNT: BeatmapPlaycountEvent,
@@ -509,11 +520,10 @@ class _Event(Model):
             EventType.USERNAME_CHANGE: UsernameChangeEvent
         }
         type_ = EventType(data["type"])
-        return mapping[type_](**data)
-
+        return mapping[type_]
 
 @dataclass
-class Event:
+class Event(Model):
     created_at: Datetime
     createdAt: Datetime
     id: int
@@ -604,26 +614,6 @@ class BeatmapsetDiscussionReview(Model):
     max_blocks: int
 
 @dataclass
-class BeatmapsetEventComment(Model):
-    # the values returned by the api for this class depends on
-    # `BeatmapsetEvent.type`. Until we have a clean way of dealing with that,
-    # mark everything as optional.
-    beatmap_id: Optional[int]
-    beatmap_version: Optional[str]
-    new_user_id: Optional[int]
-    new_user_username: Optional[str]
-    beatmap_discussion_id: Optional[int]
-    beatmap_discussion_post_id: Optional[int]
-    new_vote: Optional[BeatmapsetDiscussionVote]
-    votes: Optional[List[BeatmapsetDiscussionVote]]
-    modes: Optional[List[GameMode]]
-    # Theese types change based on `BeatmapsetEvent.type`, will need to deal
-    # with that as well
-    old: Optional[Any]
-    new: Optional[Any]
-    reason: Optional[str]
-
-@dataclass
 class BeatmapsetDiscussionPostResult(Model):
     # This is for the ``/beatmapsets/discussions/posts`` endpoint because
     # the actual return type of that endpoint doesn't match the docs at
@@ -636,17 +626,104 @@ class BeatmapsetDiscussionPostResult(Model):
     users: List[UserCompact]
 
 @dataclass
+class BeatmapsetEventComment(Model):
+    beatmap_discussion_id: int
+    beatmap_discussion_post_id: int
+
+@dataclass
+class BeatmapsetEventCommentNoPost(Model):
+    beatmap_discussion_id: int
+    beatmap_discussion_post_id: None
+
+@dataclass
+class BeatmapsetEventCommentNone(Model):
+    beatmap_discussion_id: None
+    beatmap_discussion_post_id: None
+
+
+@dataclass
+class BeatmapsetEventCommentChange(Generic[S], BeatmapsetEventCommentNone):
+    old: S
+    new: S
+
+@dataclass
+class BeatmapsetEventCommentLovedRemoval(BeatmapsetEventCommentNone):
+    reason: str
+
+@dataclass
+class BeatmapsetEventCommentKudosuChange(BeatmapsetEventCommentNoPost):
+    new_vote: KudosuVote
+    votes: List[KudosuVote]
+
+@dataclass
+class BeatmapsetEventCommentKudosuRecalculate(BeatmapsetEventCommentNoPost):
+    new_vote: Optional[KudosuVote]
+
+@dataclass
+class BeatmapsetEventCommentOwnerChange(BeatmapsetEventCommentNone):
+    beatmap_id: int
+    beatmap_version: str
+    new_user_id: int
+    new_user_username: str
+
+@dataclass
+class BeatmapsetEventCommentNominate(Model):
+    # for some reason this comment type doesn't have the normal
+    # beatmap_discussion_id and beatmap_discussion_post_id attributes (they're
+    # not even null, just missing). TODO Open an issue on osu-web?
+    modes: List[GameMode]
+
+@dataclass
 class BeatmapsetEvent(Model):
     # https://github.com/ppy/osu-web/blob/master/app/Models/BeatmapsetEvent.php
     # https://github.com/ppy/osu-web/blob/master/app/Transformers/BeatmapsetEventTransformer.php
     id: int
     type: BeatmapsetEventType
-    comment: Optional[BeatmapsetEventComment]
-    created_at: Optional[Datetime]
+    comment: str
+    created_at: Datetime
 
     user_id: Optional[int]
     beatmapset: Optional[BeatmapsetCompact]
     discussion: Optional[BeatmapsetDiscussion]
+
+    def override_types(self):
+        mapping = {
+            BeatmapsetEventType.BEATMAP_OWNER_CHANGE: BeatmapsetEventCommentOwnerChange,
+            BeatmapsetEventType.DISCUSSION_DELETE: BeatmapsetEventCommentNoPost,
+            # TODO: ``api.beatmapsets_events(types=[BeatmapsetEventType.DISCUSSION_LOCK])``
+            # doesn't seem to be recognized, just returns all events. Was this
+            # type discontinued?
+            # BeatmapsetEventType.DISCUSSION_LOCK: BeatmapsetEventComment,
+            BeatmapsetEventType.DISCUSSION_POST_DELETE: BeatmapsetEventComment,
+            BeatmapsetEventType.DISCUSSION_POST_RESTORE: BeatmapsetEventComment,
+            BeatmapsetEventType.DISCUSSION_RESTORE: BeatmapsetEventCommentNoPost,
+            # same here
+            # BeatmapsetEventType.DISCUSSION_UNLOCK: BeatmapsetEventComment,
+            BeatmapsetEventType.DISQUALIFY: BeatmapsetEventComment,
+            # same here
+            # BeatmapsetEventType.DISQUALIFY_LEGACY: BeatmapsetEventComment
+            BeatmapsetEventType.GENRE_EDIT: BeatmapsetEventCommentChange[str],
+            BeatmapsetEventType.ISSUE_REOPEN: BeatmapsetEventComment,
+            BeatmapsetEventType.ISSUE_RESOLVE: BeatmapsetEventComment,
+            BeatmapsetEventType.KUDOSU_ALLOW: BeatmapsetEventCommentNoPost,
+            BeatmapsetEventType.KUDOSU_DENY: BeatmapsetEventCommentNoPost,
+            BeatmapsetEventType.KUDOSU_GAIN: BeatmapsetEventCommentKudosuChange,
+            BeatmapsetEventType.KUDOSU_LOST: BeatmapsetEventCommentKudosuChange,
+            BeatmapsetEventType.KUDOSU_RECALCULATE: BeatmapsetEventCommentKudosuRecalculate,
+            BeatmapsetEventType.LANGUAGE_EDIT: BeatmapsetEventCommentChange[str],
+            BeatmapsetEventType.LOVE: type(None),
+            BeatmapsetEventType.NOMINATE: BeatmapsetEventCommentNominate,
+            # same here
+            # BeatmapsetEventType.NOMINATE_MODES: BeatmapsetEventComment,
+            BeatmapsetEventType.NOMINATION_RESET: BeatmapsetEventComment,
+            BeatmapsetEventType.QUALIFY: type(None),
+            BeatmapsetEventType.RANK: type(None),
+            BeatmapsetEventType.REMOVE_FROM_LOVED: BeatmapsetEventCommentLovedRemoval,
+            BeatmapsetEventType.NSFW_TOGGLE: BeatmapsetEventCommentChange[bool],
+        }
+        type_ = BeatmapsetEventType(self.type)
+        return {"comment": mapping[type_]}
+
 
 
 @dataclass
