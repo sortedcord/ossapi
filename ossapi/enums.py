@@ -306,7 +306,7 @@ class UserGroup(Model):
     identifier: str
     name: str
     short_name: str
-    colour: str
+    colour: Optional[str]
     description: Optional[GroupDescription]
     playmodes: Optional[List[GameMode]]
     is_probationary: bool
