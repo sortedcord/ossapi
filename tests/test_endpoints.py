@@ -34,7 +34,15 @@ class TestBeatmap(TestCase):
 
 class TestBeatmapsetEvents(TestCase):
     def test_deserialize(self):
-        api.beatmapsets_events(types=[BeatmapsetEventType.ISSUE_REOPEN])
+        api.beatmapsets_events()
+
+    def test_all_types(self):
+        # beatmapsets_events is a really complicated endpoint in terms of return
+        # types. We want to make sure both that we're not doing anything wrong,
+        # and the osu! api isn't doing anything wrong by returning something
+        # that doesn't match their documentation.
+        for event_type in BeatmapsetEventType:
+            api.beatmapsets_events(types=[event_type])
 
 class TestRanking(TestCase):
     def test_deserialize(self):
