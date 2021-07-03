@@ -92,3 +92,15 @@ class TestMe(TestCase):
 class TestWikiPage(TestCase):
     def test_deserialize(self):
         api.wiki_page("en", "Welcome")
+
+class TestChangelogBuild(TestCase):
+    def test_deserialize(self):
+        api.changelog_build("stable40", "20210520.2")
+
+class TestChangelogListing(TestCase):
+    def test_deserialize(self):
+        api.changelog_listing()
+
+class TestChangelogLookup(TestCase):
+    def test_deserialize(self):
+        api.changelog_lookup("lazer")

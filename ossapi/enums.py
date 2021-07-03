@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Optional, List, Any
 from enum import IntFlag
 
+
 from ossapi.utils import EnumModel, ListEnumMeta, Datetime, Model, BaseModel
 
 # ================
@@ -404,6 +405,22 @@ class EventAchivement(Model):
     mode: GameMode
     instructions: Optional[Any]
 
+@dataclass
+class GithubUser(Model):
+    display_name: str
+    github_url: Optional[str]
+    id: Optional[int]
+    osu_username: Optional[str]
+    user_id: Optional[int]
+    user_url: Optional[str]
+
+@dataclass
+class ChangelogSearch(Model):
+    from_: Optional[str]
+    limit: int
+    max_id: Optional[int]
+    stream: Optional[str]
+    to: Optional[str]
 
 # ===================
 # Undocumented Models

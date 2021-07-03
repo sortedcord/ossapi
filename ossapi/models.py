@@ -13,7 +13,8 @@ from ossapi.enums import (UserAccountHistory, ProfileBanner, UserBadge, Country,
     Nominations, Statistics, Grade, Weight, MessageType, KudosuAction,
     KudosuGiver, KudosuPost, EventType, EventAchivement, EventUser,
     EventBeatmap, BeatmapsetApproval, EventBeatmapset, KudosuVote,
-    BeatmapsetEventType, UserRelationType, UserLevel, UserGradeCounts)
+    BeatmapsetEventType, UserRelationType, UserLevel, UserGradeCounts,
+    GithubUser, ChangelogSearch)
 from ossapi.utils import Datetime, Model
 
 T = TypeVar("T")
@@ -496,18 +497,7 @@ class BeatmapPlaycount(Model):
 
 
 # we use this class to determine which event dataclass to instantiate and
-# return, based on the value of the ``type`` parameter. This class is registered
-# as a model class with our type instantiation logic, so nested models will have
-# their annotations resolved as normal after instantiation.
-# The usage of ``__new__`` here can be thought of as a hook into the annotation
-# resolution process. When we are resolving annotations, we instantiate model
-# classes and then continue traversing down them. With ``__new__`` here, we
-# hook onto that instantiation and perform whatever actions we need to (in our
-# case changing the class instantiated based on the value of a parameter) before
-# handing control back to the annotation resolution code to continue traversing
-# down our members. This affords us total control over our instantiation while
-# still allowing us to benefit from the annotation resolution of our nested
-# members.
+# return, based on the value of the ``type`` parameter.
 class _Event(Model):
     @classmethod
     def override_class(cls, data):
@@ -601,6 +591,51 @@ class UserSupportGiftEvent(Event):
 class UsernameChangeEvent(Event):
     user: EventUser
 
+@dataclass
+class Build(Model):
+    created_at: Datetime
+    display_version: str
+    id: int
+    update_stream: Optional[UpdateStream]
+    users: int
+    version: Optional[str]
+    changelog_entries: Optional[List[ChangelogEntry]]
+    versions: Optional[Versions]
+
+@dataclass
+class Versions(Model):
+    next: Optional[Build]
+    previous: Optional[Build]
+
+@dataclass
+class UpdateStream(Model):
+    display_name: Optional[str]
+    id: int
+    is_featured: bool
+    name: str
+    latest_build: Optional[Build]
+    user_count: Optional[int]
+
+@dataclass
+class ChangelogEntry(Model):
+    category: str
+    created_at: Optional[Datetime]
+    github_pull_request_id: Optional[int]
+    github_url: Optional[str]
+    id: Optional[int]
+    major: bool
+    message_html: Optional[str]
+    repository: Optional[str]
+    title: Optional[str]
+    type: str
+    url: Optional[str]
+    github_user: GithubUser
+
+@dataclass
+class ChangelogListing(Model):
+    builds: List[Build]
+    search: ChangelogSearch
+    streams: List[UpdateStream]
 
 # ===================
 # Undocumented Models

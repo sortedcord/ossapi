@@ -11,6 +11,7 @@ from enum import Enum
 from urllib.parse import unquote
 import inspect
 import json
+from keyword import iskeyword
 
 from requests_oauthlib import OAuth2Session
 from oauthlib.oauth2 import BackendApplicationClient
@@ -19,7 +20,7 @@ from ossapi.models import (Beatmap, BeatmapUserScore, ForumTopicAndPosts,
     Search, CommentBundle, Cursor, Score, BeatmapSearchResult,
     ModdingHistoryEventsBundle, User, Rankings, BeatmapScores, KudosuHistory,
     Beatmapset, BeatmapPlaycount, Spotlight, Spotlights, WikiPage, _Event, Event,
-    BeatmapsetDiscussionPostResult)
+    BeatmapsetDiscussionPostResult, Build, ChangelogListing)
 from ossapi.mod import Mod
 from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     UserBeatmapType, BeatmapDiscussionPostSort, UserLookupKey,
@@ -403,13 +404,20 @@ class OssapiV2:
             signature_type = get_origin(type_)
             type_hints = get_type_hints(signature_type)
 
-        # replace any key names that are invalid python syntax with a valid
-        # one. Note: this is relying on our models replacing an at sign with
-        # an underscore when declaring attributes.
-        # ``list(kwargs)`` to make a copy of it so we can modify kwargs while
-        # iterating.
+        # make a copy so we can modify while iterating
         for key in list(kwargs):
-            kwargs[key.replace("@", "_")] = kwargs.pop(key)
+            value = kwargs.pop(key)
+            # replace any key names that are invalid python syntax with a valid
+            # one. Note: this is relying on our models replacing an at sign with
+            # an underscore when declaring attributes.
+            key = key.replace("@", "_")
+            # python classes can't have keywords as attribute names, so if the
+            # api has given us a keyword attribute, append an underscore. As
+            # above, this is relying on our models to match this by appending
+            # an underscore to keyword attribute names.
+            if iskeyword(key):
+                key += "_"
+            kwargs[key] = value
 
         # if we've annotated a class with ``Optional[X]``, and the api response
         # didn't return a value for that attribute, pass ``None`` for that
@@ -515,6 +523,7 @@ class OssapiV2:
         """
         return self._get(Beatmap, f"/beatmaps/{beatmap_id}")
 
+
     # /beatmapsets
     # ------------
 
@@ -535,6 +544,44 @@ class OssapiV2:
             "with_deleted": with_deleted}
         return self._get(BeatmapsetDiscussionPostResult,
             "/beatmapsets/discussions/posts", params)
+
+
+    # /changelog
+    # ----------
+
+    @request
+    def changelog_build(self,
+        stream: str,
+        build: str
+    ) -> Build:
+        """
+        https://osu.ppy.sh/docs/index.html#get-changelog-build
+        """
+        return self._get(Build, f"/changelog/{stream}/{build}")
+
+    @request
+    def changelog_listing(self,
+        from_: Optional[str] = None,
+        to: Optional[str] = None,
+        max_id: Optional[int] = None,
+        stream: Optional[str] = None
+    ) -> ChangelogListing:
+        """
+        https://osu.ppy.sh/docs/index.html#get-changelog-listing
+        """
+        params = {"from": from_, "to": to, "max_id": max_id, "stream": stream}
+        return self._get(ChangelogListing, "/changelog", params)
+
+    @request
+    def changelog_lookup(self,
+        changelog: str,
+        key: Optional[str] = None
+    ) -> Build:
+        """
+        https://osu.ppy.sh/docs/index.html#lookup-changelog-build
+        """
+        params = {"key": key}
+        return self._get(Build, f"/changelog/{changelog}", params)
 
     # /comments
     # ---------
