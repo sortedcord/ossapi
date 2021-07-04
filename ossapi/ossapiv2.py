@@ -517,7 +517,9 @@ class OssapiV2:
             params)
 
     @request
-    def beatmap(self, beatmap_id: int) -> Beatmap:
+    def beatmap(self,
+        beatmap_id: int
+    ) -> Beatmap:
         """
         https://osu.ppy.sh/docs/index.html#get-beatmap
         """
@@ -610,7 +612,9 @@ class OssapiV2:
         return self._get(CommentBundle, "/comments", params)
 
     @request
-    def comment(self, comment_id: int) -> CommentBundle:
+    def comment(self,
+        comment_id: int
+    ) -> CommentBundle:
         """
         https://osu.ppy.sh/docs/index.html#get-a-comment
         """
@@ -776,7 +780,10 @@ class OssapiV2:
     # -----
 
     @request
-    def wiki_page(self, locale: str, path: str) -> WikiPage:
+    def wiki_page(self,
+        locale: str,
+        path: str
+    ) -> WikiPage:
         """
         https://osu.ppy.sh/docs/index.html#get-wiki-page
         """
@@ -787,11 +794,17 @@ class OssapiV2:
     # ------------
 
     @request
-    def score(self, mode: GameModeT, score_id: int) -> Score:
+    def score(self,
+        mode: GameModeT,
+        score_id: int
+    ) -> Score:
         return self._get(Score, f"/scores/{mode.value}/{score_id}")
 
     @request
-    def download_score(self, mode: GameModeT, score_id: int) -> str:
+    def download_score(self,
+        mode: GameModeT,
+        score_id: int
+    ) -> str:
         r = self.session.get(f"{self.BASE_URL}/scores/{mode.value}/"
             f"{score_id}/download")
 
