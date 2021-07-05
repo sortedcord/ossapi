@@ -791,9 +791,7 @@ class UserRelation(Model):
 @dataclass
 class UserStatistics(Model):
     # undocumented
-    # https://github.com/ppy/osu-web/blob/master/app/Transformers/UserStatisticsTransformer.php
     level: UserLevel
-    global_rank: int
     pp: float
     ranked_score: int
     hit_accuracy: float
@@ -809,6 +807,7 @@ class UserStatistics(Model):
     # optional fields
     # ---------------
     country_rank: Optional[int]
+    global_rank: Optional[int]
     rank: Optional[Any]
     user: Optional[UserCompact]
     variants: Optional[Any]
