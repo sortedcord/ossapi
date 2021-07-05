@@ -19,8 +19,8 @@ from oauthlib.oauth2 import BackendApplicationClient
 from ossapi.models import (Beatmap, BeatmapUserScore, ForumTopicAndPosts,
     Search, CommentBundle, Cursor, Score, BeatmapSearchResult,
     ModdingHistoryEventsBundle, User, Rankings, BeatmapScores, KudosuHistory,
-    Beatmapset, BeatmapPlaycount, Spotlight, Spotlights, WikiPage, _Event, Event,
-    BeatmapsetDiscussionPostResult, Build, ChangelogListing)
+    Beatmapset, BeatmapPlaycount, Spotlight, Spotlights, WikiPage, _Event,
+    Event, BeatmapsetDiscussionPostResult, Build, ChangelogListing)
 from ossapi.mod import Mod
 from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     UserBeatmapType, BeatmapDiscussionPostSort, UserLookupKey,
@@ -457,8 +457,8 @@ class OssapiV2:
                     if self.strict:
                         raise TypeError(f"unexpected parameter `{k}` for type "
                             f"{type_}")
-                    self.log.info(f"ignoring unexpected parameter `{k}` from api "
-                        f"response for type {type_}")
+                    self.log.info(f"ignoring unexpected parameter `{k}` from "
+                        f"api response for type {type_}")
         try:
             val = type_(**kwargs_)
         except TypeError as e:
