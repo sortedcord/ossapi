@@ -166,7 +166,7 @@ class OssapiV2:
         connection.send(b"\n")
         connection.send(b"""<html><body>
             <h2>Ossapi has received your authentication.</h2> You
-            can now close this tab safely.
+            may now close this tab safely.
             </body></html>
         """)
         connection.close()
