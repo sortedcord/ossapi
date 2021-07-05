@@ -766,7 +766,7 @@ class OssapiV2:
 
     @request
     def user(self,
-        user_id: Union[int, str],
+        user: Union[int, str],
         mode: Optional[GameModeT] = None,
         key: Optional[UserLookupKeyT] = None
     ) -> User:
@@ -774,7 +774,7 @@ class OssapiV2:
         https://osu.ppy.sh/docs/index.html#get-user
         """
         params = {"key": key}
-        return self._get(User, f"/users/{user_id}/{mode or ''}", params)
+        return self._get(User, f"/users/{user}/{mode or ''}", params)
 
     # /wiki
     # -----
