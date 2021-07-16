@@ -249,7 +249,8 @@ class Score(Model):
     https://osu.ppy.sh/docs/index.html#score
     """
     id: int
-    best_id: int
+    # documented as non-optional in docs
+    best_id: Optional[int]
     user_id: int
     accuracy: float
     mods: Mod
