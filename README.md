@@ -34,7 +34,7 @@ In either case you will need to create on oauth client on [your settings page](h
 
 #### Authorization Code
 
-With the authorization code flow we will use the oauth client's id, secret, and redirect_uri to authenticate. Copy these values from the oauth application you just created.
+With the authorization code flow we will use the oauth client's id, secret, and redirect_uri (aka callback url) to authenticate. Copy these values from the oauth application you just created.
 
 ```python
 from ossapi import *
