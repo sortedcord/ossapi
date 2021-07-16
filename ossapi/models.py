@@ -266,6 +266,7 @@ class Score(Model):
     mode: GameMode
     mode_int: int
     replay: bool
+    passed: bool
 
     beatmap: Optional[Beatmap]
     beatmapset: Optional[BeatmapsetCompact]
