@@ -122,6 +122,18 @@ r = api.ranking("osu", RankingType.PERFORMANCE, cursor=cursor)
 print(r.ranking[-1].global_rank) # 1000
 ```
 
+If there are no more pages, the `cursor` object of the response will be `None`:
+
+```python
+cursor = Cursor(page=199)
+r = api.ranking("osu", RankingType.PERFORMANCE, cursor=cursor)
+print(r.cursor) # Cursor(page=200)
+
+cursor = Cursor(page=200) # there are only 200 rankings pages
+r = api.ranking("osu", RankingType.PERFORMANCE, cursor=cursor)
+print(r.cursor) # None
+```
+
 ## API v1 Usage
 
 ```python
