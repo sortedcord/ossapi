@@ -19,7 +19,11 @@ from ossapi.utils import Datetime, Model
 
 T = TypeVar("T")
 S = TypeVar("S")
-
+# if there are no more results, a null cursor is returned instead.
+# So always let the cursor be nullable to catch this. It's the user's
+# responsibility to check for a null cursor to see if there are any more
+# results.
+CursorT = Optional["Cursor"]
 
 """
 a type hint of ``Optional[Any]`` or ``Any`` means that I don't know what type it
@@ -356,7 +360,7 @@ class CommentBundle(Model):
     user_votes: List[int]
     users: List[UserCompact]
     # undocumented
-    cursor: Cursor
+    cursor: CursorT
 
 
 @dataclass
@@ -370,7 +374,7 @@ class ForumTopic(Model):
 
 @dataclass
 class ForumTopicAndPosts(Model):
-    cursor: Cursor
+    cursor: CursorT
     search: str
     posts: List[ForumPost]
     topic: ForumTopic
@@ -414,7 +418,7 @@ class Spotlights(Model):
 @dataclass
 class Rankings(Model):
     beatmapsets: Optional[List[Beatmapset]]
-    cursor: Cursor
+    cursor: CursorT
     ranking: List[UserStatistics]
     spotlight: Optional[Spotlight]
     total: int
@@ -646,7 +650,7 @@ class ChangelogListing(Model):
 @dataclass
 class BeatmapSearchResult(Model):
     beatmapsets: List[Beatmapset]
-    cursor: Cursor
+    cursor: CursorT
     recommended_difficulty: float
     error: Optional[str]
     total: int
@@ -665,7 +669,7 @@ class BeatmapsetDiscussionPostResult(Model):
     # open issue?
     beatmapsets: List[BeatmapsetCompact]
     discussions: List[BeatmapsetDiscussion]
-    cursor: Cursor
+    cursor: CursorT
     posts: List[BeatmapsetDiscussionPost]
     users: List[UserCompact]
 
