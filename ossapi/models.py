@@ -630,6 +630,7 @@ class ChangelogEntry(Model):
     github_url: Optional[str]
     id: Optional[int]
     major: bool
+    message: Optional[str]
     message_html: Optional[str]
     repository: Optional[str]
     title: Optional[str]
