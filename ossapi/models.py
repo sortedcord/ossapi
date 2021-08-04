@@ -723,6 +723,10 @@ class BeatmapsetEventCommentNominate(Model):
     modes: List[GameMode]
 
 @dataclass
+class BeatmapsetEventCommentWithNominators(BeatmapsetEventCommentNoPost):
+    nominator_ids: Optional[List[int]]
+
+@dataclass
 class BeatmapsetEvent(Model):
     # https://github.com/ppy/osu-web/blob/master/app/Models/BeatmapsetEvent.php
     # https://github.com/ppy/osu-web/blob/master/app/Transformers/BeatmapsetEventTransformer.php
@@ -748,7 +752,7 @@ class BeatmapsetEvent(Model):
             BeatmapsetEventType.DISCUSSION_RESTORE: BeatmapsetEventCommentNoPost,
             # same here
             # BeatmapsetEventType.DISCUSSION_UNLOCK: BeatmapsetEventComment,
-            BeatmapsetEventType.DISQUALIFY: BeatmapsetEventComment,
+            BeatmapsetEventType.DISQUALIFY: BeatmapsetEventCommentWithNominators,
             # same here
             # BeatmapsetEventType.DISQUALIFY_LEGACY: BeatmapsetEventComment
             BeatmapsetEventType.GENRE_EDIT: BeatmapsetEventCommentChange[str],
@@ -764,7 +768,7 @@ class BeatmapsetEvent(Model):
             BeatmapsetEventType.NOMINATE: BeatmapsetEventCommentNominate,
             # same here
             # BeatmapsetEventType.NOMINATE_MODES: BeatmapsetEventComment,
-            BeatmapsetEventType.NOMINATION_RESET: BeatmapsetEventComment,
+            BeatmapsetEventType.NOMINATION_RESET: BeatmapsetEventCommentWithNominators,
             BeatmapsetEventType.QUALIFY: type(None),
             BeatmapsetEventType.RANK: type(None),
             BeatmapsetEventType.REMOVE_FROM_LOVED: BeatmapsetEventCommentLovedRemoval,
