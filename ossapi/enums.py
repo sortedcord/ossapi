@@ -250,6 +250,10 @@ class CommentSort(Enum):
     OLD = "old"
     TOP = "top"
 
+class ForumTopicSort(Enum):
+    NEW = "id_desc"
+    OLD = "id_asc"
+
 
 # =================
 # Documented Models

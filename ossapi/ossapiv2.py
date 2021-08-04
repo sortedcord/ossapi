@@ -24,7 +24,7 @@ from ossapi.models import (Beatmap, BeatmapUserScore, ForumTopicAndPosts,
 from ossapi.mod import Mod
 from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     UserBeatmapType, BeatmapDiscussionPostSort, UserLookupKey,
-    BeatmapsetEventType, CommentableType, CommentSort)
+    BeatmapsetEventType, CommentableType, CommentSort, ForumTopicSort)
 from ossapi.utils import (is_compatible_type, is_primitive_type, is_optional,
     is_base_model_type, is_model_type, is_high_model_type)
 
@@ -47,6 +47,7 @@ UserLookupKeyT = Union[UserLookupKey, str]
 BeatmapsetEventTypeT = Union[BeatmapsetEventType, str]
 CommentableTypeT = Union[CommentableType, str]
 CommentSortT = Union[CommentSort, str]
+ForumTopicSortT = Union[ForumTopicSort, str]
 
 
 def request(function):
@@ -627,13 +628,13 @@ class OssapiV2:
     # -------
 
     @request
-    def topic(self,
-        topic,
+    def forum_topic(self,
+        topic_id: int,
         cursor: Optional[Cursor] = None,
-        sort=None,
-        limit=None,
-        start=None,
-        end=None
+        sort: Optional[ForumTopicSortT] = None,
+        limit: Optional[int] = None,
+        start: Optional[int] = None,
+        end: Optional[int] = None
     ) -> ForumTopicAndPosts:
         """
         A topic and its posts.
@@ -642,7 +643,8 @@ class OssapiV2:
         """
         params = {"cursor": cursor, "sort": sort, "limit": limit,
             "start": start, "end": end}
-        return self._get(ForumTopicAndPosts, f"/forums/topics/{topic}", params)
+        return self._get(ForumTopicAndPosts, f"/forums/topics/{topic_id}",
+            params)
 
 
     # / ("home")
