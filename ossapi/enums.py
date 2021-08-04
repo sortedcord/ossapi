@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import Optional, List, Any
-from enum import IntFlag
+from enum import IntFlag, Enum
 
 
 from ossapi.utils import EnumModel, ListEnumMeta, Datetime, Model, BaseModel
@@ -23,25 +23,6 @@ class GameMode(EnumModel):
     TAIKO  = "taiko"
     CTB    = "fruits"
     MANIA  = "mania"
-
-class ScoreType(EnumModel):
-    BEST = "best"
-    FIRST = "first"
-    RECENT = "recent"
-
-class RankingFilter(EnumModel):
-    ALL = "all"
-    FRIENDS = "friends"
-
-class RankingType(EnumModel):
-    CHARTS = "spotlight"
-    COUNTRY = "country"
-    PERFORMANCE = "performance"
-    SCORE = "score"
-
-class UserLookupKey(EnumModel):
-    ID = "id"
-    USERNAME = "username"
 
 # for reasons I don't fully understand, we can't do
 # ``PlayStyles(IntFlagModel, metaclass=ListEnumMeta)`` and must instead do this,
@@ -177,18 +158,6 @@ class KudosuAction(EnumModel):
     RESET = "vote.reset"
     REVOKE = "vote.revoke"
 
-class UserBeatmapType(EnumModel):
-    FAVOURITE = "favourite"
-    GRAVEYARD = "graveyard"
-    LOVED = "loved"
-    MOST_PLAYED = "most_played"
-    RANKED = "ranked"
-    PENDING = "pending"
-
-class BeatmapDiscussionPostSort(EnumModel):
-    NEW = "id_desc"
-    OLD = "id_asc"
-
 class EventType(EnumModel):
     ACHIEVEMENT = "achievement"
     BEATMAP_PLAYCOUNT = "beatmapPlaycount"
@@ -218,7 +187,6 @@ class BeatmapsetApproval(EnumModel):
 # Undocumented Enums
 # ==================
 
-
 class UserRelationType(EnumModel):
     # undocumented
     # https://github.com/ppy/osu-web/blob/master/app/Transformers/UserRelationTransformer.php#L20
@@ -235,6 +203,53 @@ class Grade(EnumModel):
     C = "C"
     D = "D"
     F = "F"
+
+
+# ===============
+# Parameter Enums
+# ===============
+
+class ScoreType(Enum):
+    BEST = "best"
+    FIRST = "first"
+    RECENT = "recent"
+
+class RankingFilter(Enum):
+    ALL = "all"
+    FRIENDS = "friends"
+
+class RankingType(Enum):
+    CHARTS = "spotlight"
+    COUNTRY = "country"
+    PERFORMANCE = "performance"
+    SCORE = "score"
+
+class UserLookupKey(Enum):
+    ID = "id"
+    USERNAME = "username"
+
+class UserBeatmapType(Enum):
+    FAVOURITE = "favourite"
+    GRAVEYARD = "graveyard"
+    LOVED = "loved"
+    MOST_PLAYED = "most_played"
+    RANKED = "ranked"
+    PENDING = "pending"
+
+class BeatmapDiscussionPostSort(Enum):
+    NEW = "id_desc"
+    OLD = "id_asc"
+
+class CommentableType(Enum):
+    NEWS_POST = "news_post"
+    CHANGELOG = "build"
+    BEATMAPSET = "beatmapset"
+
+class CommentSort(Enum):
+    NEW = "new"
+    OLD = "old"
+    TOP = "top"
+
 
 # =================
 # Documented Models
@@ -421,6 +436,7 @@ class ChangelogSearch(Model):
     max_id: Optional[int]
     stream: Optional[str]
     to: Optional[str]
+
 
 # ===================
 # Undocumented Models

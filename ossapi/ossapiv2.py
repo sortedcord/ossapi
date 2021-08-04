@@ -24,7 +24,7 @@ from ossapi.models import (Beatmap, BeatmapUserScore, ForumTopicAndPosts,
 from ossapi.mod import Mod
 from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     UserBeatmapType, BeatmapDiscussionPostSort, UserLookupKey,
-    BeatmapsetEventType)
+    BeatmapsetEventType, CommentableType, CommentSort)
 from ossapi.utils import (is_compatible_type, is_primitive_type, is_optional,
     is_base_model_type, is_model_type, is_high_model_type)
 
@@ -45,6 +45,8 @@ UserBeatmapTypeT = Union[UserBeatmapType, str]
 BeatmapDiscussionPostSortT = Union[BeatmapDiscussionPostSort, str]
 UserLookupKeyT = Union[UserLookupKey, str]
 BeatmapsetEventTypeT = Union[BeatmapsetEventType, str]
+CommentableTypeT = Union[CommentableType, str]
+CommentSortT = Union[CommentSort, str]
 
 
 def request(function):
@@ -590,11 +592,11 @@ class OssapiV2:
 
     @request
     def comments(self,
-        commentable_type=None,
-        commentable_id=None,
-        cursor=None,
-        parent_id=None,
-        sort=None
+        commentable_type: Optional[CommentableTypeT] = None,
+        commentable_id: Optional[int] = None,
+        cursor: Optional[Cursor] = None,
+        parent_id: Optional[int] = None,
+        sort: Optional[CommentSortT] = None
     ) -> CommentBundle:
         """
         A list of comments and their replies, up to 2 levels deep.
