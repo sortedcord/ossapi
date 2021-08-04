@@ -121,6 +121,8 @@ class Datetime(datetime, BaseModel):
     datetime formats the api returns.
     """
     def __new__(cls, value):
+        if value is None:
+            raise ValueError("cannot instantiate a Datetime with a null value")
         # the api returns a bunch of different timestamps: two ISO 8601
         # formats (eg "2018-09-11T08:45:49.000000Z" and
         # "2014-05-18T17:22:23+00:00"), a unix timestamp (eg
