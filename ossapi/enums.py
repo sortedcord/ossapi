@@ -214,26 +214,26 @@ class Grade(EnumModel):
 # Parameter Enums
 # ===============
 
-class ScoreType(Enum):
+class ScoreType(EnumModel):
     BEST = "best"
     FIRST = "first"
     RECENT = "recent"
 
-class RankingFilter(Enum):
+class RankingFilter(EnumModel):
     ALL = "all"
     FRIENDS = "friends"
 
-class RankingType(Enum):
+class RankingType(EnumModel):
     CHARTS = "spotlight"
     COUNTRY = "country"
     PERFORMANCE = "performance"
     SCORE = "score"
 
-class UserLookupKey(Enum):
+class UserLookupKey(EnumModel):
     ID = "id"
     USERNAME = "username"
 
-class UserBeatmapType(Enum):
+class UserBeatmapType(EnumModel):
     FAVOURITE = "favourite"
     GRAVEYARD = "graveyard"
     LOVED = "loved"
@@ -241,25 +241,25 @@ class UserBeatmapType(Enum):
     RANKED = "ranked"
     PENDING = "pending"
 
-class BeatmapDiscussionPostSort(Enum):
+class BeatmapDiscussionPostSort(EnumModel):
     NEW = "id_desc"
     OLD = "id_asc"
 
-class CommentableType(Enum):
+class CommentableType(EnumModel):
     NEWS_POST = "news_post"
     CHANGELOG = "build"
     BEATMAPSET = "beatmapset"
 
-class CommentSort(Enum):
+class CommentSort(EnumModel):
     NEW = "new"
     OLD = "old"
     TOP = "top"
 
-class ForumTopicSort(Enum):
+class ForumTopicSort(EnumModel):
     NEW = "id_desc"
     OLD = "id_asc"
 
-class SearchMode(Enum):
+class SearchMode(EnumModel):
     ALL = "all"
     USERS = "user"
     WIKI = "wiki_page"
