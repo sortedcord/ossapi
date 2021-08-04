@@ -24,7 +24,8 @@ from ossapi.models import (Beatmap, BeatmapUserScore, ForumTopicAndPosts,
 from ossapi.mod import Mod
 from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     UserBeatmapType, BeatmapDiscussionPostSort, UserLookupKey,
-    BeatmapsetEventType, CommentableType, CommentSort, ForumTopicSort)
+    BeatmapsetEventType, CommentableType, CommentSort, ForumTopicSort,
+    SearchMode)
 from ossapi.utils import (is_compatible_type, is_primitive_type, is_optional,
     is_base_model_type, is_model_type, is_high_model_type)
 
@@ -48,6 +49,7 @@ BeatmapsetEventTypeT = Union[BeatmapsetEventType, str]
 CommentableTypeT = Union[CommentableType, str]
 CommentSortT = Union[CommentSort, str]
 ForumTopicSortT = Union[ForumTopicSort, str]
+SearchModeT = Union[SearchMode, str]
 
 
 def request(function):
@@ -652,9 +654,9 @@ class OssapiV2:
 
     @request
     def search(self,
-        mode="all",
-        query=None,
-        page=None
+        mode: Optional[SearchModeT] = None,
+        query: Optional[str] = None,
+        page: Optional[int] = None
     ) -> Search:
         """
         https://osu.ppy.sh/docs/index.html#search

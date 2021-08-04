@@ -259,6 +259,10 @@ class ForumTopicSort(Enum):
     NEW = "id_desc"
     OLD = "id_asc"
 
+class SearchMode(Enum):
+    ALL = "all"
+    USERS = "user"
+    WIKI = "wiki_page"
 
 # =================
 # Documented Models
