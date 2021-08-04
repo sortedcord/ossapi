@@ -182,6 +182,11 @@ class BeatmapsetApproval(EnumModel):
     QUALIFIED = "qualified"
     LOVED = "loved"
 
+class ForumTopicType(EnumModel):
+    NORMAL = "normal"
+    STICKY = "sticky"
+    ANNOUNCEMENT = "announcement"
+
 
 # ==================
 # Undocumented Enums
@@ -258,7 +263,6 @@ class ForumTopicSort(Enum):
 # =================
 # Documented Models
 # =================
-
 
 @dataclass
 class Failtimes(Model):
@@ -440,6 +444,11 @@ class ChangelogSearch(Model):
     max_id: Optional[int]
     stream: Optional[str]
     to: Optional[str]
+
+@dataclass
+class ForumPostBody(Model):
+    html: str
+    raw: str
 
 
 # ===================

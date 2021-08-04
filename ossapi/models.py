@@ -14,7 +14,7 @@ from ossapi.enums import (UserAccountHistory, ProfileBanner, UserBadge, Country,
     KudosuGiver, KudosuPost, EventType, EventAchivement, EventUser,
     EventBeatmap, BeatmapsetApproval, EventBeatmapset, KudosuVote,
     BeatmapsetEventType, UserRelationType, UserLevel, UserGradeCounts,
-    GithubUser, ChangelogSearch)
+    GithubUser, ChangelogSearch, ForumTopicType, ForumPostBody, ForumTopicSort)
 from ossapi.utils import Datetime, Model
 
 T = TypeVar("T")
@@ -362,28 +362,55 @@ class CommentBundle(Model):
     # undocumented
     cursor: CursorT
 
-
 @dataclass
 class ForumPost(Model):
-    pass
+    created_at: Datetime
+    # documented as non optional
+    deleted_at: Optional[Datetime]
+    # documented as non optional
+    edited_at: Optional[Datetime]
+    # documented as non optional
+    edited_by_id: Optional[int]
+    forum_id: int
+    id: int
+    topic_id: int
+    user_id: int
+    body: ForumPostBody
 
 @dataclass
 class ForumTopic(Model):
-    pass
-
+    created_at: Datetime
+    # documented as non optional
+    deleted_at: Optional[Datetime]
+    first_post_id: int
+    forum_id: int
+    id: int
+    is_locked: bool
+    last_post_id: int
+    post_count: int
+    title: str
+    type: ForumTopicType
+    updated_at: Datetime
+    user_id: int
 
 @dataclass
 class ForumTopicAndPosts(Model):
     cursor: CursorT
-    search: str
+    search: ForumTopicSearch
     posts: List[ForumPost]
     topic: ForumTopic
+
+@dataclass
+class ForumTopicSearch(Model):
+    sort: Optional[ForumTopicSort]
+    limit: Optional[int]
+    start: Optional[int]
+    end: Optional[int]
 
 @dataclass
 class SearchResult(Generic[T], Model):
     data: List[T]
     total: int
-
 
 @dataclass
 class WikiPage(Model):
