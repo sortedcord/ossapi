@@ -82,6 +82,7 @@ print(api.wiki_page("en", "Welcome").available_locales)
 print(api.changelog_build("stable40", "20210520.2").users)
 print(api.changelog_listing().builds[0].display_version)
 print(api.changelog_lookup("lazer").changelog_entries[0].github_pull_request_id)
+print(api.forum_topic(141240).posts[0].forum_id)
 ```
 
 Note that although this code just prints a single attribute for each endpoint, you can obviously do more complicated things like iterate over arrays:
