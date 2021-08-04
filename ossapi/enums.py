@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from typing import Optional, List, Any
-from enum import IntFlag, Enum
-
+from enum import IntFlag
 
 from ossapi.utils import EnumModel, ListEnumMeta, Datetime, Model, BaseModel
 
