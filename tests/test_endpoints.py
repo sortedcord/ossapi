@@ -104,3 +104,7 @@ class TestChangelogListing(TestCase):
 class TestChangelogLookup(TestCase):
     def test_deserialize(self):
         api.changelog_lookup("lazer")
+
+class TestForumTopic(TestCase):
+    def test_deserialize(self):
+        api.forum_topic(141240)
