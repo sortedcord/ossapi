@@ -498,13 +498,14 @@ class BeatmapsetDiscussion(Model):
 class BeatmapsetDiscussionVote(Model):
     score: int
     user_id: int
-
-    # all of the following are documented as being returned, but they never are
-    # (for the endpoints we've implemented anyway)
-    # beatmapset_discussion_id: int
-    # created_at: Datetime
-    # id: int
-    # updated_at: Datetime
+    # documented as non optional
+    beatmapset_discussion_id: Optional[int]
+    # documented as non optional
+    created_at: Optional[Datetime]
+    # documented as non optional
+    id: Optional[int]
+    # documented as non optional
+    updated_at: Optional[Datetime]
 
 @dataclass
 class KudosuHistory(Model):
@@ -734,6 +735,13 @@ class BeatmapsetDiscussionPostResult(Model):
     discussions: List[BeatmapsetDiscussion]
     cursor: CursorT
     posts: List[BeatmapsetDiscussionPost]
+    users: List[UserCompact]
+
+@dataclass
+class BeatmapsetDiscussionVotes(Model):
+    cursor: CursorT
+    discussions: List[BeatmapsetDiscussion]
+    votes: List[BeatmapsetDiscussionVote]
     users: List[UserCompact]
 
 @dataclass

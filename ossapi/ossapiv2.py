@@ -21,12 +21,13 @@ from ossapi.models import (Beatmap, BeatmapUserScore, ForumTopicAndPosts,
     ModdingHistoryEventsBundle, User, Rankings, BeatmapScores, KudosuHistory,
     Beatmapset, BeatmapPlaycount, Spotlight, Spotlights, WikiPage, _Event,
     Event, BeatmapsetDiscussionPostResult, Build, ChangelogListing,
-    MultiplayerScores, MultiplayerScoresCursor)
+    MultiplayerScores, MultiplayerScoresCursor, BeatmapsetDiscussionVotes)
 from ossapi.mod import Mod
 from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     UserBeatmapType, BeatmapDiscussionPostSort, UserLookupKey,
     BeatmapsetEventType, CommentableType, CommentSort, ForumTopicSort,
-    SearchMode, MultiplayerScoresSort)
+    SearchMode, MultiplayerScoresSort, BeatmapsetDiscussionVote,
+    BeatmapsetDiscussionVoteSort)
 from ossapi.utils import (is_compatible_type, is_primitive_type, is_optional,
     is_base_model_type, is_model_type, is_high_model_type)
 
@@ -52,6 +53,8 @@ CommentSortT = Union[CommentSort, str]
 ForumTopicSortT = Union[ForumTopicSort, str]
 SearchModeT = Union[SearchMode, str]
 MultiplayerScoresSortT = Union[MultiplayerScoresSort, str]
+BeatmapsetDiscussionVoteT = Union[BeatmapsetDiscussionVote, int]
+BeatmapsetDiscussionVoteSortT = Union[BeatmapsetDiscussionVoteSort, str]
 
 def request(function):
     """
@@ -552,6 +555,27 @@ class OssapiV2:
             "with_deleted": with_deleted}
         return self._get(BeatmapsetDiscussionPostResult,
             "/beatmapsets/discussions/posts", params)
+
+    @request
+    def beatmapset_discussion_votes(self,
+        beatmapset_discussion_id: Optional[int] = None,
+        limit: Optional[int] = None,
+        page: Optional[int] = None,
+        receiver_id: Optional[int] = None,
+        vote: Optional[BeatmapsetDiscussionVoteT] = None,
+        sort: Optional[BeatmapsetDiscussionVoteSortT] = None,
+        user_id: Optional[int] = None,
+        with_deleted: Optional[bool] = None
+    ) -> BeatmapsetDiscussionVotes:
+        """
+        https://osu.ppy.sh/docs/index.html#get-beatmapset-discussion-votes
+        """
+        params = {"beatmapset_discussion_id": beatmapset_discussion_id,
+            "limit": limit, "page": page, "receiver": receiver_id,
+            "score": vote, "sort": sort, "user": user_id,
+            "with_deleted": with_deleted}
+        return self._get(BeatmapsetDiscussionVotes,
+            "/beatmapsets/discussions/votes", params)
 
 
     # /changelog

@@ -267,6 +267,14 @@ class MultiplayerScoresSort(EnumModel):
     NEW = "score_desc"
     OLD = "score_asc"
 
+class BeatmapsetDiscussionVote(EnumModel):
+    UPVOTE = 1
+    DOWNVOTE = -1
+
+class BeatmapsetDiscussionVoteSort(EnumModel):
+    NEW = "id_desc"
+    OLD = "id_asc"
+
 # =================
 # Documented Models
 # =================

@@ -108,3 +108,7 @@ class TestChangelogLookup(TestCase):
 class TestForumTopic(TestCase):
     def test_deserialize(self):
         api.forum_topic(141240)
+
+class TestBeatmapsetDiscussionVotes(TestCase):
+    def test_deserialize(self):
+        api.beatmapset_discussion_votes().votes[0].score
