@@ -554,6 +554,8 @@ class OssapiV2:
             "/beatmapsets/discussions/posts", params)
 
 
+
+
     # /changelog
     # ----------
 
@@ -711,6 +713,7 @@ class OssapiV2:
 
     # TODO add test for this once I figure out values for room_id and
     # playlist_id that actually produce a response lol
+    @request
     def multiplayer_scores(self,
         room_id: int,
         playlist_id: int,
