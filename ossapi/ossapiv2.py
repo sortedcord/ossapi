@@ -554,8 +554,6 @@ class OssapiV2:
             "/beatmapsets/discussions/posts", params)
 
 
-
-
     # /changelog
     # ----------
 
@@ -592,6 +590,7 @@ class OssapiV2:
         """
         params = {"key": key}
         return self._get(Build, f"/changelog/{changelog}", params)
+
 
     # /comments
     # ---------
@@ -667,6 +666,7 @@ class OssapiV2:
         params = {"mode": mode, "query": query, "page": page}
         return self._get(Search, "/search", params)
 
+
     # /me
     # ---
 
@@ -678,6 +678,7 @@ class OssapiV2:
         https://osu.ppy.sh/docs/index.html#get-own-data
         """
         return self._get(User, f"/me/{mode.value if mode else ''}")
+
 
     # /rankings
     # ---------
@@ -708,6 +709,7 @@ class OssapiV2:
         spotlights = self._get(Spotlights, "/spotlights")
         return spotlights.spotlights
 
+
     # /rooms
     # ------
 
@@ -727,6 +729,7 @@ class OssapiV2:
         params = {"limit": limit, "sort": sort, "cursor": cursor}
         return self._get(MultiplayerScores,
             f"/rooms/{room_id}/playlist/{playlist_id}/scores", params=params)
+
 
     # /users
     # ------
@@ -804,6 +807,7 @@ class OssapiV2:
         """
         params = {"key": key}
         return self._get(User, f"/users/{user}/{mode.value if mode else ''}", params)
+
 
     # /wiki
     # -----
