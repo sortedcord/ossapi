@@ -671,6 +671,41 @@ class ChangelogListing(Model):
     search: ChangelogSearch
     streams: List[UpdateStream]
 
+@dataclass
+class MultiplayerScores(Model):
+    cursor: MultiplayerScoresCursor
+    params: str
+    scores: List[MultiplayerScore]
+    total: Optional[int]
+    user_score: Optional[MultiplayerScore]
+
+@dataclass
+class MultiplayerScore(Model):
+    id: int
+    user_id: int
+    room_id: int
+    playlist_item_id: int
+    beatmap_id: int
+    rank: int
+    total_score: int
+    max_combo: int
+    mods: List[Mod]
+    statistics: Statistics
+    passed: bool
+    position: Optional[int]
+    scores_around: Optional[MultiplayerScoresAround]
+    user: User
+
+@dataclass
+class MultiplayerScoresAround(Model):
+    higher: List[MultiplayerScore]
+    lower: List[MultiplayerScore]
+
+@dataclass
+class MultiplayerScoresCursor(Model):
+    score_id: int
+    total_score: int
+
 # ===================
 # Undocumented Models
 # ===================

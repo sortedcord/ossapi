@@ -20,12 +20,13 @@ from ossapi.models import (Beatmap, BeatmapUserScore, ForumTopicAndPosts,
     Search, CommentBundle, Cursor, Score, BeatmapSearchResult,
     ModdingHistoryEventsBundle, User, Rankings, BeatmapScores, KudosuHistory,
     Beatmapset, BeatmapPlaycount, Spotlight, Spotlights, WikiPage, _Event,
-    Event, BeatmapsetDiscussionPostResult, Build, ChangelogListing)
+    Event, BeatmapsetDiscussionPostResult, Build, ChangelogListing,
+    MultiplayerScores, MultiplayerScoresCursor)
 from ossapi.mod import Mod
 from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     UserBeatmapType, BeatmapDiscussionPostSort, UserLookupKey,
     BeatmapsetEventType, CommentableType, CommentSort, ForumTopicSort,
-    SearchMode)
+    SearchMode, MultiplayerScoresSort)
 from ossapi.utils import (is_compatible_type, is_primitive_type, is_optional,
     is_base_model_type, is_model_type, is_high_model_type)
 
@@ -50,7 +51,7 @@ CommentableTypeT = Union[CommentableType, str]
 CommentSortT = Union[CommentSort, str]
 ForumTopicSortT = Union[ForumTopicSort, str]
 SearchModeT = Union[SearchMode, str]
-
+MultiplayerScoresSortT = Union[MultiplayerScoresSort, str]
 
 def request(function):
     """
@@ -704,6 +705,25 @@ class OssapiV2:
         """
         spotlights = self._get(Spotlights, "/spotlights")
         return spotlights.spotlights
+
+    # /rooms
+    # ------
+
+    # TODO add test for this once I figure out values for room_id and
+    # playlist_id that actually produce a response lol
+    def multiplayer_scores(self,
+        room_id: int,
+        playlist_id: int,
+        limit: Optional[int] = None,
+        sort: Optional[MultiplayerScoresSortT] = None,
+        cursor: Optional[MultiplayerScoresCursor] = None
+    ) -> MultiplayerScores:
+        """
+        https://osu.ppy.sh/docs/index.html#get-scores
+        """
+        params = {"limit": limit, "sort": sort, "cursor": cursor}
+        return self._get(MultiplayerScores,
+            f"/rooms/{room_id}/playlist/{playlist_id}/scores", params=params)
 
     # /users
     # ------

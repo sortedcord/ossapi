@@ -263,6 +263,10 @@ class SearchMode(EnumModel):
     USERS = "user"
     WIKI = "wiki_page"
 
+class MultiplayerScoresSort(EnumModel):
+    NEW = "score_desc"
+    OLD = "score_asc"
+
 # =================
 # Documented Models
 # =================
