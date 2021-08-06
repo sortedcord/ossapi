@@ -715,7 +715,7 @@ class MultiplayerScoresCursor(Model):
 class BeatmapSearchResult(Model):
     beatmapsets: List[Beatmapset]
     cursor: CursorT
-    recommended_difficulty: float
+    recommended_difficulty: Optional[float]
     error: Optional[str]
     total: int
     search: Any
