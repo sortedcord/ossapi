@@ -726,7 +726,7 @@ class BeatmapsetDiscussionReview(Model):
     max_blocks: int
 
 @dataclass
-class BeatmapsetDiscussionPostResult(Model):
+class BeatmapsetDiscussionPosts(Model):
     # This is for the ``/beatmapsets/discussions/posts`` endpoint because
     # the actual return type of that endpoint doesn't match the docs at
     # https://osu.ppy.sh/docs/index.html#get-beatmapset-discussion-posts. TODO
