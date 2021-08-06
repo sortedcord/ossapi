@@ -903,3 +903,11 @@ class OssapiV2:
             "min_date": min_date, "max_date": max_date, "types": types}
         return self._get(ModdingHistoryEventsBundle, "/beatmapsets/events",
             params)
+
+
+    # /oauth
+    # ------
+
+    def revoke_token(self):
+        self.session.delete(f"{self.BASE_URL}/oauth/tokens/current")
+        self.clear_authentication()
