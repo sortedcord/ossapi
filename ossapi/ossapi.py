@@ -9,6 +9,8 @@ from requests import RequestException
 
 from ossapi.mod import Mod
 
+# log level below debug
+TRACE = 5
 
 class APIException(Exception):
     """An error involving the osu! api."""
@@ -68,7 +70,7 @@ class Ossapi:
             time.sleep(5)
             return self._get(endpoint, params, type_, list_, _beatmap_id)
 
-        self.log.debug(f"made request to url {r.request.url}")
+        self.log.log(TRACE, f"made request to url {r.request.url}")
 
         try:
             data = r.json()
@@ -78,7 +80,7 @@ class Ossapi:
             time.sleep(3)
             return self._get(endpoint, params, type_, list_, _beatmap_id)
 
-        self.log.debug(f"got data from api: {data}")
+        self.log.log(TRACE, f"got data from api: {data}")
 
         if "error" in data:
             error = data["error"]
