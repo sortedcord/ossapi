@@ -40,20 +40,12 @@ class Ossapi:
     RATELIMIT_REFRESH = 60
 
     def __init__(self, key):
-        """Initializes an API instance."""
         self._key = key
         self.log = logging.getLogger(__name__)
         # when we started our requests cycle
         self.start_time = datetime.min
 
     def _get(self, endpoint, params, type_, list_=False, _beatmap_id=None):
-        """
-        Makes a request to the osu api and returns the json response.
-
-        Returns a dictionary of 'error' to 'The api broke.' if no valid
-        json could be decoded (ie if a JSONDecodeError is thrown while
-        decoding the response)
-        """
         difference = datetime.now() - self.start_time
         if difference.seconds > self.RATELIMIT_REFRESH:
             self.start_time = datetime.now()
