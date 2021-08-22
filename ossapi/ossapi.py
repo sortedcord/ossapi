@@ -46,6 +46,10 @@ class Ossapi:
         self.start_time = datetime.min
 
     def _get(self, endpoint, params, type_, list_=False, _beatmap_id=None):
+        # _beatmap_id parameter exists because api v1 is badly designed and
+        # returns models which are missing some information if you already
+        # passed that value in the api call. So we need to supply it here so
+        # we can make our models homogeneous.
         difference = datetime.now() - self.start_time
         if difference.seconds > self.RATELIMIT_REFRESH:
             self.start_time = datetime.now()
