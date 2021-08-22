@@ -1,6 +1,7 @@
 import logging
 
-from ossapi.ossapi import Ossapi
+from ossapi.ossapi import (Ossapi, ReplayUnavailableException,
+    InvalidKeyException, APIException)
 from ossapi.ossapiv2 import OssapiV2
 from ossapi.mod import Mod
 from ossapi.version import __version__
