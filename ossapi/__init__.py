@@ -1,8 +1,13 @@
+import sys
 import logging
 
 from ossapi.ossapi import (Ossapi, ReplayUnavailableException,
     InvalidKeyException, APIException)
-from ossapi.ossapiv2 import OssapiV2
+
+# OssapiV2 requires python 3.8+
+if sys.version_info[1] >= 8:
+    from ossapi.ossapiv2 import OssapiV2
+
 from ossapi.mod import Mod
 from ossapi.version import __version__
 
