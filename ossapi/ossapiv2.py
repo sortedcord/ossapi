@@ -101,7 +101,6 @@ class OssapiV2:
 
     AUTHORIZATION_TOKEN_FILE = (Path(__file__).parent /
         "authorization_code.pickle")
-    CLIENT_TOKEN_FILE = Path(__file__).parent / "client_credentials.pickle"
 
     def __init__(self, client_id, client_secret, redirect_uri=None,
         scopes=["public"], strict=False):
@@ -112,21 +111,6 @@ class OssapiV2:
             scopes)
 
     def authenticate(self, client_id, client_secret, redirect_uri, scopes):
-        # Prefer saved sessions to re-authenticating. Furthermore, prefer the
-        # authorization code grant over the client credentials grant if both
-        # exist.
-        if self.AUTHORIZATION_TOKEN_FILE.is_file():
-            with open(self.AUTHORIZATION_TOKEN_FILE, "rb") as f:
-                token = pickle.load(f)
-            return self._auth_oauth_session(client_id, client_secret, scopes,
-                token=token)
-
-        # TODO I think this breaks if the token is expired?
-        if self.CLIENT_TOKEN_FILE.is_file():
-            with open(self.CLIENT_TOKEN_FILE, "rb") as f:
-                token = pickle.load(f)
-            return OAuth2Session(client_id, token=token)
-
         # if redirect_uri is not passed, assume the user wanted to use the
         # client credentials grant.
         if not redirect_uri:
@@ -134,6 +118,14 @@ class OssapiV2:
                 raise ValueError(f"`scopes` must be ['public'] if the "
                     f"client credentials grant is used. Got {scopes}")
             return self._client_credentials_grant(client_id, client_secret)
+
+        # used saved session if it exists
+        if self.AUTHORIZATION_TOKEN_FILE.is_file():
+            with open(self.AUTHORIZATION_TOKEN_FILE, "rb") as f:
+                token = pickle.load(f)
+            return self._auth_oauth_session(client_id, client_secret, scopes,
+                token=token)
+
         return self._authorization_code_grant(client_id, client_secret,
             redirect_uri, scopes)
 
@@ -141,21 +133,19 @@ class OssapiV2:
     def clear_authentication():
         if OssapiV2.AUTHORIZATION_TOKEN_FILE.is_file():
             OssapiV2.AUTHORIZATION_TOKEN_FILE.unlink()
-        if OssapiV2.CLIENT_TOKEN_FILE.is_file():
-            OssapiV2.CLIENT_TOKEN_FILE.unlink()
 
     def _client_credentials_grant(self, client_id, client_secret):
+        self.log.info("initializing client credentials grant")
         client = BackendApplicationClient(client_id=client_id, scope=["public"])
         oauth = OAuth2Session(client=client)
-
-        token = oauth.fetch_token(token_url=self.TOKEN_URL,
+        oauth.fetch_token(token_url=self.TOKEN_URL,
             client_id=client_id, client_secret=client_secret)
-        self._save_token(token, "client")
 
         return oauth
 
     def _authorization_code_grant(self, client_id, client_secret, redirect_uri,
         scopes):
+        self.log.info("initializing authorization code")
         oauth = self._auth_oauth_session(client_id, client_secret, scopes,
             redirect_uri=redirect_uri)
         authorization_url, _state = oauth.authorization_url(self.AUTH_CODE_URL)
@@ -184,7 +174,7 @@ class OssapiV2:
         code = data.split("code=")[1].split("&state=")[0]
         token = oauth.fetch_token(self.TOKEN_URL, client_id=client_id,
             client_secret=client_secret, code=code)
-        self._save_token(token, "auth")
+        self._save_token(token)
 
         return oauth
 
@@ -197,15 +187,12 @@ class OssapiV2:
         return OAuth2Session(client_id, token=token, redirect_uri=redirect_uri,
             auto_refresh_url=self.TOKEN_URL,
             auto_refresh_kwargs=auto_refresh_kwargs,
-            token_updater=lambda token: self._save_token(token, "auth"),
+            token_updater=self._save_token,
             scope=scopes)
 
-    def _save_token(self, token, flow):
-        self.log.info(f"saving token to pickle file for flow {flow}")
-        filename = ("authorization_code.pickle" if flow == "auth" else
-            "client_credentials.pickle")
-        path = Path(__file__).parent / filename
-        with open(path, "wb+") as f:
+    def _save_token(self, token):
+        self.log.info(f"saving token to {self.AUTHORIZATION_TOKEN_FILE}")
+        with open(self.AUTHORIZATION_TOKEN_FILE, "wb+") as f:
             pickle.dump(token, f)
 
     def _get(self, type_, url, params={}):
