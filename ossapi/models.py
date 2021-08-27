@@ -159,7 +159,9 @@ class Beatmap(BeatmapCompact):
     accuracy: float
     ar: float
     beatmapset_id: int
-    bpm: float
+    # documented as non-optional. See api.beatmap(beatmap_id=2279323) for a
+    # beatmap with a null bpm
+    bpm: Optional[float]
     convert: bool
     count_circles: int
     count_sliders: int
