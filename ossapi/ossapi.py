@@ -328,8 +328,10 @@ class Score(Model):
         self.user_id = self._int("user_id")
         self.date = self._date("date")
         self.rank = self._get("rank")
-        self.pp = self._float("pp")
-        self.replay_available = self._bool("replay_available")
+        # get_user_recent doesn't provide pp or replay_available at all
+        self.pp = self._float("pp") if "pp" in data else None
+        self.replay_available = (self._bool("replay_available") if
+            "replay_available" in data else None)
 
 class Replay(Model):
     def __init__(self, data):
