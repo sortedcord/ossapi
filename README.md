@@ -4,27 +4,21 @@
 
 ossapi is a python wrapper for the osu! api. ossapi supports both [api v2](https://osu.ppy.sh/docs/index.html) and [api v1](https://github.com/ppy/osu-api/wiki). See [API v2 Usage](#api-v2-usage) for api v2 documentation, or [API v1 Usage](#api-v1-usage) for api v1 documentation.
 
-To install ossapi for api v2, which is currently in beta:
-
-```bash
-pip install --pre ossapi
-```
-
-To upgrade ossapi for api v2:
-
-```bash
-pip install --pre -U ossapi
-```
-
-To install ossapi for api v1:
+To install:
 
 ```bash
 pip install ossapi
 ```
 
+To upgrade:
+
+```bash
+pip install -U ossapi
+```
+
 ## API v2 Usage
 
-Note that api v2 requires python 3.8+.
+Please note that api v2 requires python 3.8+ (api v1 only requires python 3.6+).
 
 ### Authenticating
 
@@ -138,11 +132,26 @@ print(r.cursor) # None
 
 ## API v1 Usage
 
+You can get your api v1 key at <https://osu.ppy.sh/p/api/>. Note that due to a [redirection bug](https://github.com/ppy/osu-web/issues/2867), you may need to log in and wait 30 seconds before being able to access the api page through the above link.
+
+Basic usage:
+
 ```python
 from ossapi import Ossapi
 
 api = Ossapi("API_KEY")
-json = api.get_replay({"m": "0", "b": "1776628", "u": "3256299"})
-# either strings or ints will work. Returns something like
-# `{"content":"XQAAIA....3fISw=","encoding":"base64"}`
+print(api.get_beatmaps(user=10690090)[0].submit_date)
+print(api.get_match(69063884).games[0].game_id)
+print(api.get_scores(221777)[0].username)
+print(len(api.get_replay(beatmap_id=221777, user=6974470)))
+print(api.get_user(12092800).playcount)
+print(api.get_user_best(12092800)[0].pp)
+print(api.get_user_recent(12092800)[0].beatmap_id)
+
+# for mods, we have a Mod class which provides convenience
+# functions for working with mod combinations. An example
+# of working with the Mod class:
+score = api.get_scores(221777)[0]
+print(score.mods, score.mods.decompose(),
+    score.mods.value, score.mods.long_name())
 ```
