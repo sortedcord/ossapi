@@ -14,7 +14,7 @@ class TestGetBeatmaps(TestCase):
         apiv1.get_beatmaps(beatmapset_id=1051305)
         apiv1.get_beatmaps(beatmap_id=221777)
 
-class TestGetUserBes(TestCase):
+class TestGetUserBest(TestCase):
     def test_deserialize(self):
         apiv1.get_user_best(12092800)
 
