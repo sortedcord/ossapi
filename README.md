@@ -139,7 +139,7 @@ Basic usage:
 ```python
 from ossapi import Ossapi
 
-api = Ossapi("API_KEY")
+api = Ossapi("key")
 print(api.get_beatmaps(user=10690090)[0].submit_date)
 print(api.get_match(69063884).games[0].game_id)
 print(api.get_scores(221777)[0].username)
