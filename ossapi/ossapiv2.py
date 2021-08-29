@@ -22,7 +22,7 @@ from ossapi.models import (
     ModdingHistoryEventsBundle, User, Rankings, BeatmapScores, KudosuHistory,
     Beatmapset, BeatmapPlaycount, Spotlight, Spotlights, WikiPage, _Event,
     Event, BeatmapsetDiscussionPosts, Build, ChangelogListing,
-    MultiplayerScores, MultiplayerScoresCursor, BeatmapsetDiscussionVotes, CreateNewPMResponse
+    MultiplayerScores, MultiplayerScoresCursor, BeatmapsetDiscussionVotes, CreatePMResponse
 )
 from ossapi.mod import Mod
 from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
@@ -210,7 +210,7 @@ class OssapiV2:
         self._check_json(json_, r.request.url)
         return self._instantiate_type(type_, json_)
 
-    def _post(self, type_, url: str, data: Optional[dict] = None):
+    def _post(self, type_, url, data=None):
         data = data or {}
         r = self.session.post(f"{self.BASE_URL}{url}", data=data)
         self.log.info(f"made POST request to {r.request.url}")
@@ -622,12 +622,12 @@ class OssapiV2:
     # ---------
 
     @request
-    def create_new_pm(self, target_id: int, message: str, is_action: bool = False) -> CreateNewPMResponse:
+    def create_pm(self, user_id: int, message: str, is_action: bool = False) -> CreatePMResponse:
         """
         https://osu.ppy.sh/docs/index.html#create-new-pm
         """
-        payload = {"target_id": target_id, "message": message, "is_action": is_action}
-        return self._post(CreateNewPMResponse, "/chat/new", data=payload)
+        payload = {"target_id": user_id, "message": message, "is_action": is_action}
+        return self._post(CreatePMResponse, "/chat/new", data=payload)
 
 
     # /comments

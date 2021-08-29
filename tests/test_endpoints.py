@@ -119,4 +119,4 @@ class TestCreateNewPM(TestCase):
         # Target ID of 2070907 is Tillerino
         scoped_api = OssapiV2(client_id, client_secret, redirect_uri="http://localhost:9409/",
                               scopes=["chat.write"], strict=True)
-        scoped_api.create_new_pm(target_id=2070907, message="Integration test please ignore")
+        scoped_api.create_pm(user_id=2070907, message="Integration test please ignore")

@@ -874,7 +874,7 @@ class ChatMessage(Model):
     timestamp: Datetime
 
 @dataclass
-class CreateNewPMResponse(Model):
+class CreatePMResponse(Model):
     message: ChatMessage
     new_channel_id: int
 
