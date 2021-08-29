@@ -871,7 +871,7 @@ class ChatMessage(Model):
     message_id: int
     sender: UserCompact
     sender_id: int
-    timestamp: str
+    timestamp: Datetime
 
 @dataclass
 class CreateNewPMResponse(Model):
