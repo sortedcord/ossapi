@@ -1,8 +1,8 @@
 from unittest import TestCase
 
-from ossapi import RankingType, BeatmapsetEventType
+from ossapi import RankingType, BeatmapsetEventType, OssapiV2
 
-from tests import api
+from tests import api, client_id, client_secret
 
 class TestBeatmapsetDiscussionPosts(TestCase):
     def test_deserialize(self):
@@ -77,7 +77,7 @@ class TestUser(TestCase):
         api.user(10690090)
 
     def test_key(self):
-        # make suure it automatically falls back to username if not specified
+        # make sure it automatically falls back to username if not specified
         api.user("tybug2")
         api.user("tybug2", key="username")
 
@@ -112,3 +112,11 @@ class TestForumTopic(TestCase):
 class TestBeatmapsetDiscussionVotes(TestCase):
     def test_deserialize(self):
         api.beatmapset_discussion_votes().votes[0].score
+
+
+class TestCreateNewPM(TestCase):
+    def test_deserialize(self):
+        # Target ID of 2070907 is Tillerino
+        scoped_api = OssapiV2(client_id, client_secret, redirect_uri="http://localhost:9409/",
+                              scopes=["chat.write"], strict=True)
+        scoped_api.create_new_pm(target_id=2070907, message="Integration test please ignore")

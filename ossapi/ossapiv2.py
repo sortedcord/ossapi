@@ -16,12 +16,14 @@ from keyword import iskeyword
 from requests_oauthlib import OAuth2Session
 from oauthlib.oauth2 import BackendApplicationClient
 
-from ossapi.models import (Beatmap, BeatmapUserScore, ForumTopicAndPosts,
+from ossapi.models import (
+    Beatmap, BeatmapUserScore, ForumTopicAndPosts,
     Search, CommentBundle, Cursor, Score, BeatmapSearchResult,
     ModdingHistoryEventsBundle, User, Rankings, BeatmapScores, KudosuHistory,
     Beatmapset, BeatmapPlaycount, Spotlight, Spotlights, WikiPage, _Event,
     Event, BeatmapsetDiscussionPosts, Build, ChangelogListing,
-    MultiplayerScores, MultiplayerScoresCursor, BeatmapsetDiscussionVotes)
+    MultiplayerScores, MultiplayerScoresCursor, BeatmapsetDiscussionVotes, CreateNewPMResponse
+)
 from ossapi.mod import Mod
 from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     UserBeatmapType, BeatmapDiscussionPostSort, UserLookupKey,
@@ -33,7 +35,7 @@ from ossapi.utils import (is_compatible_type, is_primitive_type, is_optional,
 
 # our ``request`` function below relies on the ordering of these types. The
 # base type must come first, with any auxiliary types that the base type accepts
-# cooming after.
+# coming after.
 # These types are intended to provide better type hinting for consumers. We
 # want to support the ability to pass ``"osu"`` instead of ``GameMode.STD``,
 # for instance. We automatically convert any value to its base class if the
@@ -195,19 +197,32 @@ class OssapiV2:
         with open(self.AUTHORIZATION_TOKEN_FILE, "wb+") as f:
             pickle.dump(token, f)
 
-    def _get(self, type_, url, params={}):
+    def _get(self, type_, url, params=None):
+        params = params or {}
         params = self._format_params(params)
         r = self.session.get(f"{self.BASE_URL}{url}", params=params)
-        self.log.info(f"made request to {r.request.url}")
+        self.log.info(f"made GET request to {r.request.url}")
         json_ = r.json()
         self.log.debug(f"received json: \n{json.dumps(json_, indent=4)}")
         # TODO this should just be ``if "error" in json``, but for some reason
         # ``self.search_beatmaps`` always returns an error in the response...
         # open an issue on osu-web?
-        if len(json_) == 1 and "error" in json_:
-            raise ValueError(f"api returned an error of `{json_['error']}` for "
-                f"a request to {unquote(r.request.url)}")
+        self._check_json(json_, r.request.url)
         return self._instantiate_type(type_, json_)
+
+    def _post(self, type_, url: str, data: Optional[dict] = None):
+        data = data or {}
+        r = self.session.post(f"{self.BASE_URL}{url}", data=data)
+        self.log.info(f"made POST request to {r.request.url}")
+        json_ = r.json()
+        self.log.debug(f"received json: \n{json.dumps(json_, indent=4)}")
+        self._check_json(json_, r.request.url)
+        return self._instantiate_type(type_, json_)
+
+    @staticmethod
+    def _check_json(json_, url):
+        if len(json_) == 1 and "error" in json_:
+            raise ValueError(f"api returned an error of `{json_['error']}` for a request to {unquote(url)}")
 
     def _format_params(self, params):
         for key, value in params.copy().items():
@@ -603,6 +618,18 @@ class OssapiV2:
         return self._get(Build, f"/changelog/{changelog}", params)
 
 
+    # /chat
+    # ---------
+
+    @request
+    def create_new_pm(self, target_id: int, message: str, is_action: bool = False) -> CreateNewPMResponse:
+        """
+        https://osu.ppy.sh/docs/index.html#create-new-pm
+        """
+        payload = {"target_id": target_id, "message": message, "is_action": is_action}
+        return self._post(CreateNewPMResponse, "/chat/new", data=payload)
+
+
     # /comments
     # ---------
 
@@ -791,8 +818,7 @@ class OssapiV2:
         if type_ is UserBeatmapType.MOST_PLAYED:
             return_type = List[BeatmapPlaycount]
 
-        return self._get(return_type, f"/users/{user_id}/beatmapsets/"
-            f"{type_.value}", params)
+        return self._get(return_type, f"/users/{user_id}/beatmapsets/{type_.value}", params)
 
     @request
     def user_recent_activity(self,
