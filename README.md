@@ -147,11 +147,40 @@ print(len(api.get_replay(beatmap_id=221777, user=6974470)))
 print(api.get_user(12092800).playcount)
 print(api.get_user_best(12092800)[0].pp)
 print(api.get_user_recent(12092800)[0].beatmap_id)
+```
 
-# for mods, we have a Mod class which provides convenience
-# functions for working with mod combinations. An example
-# of working with the Mod class:
-score = api.get_scores(221777)[0]
-print(score.mods, score.mods.decompose(),
-    score.mods.value, score.mods.long_name())
+For convenience when working with mods, we provide a Mod class, which is used wherever the api returns a mod value. An overview of its methods, in example format:
+
+```python
+from ossapi import Mod, Ossapi
+
+api = Ossapi("key")
+
+mods = api.get_scores(221777)[0].mods
+# Mod's __str__ uses short_name()
+print(mods)
+print(mods.short_name())
+
+# to break down a mod into its component mods (eg if you want ["HD", "DT"] from "HDDT")
+print(mods.decompose())
+
+# to get the long form name (HD -> Hidden)
+print(mods.long_name())
+
+# to access the underlying value
+print(mods.value)
+
+# to add or remove a mod from the mod combination, use + and -
+print(mods + Mod.FL)
+print(mods - Mod.HD)
+# you can also add or remove multiple mods at a time
+print(mods - Mod.HDHR)
+
+# common mod combinations are stored as static variables under `Mod` for convenience
+print(Mod.HDDT, Mod.HDHR, Mod.HDDTHR)
+# otherwise, the preferred way to build up mods is by adding them together
+print(Mod.HD + Mod.FL + Mod.EZ)
+# alternatively, you can instantiate with the raw value
+print(Mod(1034))
+assert Mod.HD + Mod.FL + Mod.EZ == Mod(1034)
 ```
