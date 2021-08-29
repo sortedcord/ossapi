@@ -113,6 +113,9 @@ class TestBeatmapsetDiscussionVotes(TestCase):
     def test_deserialize(self):
         api.beatmapset_discussion_votes().votes[0].score
 
+class TestBeatmapsetDiscussionListing(TestCase):
+    def test_deserialize(self):
+        api.beatmapset_discussion_listing()
 
 class TestCreateNewPM(TestCase):
     def test_deserialize(self):

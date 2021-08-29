@@ -22,16 +22,21 @@ from ossapi.models import (
     ModdingHistoryEventsBundle, User, Rankings, BeatmapScores, KudosuHistory,
     Beatmapset, BeatmapPlaycount, Spotlight, Spotlights, WikiPage, _Event,
     Event, BeatmapsetDiscussionPosts, Build, ChangelogListing,
-    MultiplayerScores, MultiplayerScoresCursor, BeatmapsetDiscussionVotes, CreatePMResponse
+    MultiplayerScores, MultiplayerScoresCursor, BeatmapsetDiscussionVotes, CreatePMResponse,
+    BeatmapsetDiscussionListing
 )
 from ossapi.mod import Mod
-from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
+from ossapi.enums import (
+    GameMode, ScoreType, RankingFilter, RankingType,
     UserBeatmapType, BeatmapDiscussionPostSort, UserLookupKey,
     BeatmapsetEventType, CommentableType, CommentSort, ForumTopicSort,
     SearchMode, MultiplayerScoresSort, BeatmapsetDiscussionVote,
-    BeatmapsetDiscussionVoteSort)
-from ossapi.utils import (is_compatible_type, is_primitive_type, is_optional,
-    is_base_model_type, is_model_type, is_high_model_type)
+    BeatmapsetDiscussionVoteSort, BeatmapsetStatus, MessageType
+)
+from ossapi.utils import (
+    is_compatible_type, is_primitive_type, is_optional,
+    is_base_model_type, is_model_type, is_high_model_type
+)
 
 # our ``request`` function below relies on the ordering of these types. The
 # base type must come first, with any auxiliary types that the base type accepts
@@ -57,6 +62,7 @@ SearchModeT = Union[SearchMode, str]
 MultiplayerScoresSortT = Union[MultiplayerScoresSort, str]
 BeatmapsetDiscussionVoteT = Union[BeatmapsetDiscussionVote, int]
 BeatmapsetDiscussionVoteSortT = Union[BeatmapsetDiscussionVoteSort, str]
+MessageTypeT = Union[MessageType, str]
 
 def request(function):
     """
@@ -579,6 +585,35 @@ class OssapiV2:
         return self._get(BeatmapsetDiscussionVotes,
             "/beatmapsets/discussions/votes", params)
 
+    @request
+    def beatmapset_discussion_listing(self,
+        beatmapset_id: Optional[str] = None,
+        beatmap_id: Optional[str] = None,
+        beatmapset_status: Optional[BeatmapsetStatus] = None,
+        limit: Optional[int] = None,
+        message_types: Optional[List[MessageTypeT]] = None,
+        only_unresolved: Optional[bool] = None,
+        page: Optional[int] = None,
+        sort: Optional[BeatmapDiscussionPostSortT] = None,
+        user: Optional[str] = None,
+        with_deleted: Optional[str] = None,
+    ) -> BeatmapsetDiscussionListing:
+        """
+        https://osu.ppy.sh/docs/index.html#get-beatmapset-discussions
+        """
+        params = {
+            "beatmapset_id": beatmapset_id,
+            "beatmap_id": beatmap_id,
+            "beatmapset_status": beatmapset_status,
+            "limit": limit,
+            "message_types": message_types,
+            "only_unresolved": only_unresolved,
+            "page": page,
+            "sort": sort,
+            "user": user,
+            "with_deleted": with_deleted,
+        }
+        return self._get(BeatmapsetDiscussionListing, "/beatmapsets/discussions", params)
 
     # /changelog
     # ----------

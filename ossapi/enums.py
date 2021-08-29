@@ -244,6 +244,13 @@ class BeatmapDiscussionPostSort(EnumModel):
     NEW = "id_desc"
     OLD = "id_asc"
 
+class BeatmapsetStatus(EnumModel):
+    ALL = "all"
+    RANKED = "ranked"
+    QUALIFIED = "qualified"
+    DISQUALIFIED = "disqualified"
+    NEVER_QUALIFIED = "never_qualified"
+
 class ChannelType(EnumModel):
     PUBLIC = "PUBLIC"
     PRIVATE = "PRIVATE"

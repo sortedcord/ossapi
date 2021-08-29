@@ -724,6 +724,15 @@ class BeatmapSearchResult(Model):
     search: Any
 
 @dataclass
+class BeatmapsetDiscussionListing(Model):
+    beatmaps: List[Beatmap]
+    cursor: CursorT
+    discussions: List[BeatmapsetDiscussion]
+    included_discussions: List[BeatmapsetDiscussion]
+    reviews_config: ReviewsConfig
+    users: List[UserCompact]
+
+@dataclass
 class BeatmapsetDiscussionReview(Model):
     # https://github.com/ppy/osu-web/blob/master/app/Libraries/BeatmapsetDiscussionReview.php
     max_blocks: int
@@ -890,6 +899,10 @@ class ModdingHistoryEventsBundle(Model):
     events: List[BeatmapsetEvent]
     reviewsConfig: BeatmapsetDiscussionReview
     users: List[UserCompact]
+
+@dataclass
+class ReviewsConfig(Model):
+    max_blocks: int
 
 @dataclass
 class UserRelation(Model):
