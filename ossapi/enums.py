@@ -244,6 +244,15 @@ class BeatmapDiscussionPostSort(EnumModel):
     NEW = "id_desc"
     OLD = "id_asc"
 
+class ChannelType(EnumModel):
+    PUBLIC = "PUBLIC"
+    PRIVATE = "PRIVATE"
+    MULTIPLAYER = "MULTIPLAYER"
+    SPECTATOR = "SPECTATOR"
+    TEMPORARY = "TEMPORARY"
+    PM = "PM"
+    GROUP = "GROUP"
+
 class CommentableType(EnumModel):
     NEWS_POST = "news_post"
     CHANGELOG = "build"

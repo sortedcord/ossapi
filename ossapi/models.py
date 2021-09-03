@@ -14,7 +14,8 @@ from ossapi.enums import (UserAccountHistory, ProfileBanner, UserBadge, Country,
     KudosuGiver, KudosuPost, EventType, EventAchivement, EventUser,
     EventBeatmap, BeatmapsetApproval, EventBeatmapset, KudosuVote,
     BeatmapsetEventType, UserRelationType, UserLevel, UserGradeCounts,
-    GithubUser, ChangelogSearch, ForumTopicType, ForumPostBody, ForumTopicSort)
+    GithubUser, ChangelogSearch, ForumTopicType, ForumPostBody, ForumTopicSort,
+    ChannelType)
 from ossapi.utils import Datetime, Model
 
 T = TypeVar("T")
@@ -147,6 +148,7 @@ class BeatmapCompact(Model):
     # optional fields
     # ---------------
     beatmapset: Optional[BeatmapsetCompact]
+    beatmapset_id: Optional[int]
     checksum: Optional[str]
     failtimes: Optional[Failtimes]
     max_combo: Optional[int]
@@ -226,6 +228,8 @@ class BeatmapsetCompact(Model):
     recent_favourites: Optional[Any]
     related_users: Optional[Any]
     user: Optional[UserCompact]
+    # undocumented
+    track_id: Optional[int]
 
 @dataclass
 class Beatmapset(BeatmapsetCompact):
@@ -845,7 +849,44 @@ class BeatmapsetEvent(Model):
         type_ = BeatmapsetEventType(self.type)
         return {"comment": mapping[type_]}
 
+@dataclass
+class ChatChannel(Model):
+    channel_id: int
+    description: Optional[str]
+    icon: str
+    # documented as non-optional (try pming tillerino with this non-optional)
+    moderated: Optional[bool]
+    name: str
+    type: ChannelType
 
+    # optional fields
+    # ---------------
+    first_message_id: Optional[int]
+    last_message_id: Optional[int]
+    last_read_id: Optional[int]
+    recent_messages: Optional[List[ChatMessage]]
+    users: Optional[List[int]]
+
+@dataclass
+class ChatMessage(Model):
+    channel_id: int
+    content: str
+    is_action: bool
+    message_id: int
+    sender: UserCompact
+    sender_id: int
+    timestamp: Datetime
+
+@dataclass
+class CreatePMResponse(Model):
+    message: ChatMessage
+    new_channel_id: int
+
+    # undocumented
+    channel: ChatChannel
+
+    # documented but not present in response
+    presence: Optional[List[ChatChannel]]
 
 @dataclass
 class ModdingHistoryEventsBundle(Model):

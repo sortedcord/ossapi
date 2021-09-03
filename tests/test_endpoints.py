@@ -1,8 +1,8 @@
 from unittest import TestCase
 
-from ossapi import RankingType, BeatmapsetEventType
+from ossapi import RankingType, BeatmapsetEventType, OssapiV2
 
-from tests import api
+from tests import api, client_id, client_secret
 
 class TestBeatmapsetDiscussionPosts(TestCase):
     def test_deserialize(self):
@@ -77,7 +77,7 @@ class TestUser(TestCase):
         api.user(10690090)
 
     def test_key(self):
-        # make suure it automatically falls back to username if not specified
+        # make sure it automatically falls back to username if not specified
         api.user("tybug2")
         api.user("tybug2", key="username")
 
@@ -112,3 +112,10 @@ class TestForumTopic(TestCase):
 class TestBeatmapsetDiscussionVotes(TestCase):
     def test_deserialize(self):
         api.beatmapset_discussion_votes().votes[0].score
+
+# TODO revisit when either ``api`` is scoped differently (requires redirect_uri
+# stored) or auth handling is rewriting to allow multiple clients
+# class TestCreateNewPM(TestCase):
+#     def test_deserialize(self):
+#         api.create_pm(2070907, "Unit test from ossapi "
+#             "(https://github.com/circleguard/ossapi/), please ignore")
