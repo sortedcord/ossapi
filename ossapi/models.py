@@ -228,6 +228,8 @@ class BeatmapsetCompact(Model):
     recent_favourites: Optional[Any]
     related_users: Optional[Any]
     user: Optional[UserCompact]
+    # undocumented
+    track_id: Optional[int]
 
 @dataclass
 class Beatmapset(BeatmapsetCompact):
