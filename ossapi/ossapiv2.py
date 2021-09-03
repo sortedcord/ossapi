@@ -16,15 +16,13 @@ from keyword import iskeyword
 from requests_oauthlib import OAuth2Session
 from oauthlib.oauth2 import BackendApplicationClient
 
-from ossapi.models import (
-    Beatmap, BeatmapUserScore, ForumTopicAndPosts,
+from ossapi.models import (Beatmap, BeatmapUserScore, ForumTopicAndPosts,
     Search, CommentBundle, Cursor, Score, BeatmapSearchResult,
     ModdingHistoryEventsBundle, User, Rankings, BeatmapScores, KudosuHistory,
     Beatmapset, BeatmapPlaycount, Spotlight, Spotlights, WikiPage, _Event,
     Event, BeatmapsetDiscussionPosts, Build, ChangelogListing,
-    MultiplayerScores, MultiplayerScoresCursor, BeatmapsetDiscussionVotes, CreatePMResponse,
-    BeatmapsetDiscussionListing
-)
+    MultiplayerScores, MultiplayerScoresCursor, BeatmapsetDiscussionVotes,
+    CreatePMResponse, BeatmapsetDiscussionListing)
 from ossapi.mod import Mod
 from ossapi.enums import (
     GameMode, ScoreType, RankingFilter, RankingType,
@@ -203,11 +201,11 @@ class OssapiV2:
         with open(self.AUTHORIZATION_TOKEN_FILE, "wb+") as f:
             pickle.dump(token, f)
 
-    def _get(self, type_, url, params=None):
-        params = params or {}
+    def _request(self, type_, method, url, params={}, data={}):
         params = self._format_params(params)
-        r = self.session.get(f"{self.BASE_URL}{url}", params=params)
-        self.log.info(f"made GET request to {r.request.url}")
+        r = self.session.request(method, f"{self.BASE_URL}{url}", params=params,
+            data=data)
+        self.log.info(f"made {method} request to {r.request.url}")
         json_ = r.json()
         self.log.debug(f"received json: \n{json.dumps(json_, indent=4)}")
         # TODO this should just be ``if "error" in json``, but for some reason
@@ -216,14 +214,11 @@ class OssapiV2:
         self._check_json(json_, r.request.url)
         return self._instantiate_type(type_, json_)
 
-    def _post(self, type_, url, data=None):
-        data = data or {}
-        r = self.session.post(f"{self.BASE_URL}{url}", data=data)
-        self.log.info(f"made POST request to {r.request.url}")
-        json_ = r.json()
-        self.log.debug(f"received json: \n{json.dumps(json_, indent=4)}")
-        self._check_json(json_, r.request.url)
-        return self._instantiate_type(type_, json_)
+    def _get(self, type_, url, params={}):
+        return self._request(type_, "GET", url, params=params)
+
+    def _post(self, type_, url, data={}):
+        return self._request(type_, "POST", url, data=data)
 
     @staticmethod
     def _check_json(json_, url):
@@ -657,12 +652,17 @@ class OssapiV2:
     # ---------
 
     @request
-    def create_pm(self, user_id: int, message: str, is_action: bool = False) -> CreatePMResponse:
+    def create_pm(self,
+        user_id: int,
+        message: str,
+        is_action: Optional[bool] = False
+    ) -> CreatePMResponse:
         """
         https://osu.ppy.sh/docs/index.html#create-new-pm
         """
-        payload = {"target_id": user_id, "message": message, "is_action": is_action}
-        return self._post(CreatePMResponse, "/chat/new", data=payload)
+        data = {"target_id": user_id, "message": message,
+            "is_action": is_action}
+        return self._post(CreatePMResponse, "/chat/new", data=data)
 
 
     # /comments
