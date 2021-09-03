@@ -14,7 +14,8 @@ from ossapi.enums import (UserAccountHistory, ProfileBanner, UserBadge, Country,
     KudosuGiver, KudosuPost, EventType, EventAchivement, EventUser,
     EventBeatmap, BeatmapsetApproval, EventBeatmapset, KudosuVote,
     BeatmapsetEventType, UserRelationType, UserLevel, UserGradeCounts,
-    GithubUser, ChangelogSearch, ForumTopicType, ForumPostBody, ForumTopicSort, ChannelType)
+    GithubUser, ChangelogSearch, ForumTopicType, ForumPostBody, ForumTopicSort,
+    ChannelType)
 from ossapi.utils import Datetime, Model
 
 T = TypeVar("T")
