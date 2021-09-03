@@ -113,6 +113,10 @@ class TestBeatmapsetDiscussionVotes(TestCase):
     def test_deserialize(self):
         api.beatmapset_discussion_votes().votes[0].score
 
+class TestBeatmapsetDiscussionListing(TestCase):
+    def test_deserialize(self):
+        api.beatmapset_discussion_listing()
+
 # TODO revisit when either ``api`` is scoped differently (requires redirect_uri
 # stored) or auth handling is rewriting to allow multiple clients
 # class TestCreateNewPM(TestCase):

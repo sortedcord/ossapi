@@ -15,7 +15,7 @@ from ossapi.enums import (UserAccountHistory, ProfileBanner, UserBadge, Country,
     EventBeatmap, BeatmapsetApproval, EventBeatmapset, KudosuVote,
     BeatmapsetEventType, UserRelationType, UserLevel, UserGradeCounts,
     GithubUser, ChangelogSearch, ForumTopicType, ForumPostBody, ForumTopicSort,
-    ChannelType)
+    ChannelType, ReviewsConfig)
 from ossapi.utils import Datetime, Model
 
 T = TypeVar("T")
@@ -488,6 +488,9 @@ class BeatmapsetDiscussion(Model):
     can_be_resolved: bool
     can_grant_kudosu: bool
     created_at: Datetime
+    # documented as non-optional, but just try api.beatmapsets_events() to see
+    # it can't be non-optional
+    current_user_attributes: Optional[Any]
     updated_at: Datetime
     deleted_at: Optional[Datetime]
     # documented as non-optional
@@ -725,6 +728,15 @@ class BeatmapSearchResult(Model):
     error: Optional[str]
     total: int
     search: Any
+
+@dataclass
+class BeatmapsetDiscussionListing(Model):
+    beatmaps: List[Beatmap]
+    cursor: CursorT
+    discussions: List[BeatmapsetDiscussion]
+    included_discussions: List[BeatmapsetDiscussion]
+    reviews_config: ReviewsConfig
+    users: List[UserCompact]
 
 @dataclass
 class BeatmapsetDiscussionReview(Model):

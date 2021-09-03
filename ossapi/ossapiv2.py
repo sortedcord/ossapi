@@ -22,13 +22,13 @@ from ossapi.models import (Beatmap, BeatmapUserScore, ForumTopicAndPosts,
     Beatmapset, BeatmapPlaycount, Spotlight, Spotlights, WikiPage, _Event,
     Event, BeatmapsetDiscussionPosts, Build, ChangelogListing,
     MultiplayerScores, MultiplayerScoresCursor, BeatmapsetDiscussionVotes,
-    CreatePMResponse)
+    CreatePMResponse, BeatmapsetDiscussionListing)
 from ossapi.mod import Mod
 from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     UserBeatmapType, BeatmapDiscussionPostSort, UserLookupKey,
     BeatmapsetEventType, CommentableType, CommentSort, ForumTopicSort,
     SearchMode, MultiplayerScoresSort, BeatmapsetDiscussionVote,
-    BeatmapsetDiscussionVoteSort)
+    BeatmapsetDiscussionVoteSort, BeatmapsetStatus, MessageType)
 from ossapi.utils import (is_compatible_type, is_primitive_type, is_optional,
     is_base_model_type, is_model_type, is_high_model_type)
 
@@ -56,6 +56,8 @@ SearchModeT = Union[SearchMode, str]
 MultiplayerScoresSortT = Union[MultiplayerScoresSort, str]
 BeatmapsetDiscussionVoteT = Union[BeatmapsetDiscussionVote, int]
 BeatmapsetDiscussionVoteSortT = Union[BeatmapsetDiscussionVoteSort, str]
+MessageTypeT = Union[MessageType, str]
+BeatmapsetStatusT = Union[BeatmapsetStatus, str]
 
 def request(function):
     """
@@ -206,7 +208,9 @@ class OssapiV2:
         # TODO this should just be ``if "error" in json``, but for some reason
         # ``self.search_beatmaps`` always returns an error in the response...
         # open an issue on osu-web?
-        self._check_json(json_, r.request.url)
+        if len(json_) == 1 and "error" in json_:
+            raise ValueError(f"api returned an error of `{json_['error']}` for "
+                f"a request to {unquote(url)}")
         return self._instantiate_type(type_, json_)
 
     def _get(self, type_, url, params={}):
@@ -214,11 +218,6 @@ class OssapiV2:
 
     def _post(self, type_, url, data={}):
         return self._request(type_, "POST", url, data=data)
-
-    @staticmethod
-    def _check_json(json_, url):
-        if len(json_) == 1 and "error" in json_:
-            raise ValueError(f"api returned an error of `{json_['error']}` for a request to {unquote(url)}")
 
     def _format_params(self, params):
         for key, value in params.copy().items():
@@ -575,6 +574,29 @@ class OssapiV2:
         return self._get(BeatmapsetDiscussionVotes,
             "/beatmapsets/discussions/votes", params)
 
+    @request
+    def beatmapset_discussion_listing(self,
+        beatmapset_id: Optional[int] = None,
+        beatmap_id: Optional[int] = None,
+        beatmapset_status: Optional[BeatmapsetStatusT] = None,
+        limit: Optional[int] = None,
+        message_types: Optional[List[MessageTypeT]] = None,
+        only_unresolved: Optional[bool] = None,
+        page: Optional[int] = None,
+        sort: Optional[BeatmapDiscussionPostSortT] = None,
+        user_id: Optional[int] = None,
+        with_deleted: Optional[bool] = None,
+    ) -> BeatmapsetDiscussionListing:
+        """
+        https://osu.ppy.sh/docs/index.html#get-beatmapset-discussions
+        """
+        params = {"beatmapset_id": beatmapset_id, "beatmap_id": beatmap_id,
+            "beatmapset_status": beatmapset_status, "limit": limit,
+            "message_types": message_types, "only_unresolved": only_unresolved,
+            "page": page, "sort": sort, "user": user_id,
+            "with_deleted": with_deleted}
+        return self._get(BeatmapsetDiscussionListing,
+            "/beatmapsets/discussions", params)
 
     # /changelog
     # ----------
