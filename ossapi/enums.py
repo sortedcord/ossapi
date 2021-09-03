@@ -481,6 +481,10 @@ class ForumPostBody(Model):
     html: str
     raw: str
 
+@dataclass
+class ReviewsConfig(Model):
+    max_blocks: int
+
 
 # ===================
 # Undocumented Models

@@ -15,7 +15,7 @@ from ossapi.enums import (UserAccountHistory, ProfileBanner, UserBadge, Country,
     EventBeatmap, BeatmapsetApproval, EventBeatmapset, KudosuVote,
     BeatmapsetEventType, UserRelationType, UserLevel, UserGradeCounts,
     GithubUser, ChangelogSearch, ForumTopicType, ForumPostBody, ForumTopicSort,
-    ChannelType)
+    ChannelType, ReviewsConfig)
 from ossapi.utils import Datetime, Model
 
 T = TypeVar("T")
@@ -488,6 +488,7 @@ class BeatmapsetDiscussion(Model):
     can_be_resolved: bool
     can_grant_kudosu: bool
     created_at: Datetime
+    current_user_attributes: Any
     updated_at: Datetime
     deleted_at: Optional[Datetime]
     # documented as non-optional
@@ -903,10 +904,6 @@ class ModdingHistoryEventsBundle(Model):
     events: List[BeatmapsetEvent]
     reviewsConfig: BeatmapsetDiscussionReview
     users: List[UserCompact]
-
-@dataclass
-class ReviewsConfig(Model):
-    max_blocks: int
 
 @dataclass
 class UserRelation(Model):
