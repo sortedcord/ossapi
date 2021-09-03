@@ -488,7 +488,9 @@ class BeatmapsetDiscussion(Model):
     can_be_resolved: bool
     can_grant_kudosu: bool
     created_at: Datetime
-    current_user_attributes: Any
+    # documented as non-optional, but just try api.beatmapsets_events() to see
+    # it can't be non-optional
+    current_user_attributes: Optional[Any]
     updated_at: Datetime
     deleted_at: Optional[Datetime]
     # documented as non-optional
