@@ -113,10 +113,9 @@ class TestBeatmapsetDiscussionVotes(TestCase):
     def test_deserialize(self):
         api.beatmapset_discussion_votes().votes[0].score
 
-
-class TestCreateNewPM(TestCase):
-    def test_deserialize(self):
-        # Target ID of 2070907 is Tillerino
-        scoped_api = OssapiV2(client_id, client_secret, redirect_uri="http://localhost:9409/",
-                              scopes=["chat.write"], strict=True)
-        scoped_api.create_pm(user_id=2070907, message="Integration test please ignore")
+# TODO revisit when either ``api`` is scoped differently (requires redirect_uri
+# stored) or auth handling is rewriting to allow multiple clients
+# class TestCreateNewPM(TestCase):
+#     def test_deserialize(self):
+#         api.create_pm(2070907, "Unit test from ossapi "
+#             "(https://github.com/circleguard/ossapi/), please ignore")
