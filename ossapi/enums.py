@@ -150,9 +150,8 @@ class UserListViews(EnumModel):
     BRICK = "brick"
 
 class KudosuAction(EnumModel):
-    # TODO ideally these wouldn't be prefixed with ``vote``. They aren't
-    # documented as such in https://osu.ppy.sh/docs/index.html#kudosuhistory,
-    # but that's what the api returns
+    # names don't match documentation in
+    # https://osu.ppy.sh/docs/index.html#kudosuhistory
     GIVE = "vote.give"
     RESET = "vote.reset"
     REVOKE = "vote.revoke"

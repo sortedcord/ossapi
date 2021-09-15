@@ -53,8 +53,7 @@ class UserCompact(Model):
     is_supporter: bool
     last_visit: Optional[Datetime]
     pm_friends_only: bool
-    # TODO pretty sure this needs to be optional but it's not documented as
-    # such, open an issue?
+    # documented as non-optional
     profile_colour: Optional[str]
     username: str
 
@@ -527,8 +526,7 @@ class KudosuHistory(Model):
     created_at: Datetime
     giver: Optional[KudosuGiver]
     post: KudosuPost
-    # TODO type hint properly when https://github.com/ppy/osu-web/issues/7549 is
-    # resolved
+    # see https://github.com/ppy/osu-web/issues/7549
     details: Any
 
 @dataclass
