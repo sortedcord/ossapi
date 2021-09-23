@@ -12,6 +12,7 @@ from urllib.parse import unquote
 import inspect
 import json
 from keyword import iskeyword
+import hashlib
 
 from requests_oauthlib import OAuth2Session
 from oauthlib.oauth2 import BackendApplicationClient
@@ -96,62 +97,113 @@ def request(function):
         return function(*args, **kwargs)
     return wrapper
 
+class Grant(Enum):
+    CLIENT_CREDENTIALS = "client"
+    AUTHORIZATION_CODE = "authorization"
 
 class OssapiV2:
     TOKEN_URL = "https://osu.ppy.sh/oauth/token"
     AUTH_CODE_URL = "https://osu.ppy.sh/oauth/authorize"
     BASE_URL = "https://osu.ppy.sh/api/v2"
 
-    AUTHORIZATION_TOKEN_FILE = (Path(__file__).parent /
-        "authorization_code.pickle")
+    def __init__(self,
+        grant: Union[Grant, str],
+        client_id: int,
+        client_secret: str,
+        redirect_uri: Optional[str] = None,
+        scopes: List[str] = ["public"],
+        strict: Optional[bool] = False
+    ):
+        grant = Grant(grant)
 
-    def __init__(self, client_id, client_secret, redirect_uri=None,
-        scopes=["public"], strict=False):
+        self.grant = grant
+        self.client_id = client_id
+        self.client_secret = client_secret
+        self.redirect_uri = redirect_uri
+        self.scopes = scopes
         self.strict = strict
+
         self.log = logging.getLogger(__name__)
+        self.key = self._key(self.grant, self.client_id, self.client_secret,
+            self.scopes)
+        self.token_file = Path(__file__).parent / f"{self.key}.pickle"
 
-        self.session = self.authenticate(client_id, client_secret, redirect_uri,
-            scopes)
-
-    def authenticate(self, client_id, client_secret, redirect_uri, scopes):
-        # if redirect_uri is not passed, assume the user wanted to use the
-        # client credentials grant.
-        if not redirect_uri:
-            if scopes != ["public"]:
+        if self.grant is Grant.CLIENT_CREDENTIALS:
+            if self.scopes != ["public"]:
                 raise ValueError(f"`scopes` must be ['public'] if the "
-                    f"client credentials grant is used. Got {scopes}")
-            return self._client_credentials_grant(client_id, client_secret)
+                    f"client credentials grant is used. Got {self.scopes}")
 
-        # used saved session if it exists
-        if self.AUTHORIZATION_TOKEN_FILE.is_file():
-            with open(self.AUTHORIZATION_TOKEN_FILE, "rb") as f:
-                token = pickle.load(f)
-            return self._auth_oauth_session(client_id, client_secret, scopes,
-                token=token)
+        if self.grant is Grant.AUTHORIZATION_CODE and not self.redirect_uri:
+            raise ValueError("`redirect_uri` must be passed if the "
+                "authorization code grant is used.")
 
-        return self._authorization_code_grant(client_id, client_secret,
-            redirect_uri, scopes)
+        self.session = self.authenticate()
 
     @staticmethod
-    def clear_authentication():
-        if OssapiV2.AUTHORIZATION_TOKEN_FILE.is_file():
-            OssapiV2.AUTHORIZATION_TOKEN_FILE.unlink()
+    def _key(grant, client_id, client_secret, scopes):
+        m = hashlib.sha256()
+        m.update(grant.value.encode("utf-8"))
+        m.update(str(client_id).encode("utf-8"))
+        m.update(client_secret.encode("utf-8"))
+        m.update("".join(scopes).encode("utf-8"))
+        return m.hexdigest()
 
-    def _client_credentials_grant(self, client_id, client_secret):
+    @staticmethod
+    def clear_authentication(grant, client_id, client_secret, scopes):
+        grant = Grant(grant)
+        key = OssapiV2._key(grant, client_id, client_secret, scopes)
+        token_file = Path(__file__).parent / f"{key}.pickle"
+        token_file.unlink()
+
+    def authenticate(self):
+        if self.token_file.exists():
+            with open(self.token_file, "rb") as f:
+                token = pickle.load(f)
+
+            if self.grant is Grant.CLIENT_CREDENTIALS:
+                return OAuth2Session(self.client_id, token=token)
+
+            if self.grant is Grant.AUTHORIZATION_CODE:
+                auto_refresh_kwargs = {
+                    "client_id": self.client_id,
+                    "client_secret": self.client_secret
+                }
+                return OAuth2Session(self.client_id, token=token,
+                    redirect_uri=self.redirect_uri,
+                    auto_refresh_url=self.TOKEN_URL,
+                    auto_refresh_kwargs=auto_refresh_kwargs,
+                    token_updater=self._save_token, scope=self.scopes)
+
+        if self.grant is Grant.CLIENT_CREDENTIALS:
+            return self._new_client_grant(self.client_id, self.client_secret)
+
+        return self._new_authorization_grant(self.client_id, self.client_secret,
+            self.redirect_uri, self.scopes)
+
+    def _new_client_grant(self, client_id, client_secret):
         self.log.info("initializing client credentials grant")
         client = BackendApplicationClient(client_id=client_id, scope=["public"])
-        oauth = OAuth2Session(client=client)
-        oauth.fetch_token(token_url=self.TOKEN_URL,
+        session = OAuth2Session(client=client)
+        token = session.fetch_token(token_url=self.TOKEN_URL,
             client_id=client_id, client_secret=client_secret)
 
-        return oauth
+        self._save_token(token)
+        return session
 
-    def _authorization_code_grant(self, client_id, client_secret, redirect_uri,
+    def _new_authorization_grant(self, client_id, client_secret, redirect_uri,
         scopes):
         self.log.info("initializing authorization code")
-        oauth = self._auth_oauth_session(client_id, client_secret, scopes,
-            redirect_uri=redirect_uri)
-        authorization_url, _state = oauth.authorization_url(self.AUTH_CODE_URL)
+
+        auto_refresh_kwargs = {
+            "client_id": client_id,
+            "client_secret": client_secret
+        }
+        session = OAuth2Session(client_id, redirect_uri=redirect_uri,
+            auto_refresh_url=self.TOKEN_URL,
+            auto_refresh_kwargs=auto_refresh_kwargs,
+            token_updater=self._save_token, scope=scopes)
+
+        authorization_url, _state = session.authorization_url(self.AUTH_CODE_URL)
         webbrowser.open(authorization_url)
 
         # open up a temporary socket so we can receive the GET request to the
@@ -175,27 +227,15 @@ class OssapiV2:
         serversocket.close()
 
         code = data.split("code=")[1].split("&state=")[0]
-        token = oauth.fetch_token(self.TOKEN_URL, client_id=client_id,
+        token = session.fetch_token(self.TOKEN_URL, client_id=client_id,
             client_secret=client_secret, code=code)
         self._save_token(token)
 
-        return oauth
-
-    def _auth_oauth_session(self, client_id, client_secret, scopes, *,
-        token=None, redirect_uri=None):
-        auto_refresh_kwargs = {
-            "client_id": client_id,
-            "client_secret": client_secret
-        }
-        return OAuth2Session(client_id, token=token, redirect_uri=redirect_uri,
-            auto_refresh_url=self.TOKEN_URL,
-            auto_refresh_kwargs=auto_refresh_kwargs,
-            token_updater=self._save_token,
-            scope=scopes)
+        return session
 
     def _save_token(self, token):
-        self.log.info(f"saving token to {self.AUTHORIZATION_TOKEN_FILE}")
-        with open(self.AUTHORIZATION_TOKEN_FILE, "wb+") as f:
+        self.log.info(f"saving token to {self.token_file}")
+        with open(self.token_file, "wb+") as f:
             pickle.dump(token, f)
 
     def _request(self, type_, method, url, params={}, data={}):
@@ -948,4 +988,5 @@ class OssapiV2:
 
     def revoke_token(self):
         self.session.delete(f"{self.BASE_URL}/oauth/tokens/current")
-        self.clear_authentication()
+        self.clear_authentication(self.grant, self.client_id,
+            self.client_secret, self.scopes)

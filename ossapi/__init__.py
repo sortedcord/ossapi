@@ -6,7 +6,7 @@ from ossapi.ossapi import (Ossapi, ReplayUnavailableException,
 
 # OssapiV2 requires python 3.8+
 if sys.version_info[1] >= 8:
-    from ossapi.ossapiv2 import OssapiV2
+    from ossapi.ossapiv2 import OssapiV2, Grant
 
 from ossapi.mod import Mod
 from ossapi.version import __version__
