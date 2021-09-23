@@ -841,7 +841,8 @@ class OssapiV2:
         if type_ is UserBeatmapType.MOST_PLAYED:
             return_type = List[BeatmapPlaycount]
 
-        return self._get(return_type, f"/users/{user_id}/beatmapsets/{type_.value}", params)
+        return self._get(return_type,
+            f"/users/{user_id}/beatmapsets/{type_.value}", params)
 
     @request
     def user_recent_activity(self,
@@ -866,7 +867,8 @@ class OssapiV2:
         https://osu.ppy.sh/docs/index.html#get-user
         """
         params = {"key": key}
-        return self._get(User, f"/users/{user}/{mode.value if mode else ''}", params)
+        return self._get(User, f"/users/{user}/{mode.value if mode else ''}",
+            params)
 
 
     # /wiki
