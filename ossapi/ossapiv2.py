@@ -268,7 +268,9 @@ class OssapiV2:
             auto_refresh_kwargs=auto_refresh_kwargs,
             token_updater=self._save_token, scope=scopes)
 
-        authorization_url, _state = session.authorization_url(self.AUTH_CODE_URL)
+        authorization_url, _state = (
+            session.authorization_url(self.AUTH_CODE_URL)
+        )
         webbrowser.open(authorization_url)
 
         # open up a temporary socket so we can receive the GET request to the
