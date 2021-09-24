@@ -185,10 +185,9 @@ class OssapiV2:
         )
         self.token_file = self.token_directory / f"{self.token_key}.pickle"
 
-        if self.grant is Grant.CLIENT_CREDENTIALS:
-            if self.scopes != ["public"]:
-                raise ValueError(f"`scopes` must be ['public'] if the "
-                    f"client credentials grant is used. Got {self.scopes}")
+        if self.grant is Grant.CLIENT_CREDENTIALS and self.scopes != ["public"]:
+            raise ValueError(f"`scopes` must be ['public'] if the "
+                f"client credentials grant is used. Got {self.scopes}")
 
         if self.grant is Grant.AUTHORIZATION_CODE and not self.redirect_uri:
             raise ValueError("`redirect_uri` must be passed if the "
