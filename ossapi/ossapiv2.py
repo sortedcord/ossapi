@@ -147,6 +147,12 @@ class OssapiV2:
         If passed, the given directory will be used to store and retrieve token
         files instead of locally wherever ossapi is installed. Useful if you
         want more control over token files.
+    token_key: str
+        If passed, this key will be used to name the token file instead of an
+        automatically generated one. Note that if you pass this, you are taking
+        responsibility for making sure it is unique / unused, and also for
+        remembering the key you passed if you wish to eg remove the token in the
+        future, which requires the key.
     """
     TOKEN_URL = "https://osu.ppy.sh/oauth/token"
     AUTH_CODE_URL = "https://osu.ppy.sh/oauth/authorize"
@@ -160,6 +166,7 @@ class OssapiV2:
         scopes: List[str] = ["public"],
         strict: bool = False,
         token_directory: Optional[str] = None,
+        token_key: Optional[str] = None
     ):
         grant = Grant(grant)
 
@@ -171,12 +178,12 @@ class OssapiV2:
         self.strict = strict
 
         self.log = logging.getLogger(__name__)
-        self.key = self._key(self.grant, self.client_id, self.client_secret,
-            self.scopes)
+        self.token_key = token_key or self.gen_token_key(self.grant,
+            self.client_id, self.client_secret, self.scopes)
         self.token_directory = (
             Path(token_directory) if token_directory else Path(__file__).parent
         )
-        self.token_file = self.token_directory / f"{self.key}.pickle"
+        self.token_file = self.token_directory / f"{self.token_key}.pickle"
 
         if self.grant is Grant.CLIENT_CREDENTIALS:
             if self.scopes != ["public"]:
@@ -190,7 +197,7 @@ class OssapiV2:
         self.session = self.authenticate()
 
     @staticmethod
-    def _key(grant, client_id, client_secret, scopes):
+    def gen_token_key(grant, client_id, client_secret, scopes):
         """
         The unique key / hash for the given set of parameters. This is intended
         to provide a way to allow multiple OssapiV2's to live at the same time,
@@ -200,6 +207,7 @@ class OssapiV2:
         OssapiV2 is instantiated twice with the same parameters. This avoids the
         need to reauthenticate unless absolutely necessary.
         """
+        grant = Grant(grant)
         m = hashlib.sha256()
         m.update(grant.value.encode("utf-8"))
         m.update(str(client_id).encode("utf-8"))
@@ -208,13 +216,12 @@ class OssapiV2:
         return m.hexdigest()
 
     @staticmethod
-    def clear_authentication(grant, client_id, client_secret, scopes,
-        token_directory=None):
+    def remove_token(key, token_directory=None):
         """
-        Removes the token file associated with the given parameters.
+        Removes the token file associated with the given key. If
+        ``token_directory`` is passed, looks there for the token file instead of
+        locally in ossapi's install site.
         """
-        grant = Grant(grant)
-        key = OssapiV2._key(grant, client_id, client_secret, scopes)
         token_directory = (
             Path(token_directory) if token_directory else Path(__file__).parent
         )
@@ -1070,6 +1077,4 @@ class OssapiV2:
 
     def revoke_token(self):
         self.session.delete(f"{self.BASE_URL}/oauth/tokens/current")
-        self.clear_authentication(self.grant, self.client_id,
-            self.client_secret, self.scopes,
-            token_directory=self.token_directory)
+        self.remove_token(self.token_key, self.token_directory)
