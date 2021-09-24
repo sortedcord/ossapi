@@ -765,7 +765,7 @@ class OssapiV2:
 
 
     # /chat
-    # ---------
+    # -----
 
     @request
     def create_pm(self,
