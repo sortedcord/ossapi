@@ -102,6 +102,48 @@ class Grant(Enum):
     AUTHORIZATION_CODE = "authorization"
 
 class OssapiV2:
+    """
+    A wrapper around osu api v2.
+
+    Parameters
+    ----------
+    grant: Grant or str
+        Which oauth grant (aka flow) to use when authenticating with the api.
+        Currently the api offers the client credentials (pass "client" for this
+        parameter) and authorization code (pass "authorization" for this
+        parameter) grants.
+        |br|
+        The authorization code grant requires user interaction to authenticate
+        the first time, but grants full access to the api. In contrast, the
+        client credentials grant does not require user interaction to
+        authenticate, but only grants guest user access to the api. This means
+        you will not be able to do things like download replays on the client
+        credentials grant.
+    client_id: int
+        The id of the client to authenticate with.
+    client_secret: str
+        The secret of the client to authenticate with.
+    redirect_uri: str
+        The redirect uri for the client.Must be passed if using the
+        authorization code grant. This must exactly match the redirect uri on
+        the client's settings page. Additionally, in order for ossapi to receive
+        authentication from this redirect uri, it must be a port on localhost.
+        So "http://localhost:3914/", "http://localhost:727/", etc are all valid
+        redirect uris. You can change your client's redirect uri from its
+        settings page.
+    scopes: List[str]
+        What scopes to request when authenticating.
+    strict: bool
+        Whether to run in "strict" mode. In strict mode, ossapi will raise an
+        exception if the api returns an attribute in a response which we didn't
+        expect to be there. This is useful for developers which want to catch
+        new attributes as they get added. More checks may be added in the future
+        for things which developers may want to be aware of, but normal users do
+        not want to have an exception raised for.
+        |br|
+        If you are not a developer, you are very unlikely to want to use this
+        parameter.
+    """
     TOKEN_URL = "https://osu.ppy.sh/oauth/token"
     AUTH_CODE_URL = "https://osu.ppy.sh/oauth/authorize"
     BASE_URL = "https://osu.ppy.sh/api/v2"
@@ -141,6 +183,15 @@ class OssapiV2:
 
     @staticmethod
     def _key(grant, client_id, client_secret, scopes):
+        """
+        The unique key / hash for the given set of parameters. This is intended
+        to provide a way to allow multiple OssapiV2's to live at the same time,
+        by eg saving their tokens to different files based on their key.
+
+        This function is also deterministic, to eg allow tokens to be reused if
+        OssapiV2 is instantiated twice with the same parameters. This avoids the
+        need to reauthenticate unless absolutely necessary.
+        """
         m = hashlib.sha256()
         m.update(grant.value.encode("utf-8"))
         m.update(str(client_id).encode("utf-8"))
@@ -150,12 +201,20 @@ class OssapiV2:
 
     @staticmethod
     def clear_authentication(grant, client_id, client_secret, scopes):
+        """
+        Removes the token file associated with the given parameters.
+        """
         grant = Grant(grant)
         key = OssapiV2._key(grant, client_id, client_secret, scopes)
         token_file = Path(__file__).parent / f"{key}.pickle"
         token_file.unlink()
 
     def authenticate(self):
+        """
+        Returns a valid OAuth2Session, either from a saved token file associated
+        with this OssapiV2's parameters, or from a fresh authentication if no
+        such file exists.
+        """
         if self.token_file.exists():
             with open(self.token_file, "rb") as f:
                 token = pickle.load(f)
@@ -181,6 +240,9 @@ class OssapiV2:
             self.redirect_uri, self.scopes)
 
     def _new_client_grant(self, client_id, client_secret):
+        """
+        Authenticates with the api from scratch on the client grant.
+        """
         self.log.info("initializing client credentials grant")
         client = BackendApplicationClient(client_id=client_id, scope=["public"])
         session = OAuth2Session(client=client)
@@ -192,6 +254,9 @@ class OssapiV2:
 
     def _new_authorization_grant(self, client_id, client_secret, redirect_uri,
         scopes):
+        """
+        Authenticates with the api from scratch on the authorization code grant.
+        """
         self.log.info("initializing authorization code")
 
         auto_refresh_kwargs = {
@@ -234,6 +299,9 @@ class OssapiV2:
         return session
 
     def _save_token(self, token):
+        """
+        Saves the token to this OssapiV2's associated token file.
+        """
         self.log.info(f"saving token to {self.token_file}")
         with open(self.token_file, "wb+") as f:
             pickle.dump(token, f)
