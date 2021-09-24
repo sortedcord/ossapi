@@ -143,6 +143,10 @@ class OssapiV2:
         |br|
         If you are not a developer, you are very unlikely to want to use this
         parameter.
+    token_directory: str
+        If passed, the given directory will be used to store and retrieve token
+        files instead of locally wherever ossapi is installed. Useful if you
+        want more control over token files.
     """
     TOKEN_URL = "https://osu.ppy.sh/oauth/token"
     AUTH_CODE_URL = "https://osu.ppy.sh/oauth/authorize"
@@ -154,7 +158,8 @@ class OssapiV2:
         client_secret: str,
         redirect_uri: Optional[str] = None,
         scopes: List[str] = ["public"],
-        strict: Optional[bool] = False
+        strict: bool = False,
+        token_directory: Optional[str] = None,
     ):
         grant = Grant(grant)
 
@@ -168,7 +173,10 @@ class OssapiV2:
         self.log = logging.getLogger(__name__)
         self.key = self._key(self.grant, self.client_id, self.client_secret,
             self.scopes)
-        self.token_file = Path(__file__).parent / f"{self.key}.pickle"
+        self.token_directory = (
+            Path(token_directory) if token_directory else Path(__file__).parent
+        )
+        self.token_file = self.token_directory / f"{self.key}.pickle"
 
         if self.grant is Grant.CLIENT_CREDENTIALS:
             if self.scopes != ["public"]:
@@ -200,13 +208,17 @@ class OssapiV2:
         return m.hexdigest()
 
     @staticmethod
-    def clear_authentication(grant, client_id, client_secret, scopes):
+    def clear_authentication(grant, client_id, client_secret, scopes,
+        token_directory=None):
         """
         Removes the token file associated with the given parameters.
         """
         grant = Grant(grant)
         key = OssapiV2._key(grant, client_id, client_secret, scopes)
-        token_file = Path(__file__).parent / f"{key}.pickle"
+        token_directory = (
+            Path(token_directory) if token_directory else Path(__file__).parent
+        )
+        token_file = token_directory / f"{key}.pickle"
         token_file.unlink()
 
     def authenticate(self):
@@ -1059,4 +1071,5 @@ class OssapiV2:
     def revoke_token(self):
         self.session.delete(f"{self.BASE_URL}/oauth/tokens/current")
         self.clear_authentication(self.grant, self.client_id,
-            self.client_secret, self.scopes)
+            self.client_secret, self.scopes,
+            token_directory=self.token_directory)
