@@ -15,7 +15,7 @@ from keyword import iskeyword
 import hashlib
 
 from requests_oauthlib import OAuth2Session
-from oauthlib.oauth2 import BackendApplicationClient
+from oauthlib.oauth2 import BackendApplicationClient, TokenExpiredError
 
 from ossapi.models import (Beatmap, BeatmapUserScore, ForumTopicAndPosts,
     Search, CommentBundle, Cursor, Score, BeatmapSearchResult,
@@ -328,8 +328,24 @@ class OssapiV2:
 
     def _request(self, type_, method, url, params={}, data={}):
         params = self._format_params(params)
-        r = self.session.request(method, f"{self.BASE_URL}{url}", params=params,
-            data=data)
+        try:
+            r = self.session.request(method, f"{self.BASE_URL}{url}",
+                params=params, data=data)
+        except TokenExpiredError:
+            # provide "auto refreshing" for client credentials grant. The client
+            # grant doesn't actually provide a refresh token, so we can't hook
+            # onto OAuth2Session's auto_refresh functionality like we do for the
+            # authorization code grant. But we can do something effectively
+            # equivalent - whenever we make a request with an expired client
+            # grant token, just request a new one.
+            if self.grant is not Grant.CLIENT_CREDENTIALS:
+                raise
+            self.session = self._new_client_grant(self.client_id,
+                self.client_secret)
+            # redo the request now that we have a valid token
+            r = self.session.request(method, f"{self.BASE_URL}{url}",
+                params=params, data=data)
+
         self.log.info(f"made {method} request to {r.request.url}")
         json_ = r.json()
         self.log.debug(f"received json: \n{json.dumps(json_, indent=4)}")
