@@ -336,7 +336,7 @@ class OssapiV2:
             # grant doesn't actually provide a refresh token, so we can't hook
             # onto OAuth2Session's auto_refresh functionality like we do for the
             # authorization code grant. But we can do something effectively
-            # equivalent - whenever we make a request with an expired client
+            # equivalent: whenever we make a request with an expired client
             # grant token, just request a new one.
             if self.grant is not Grant.CLIENT_CREDENTIALS:
                 raise
