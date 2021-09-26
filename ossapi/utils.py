@@ -120,7 +120,7 @@ class Datetime(datetime, BaseModel):
     Our replacement for the ``datetime`` object that deals with the various
     datetime formats the api returns.
     """
-    def __new__(cls, value):
+    def __new__(cls, value): # pylint: disable=signature-differs
         if value is None:
             raise ValueError("cannot instantiate a Datetime with a null value")
         # the api returns a bunch of different timestamps: two ISO 8601
