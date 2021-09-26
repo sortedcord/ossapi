@@ -748,7 +748,7 @@ class OssapiV2:
 
     @request(Scope.PUBLIC)
     def beatmapset_discussion_posts(self,
-        beatmapset_session_id: Optional[int] = None,
+        beatmapset_discussion_id: Optional[int] = None,
         limit: Optional[int] = None,
         page: Optional[int] = None,
         sort: Optional[BeatmapDiscussionPostSortT] = None,
@@ -758,7 +758,7 @@ class OssapiV2:
         """
         https://osu.ppy.sh/docs/index.html#get-beatmapset-discussion-posts
         """
-        params = {"beatmapset_session_id": beatmapset_session_id,
+        params = {"beatmapset_discussion_id": beatmapset_discussion_id,
             "limit": limit, "page": page, "sort": sort, "user": user_id,
             "with_deleted": with_deleted}
         return self._get(BeatmapsetDiscussionPosts,
