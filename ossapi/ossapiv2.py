@@ -276,6 +276,9 @@ class OssapiV2:
         Removes the token file associated with the given key. If
         ``token_directory`` is passed, looks there for the token file instead of
         locally in ossapi's install site.
+
+        To determine the key associated with a given grant, client_id,
+        client_secret, and set of scopes, use ``gen_token_key``.
         """
         token_directory = (
             Path(token_directory) if token_directory else Path(__file__).parent
