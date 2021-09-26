@@ -16,7 +16,7 @@ from ossapi.enums import (UserAccountHistory, ProfileBanner, UserBadge, Country,
     BeatmapsetEventType, UserRelationType, UserLevel, UserGradeCounts,
     GithubUser, ChangelogSearch, ForumTopicType, ForumPostBody, ForumTopicSort,
     ChannelType, ReviewsConfig)
-from ossapi.utils import Datetime, Model
+from ossapi.utils import Datetime, Model, Expandable
 
 T = TypeVar("T")
 S = TypeVar("S")
@@ -36,7 +36,7 @@ is, not that the api actually lets any type be returned there.
 # =================
 
 @dataclass
-class UserCompact(Model):
+class UserCompact(Model, Expandable):
     """
     https://osu.ppy.sh/docs/index.html#usercompact
     """
@@ -108,6 +108,9 @@ class UserCompact(Model):
     # deprecated, replaced by rank_history
     rankHistory: Optional[RankHistory]
 
+    def expand(self):
+        return self._api.user(self.id)
+
 @dataclass
 class User(UserCompact):
     comments_count: int
@@ -130,10 +133,13 @@ class User(UserCompact):
     twitter: Optional[str]
     website: Optional[str]
 
+    def expand(self):
+        # we're already expanded, no need to waste an api call
+        return self
 
 
 @dataclass
-class BeatmapCompact(Model):
+class BeatmapCompact(Model, Expandable):
     # required fields
     # ---------------
     difficulty_rating: float
@@ -152,6 +158,8 @@ class BeatmapCompact(Model):
     failtimes: Optional[Failtimes]
     max_combo: Optional[int]
 
+    def expand(self):
+        return self._api.beatmap(self.id)
 
 @dataclass
 class Beatmap(BeatmapCompact):
@@ -183,7 +191,10 @@ class Beatmap(BeatmapCompact):
     # -----------------
     beatmapset: Optional[Beatmapset]
 
+    def expand(self):
+        return self
 
+# TODO make thtis expandable when we implement beatmapset lookup
 @dataclass
 class BeatmapsetCompact(Model):
     """

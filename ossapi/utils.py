@@ -1,7 +1,8 @@
 from enum import EnumMeta, Enum, IntFlag
 from datetime import datetime, timezone
 from typing import get_args, get_origin, Union
-
+from abc import ABC, abstractmethod
+from dataclasses import dataclass, field
 
 def is_high_model_type(type_):
     """
@@ -154,6 +155,31 @@ class Datetime(datetime, BaseModel):
         except ValueError:
             return False
         return True
+
+# whenever a dataclass gets created, ``dataclasses`` traverses up the
+# inheritance hierarchy and looks for any class which is a dataclass. If it
+# finds one, it adds the parameters for that class to the new dataclass'
+# __init__.
+# Since almost all of our models are dataclasses, this means that ``Expandable``
+# also needs to be a dataclass so that the new ``_api`` parameter gets picked up
+# and added to the created ``__init__``.
+
+@dataclass
+class Expandable(ABC):
+    """
+    A mixin for models which can be "expanded" to a different model which has a
+    superset of attributes of the current model. Typically this expansion is
+    expensive (requires an additional api call) which is why it is not done by
+    default.
+    """
+    # can't annotate with OssapiV2 or we get a circular import error, this is
+    # good enough
+    _api: field()
+
+    @abstractmethod
+    def expand(self):
+        pass
+
 
 # typing utils
 # ------------

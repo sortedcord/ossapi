@@ -33,7 +33,7 @@ from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     SearchMode, MultiplayerScoresSort, BeatmapsetDiscussionVote,
     BeatmapsetDiscussionVoteSort, BeatmapsetStatus, MessageType)
 from ossapi.utils import (is_compatible_type, is_primitive_type, is_optional,
-    is_base_model_type, is_model_type, is_high_model_type)
+    is_base_model_type, is_model_type, is_high_model_type, Expandable)
 from ossapi.mod import Mod
 from ossapi.replay import Replay
 
@@ -667,6 +667,17 @@ class OssapiV2:
                             f"{type_}")
                     self.log.info(f"ignoring unexpected parameter `{k}` from "
                         f"api response for type {type_}")
+
+        # "expandable" models need an api instance to be injected into them on
+        # instantiation. There isn't really a clean way to do this
+        # unfortunately. If the parameter name on the ``Expandable`` class ever
+        # changes from ``_api``, this will also need to be changed. And it's not
+        # very transparent as to where this parameter is coming from, from
+        # Expandable's perspective. But such is the way of life when abusing
+        # python type hints.
+        if isinstance(type_, type) and issubclass(type_, Expandable):
+            kwargs_["_api"] = self
+
         try:
             val = type_(**kwargs_)
         except TypeError as e:
