@@ -194,7 +194,7 @@ class Beatmap(BeatmapCompact):
     def expand(self):
         return self
 
-# TODO make thtis expandable when we implement beatmapset lookup
+# TODO make this expandable when we implement beatmapset lookup
 @dataclass
 class BeatmapsetCompact(Model):
     """
