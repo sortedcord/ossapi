@@ -628,18 +628,6 @@ class OssapiV2:
     # ---------
 
     @request
-    def beatmap_lookup(self,
-        checksum: Optional[str] = None,
-        filename: Optional[str] = None,
-        beatmap_id: Optional[int] = None
-    ) -> Beatmap:
-        """
-        https://osu.ppy.sh/docs/index.html#lookup-beatmap
-        """
-        params = {"checksum": checksum, "filename": filename, "id": beatmap_id}
-        return self._get(Beatmap, "/beatmaps/lookup", params)
-
-    @request
     def beatmap_user_score(self,
         beatmap_id: int,
         user_id: int,
@@ -669,12 +657,19 @@ class OssapiV2:
 
     @request
     def beatmap(self,
-        beatmap_id: int
+        beatmap_id: Optional[int] = None,
+        checksum: Optional[str] = None,
+        filename: Optional[str] = None,
     ) -> Beatmap:
         """
-        https://osu.ppy.sh/docs/index.html#get-beatmap
+        combines https://osu.ppy.sh/docs/index.html#get-beatmap and
+        https://osu.ppy.sh/docs/index.html#lookup-beatmap
         """
-        return self._get(Beatmap, f"/beatmaps/{beatmap_id}")
+        if not (beatmap_id or checksum or filename):
+            raise ValueError("at least one of beatmap_id, checksum, or "
+                "filename must be passed")
+        params = {"checksum": checksum, "filename": filename, "id": beatmap_id}
+        return self._get(Beatmap, "/beatmaps/lookup", params)
 
 
     # /beatmapsets
