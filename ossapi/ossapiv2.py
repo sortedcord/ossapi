@@ -80,6 +80,15 @@ def request(scope, *, requires_login=False):
       with an argument annotated as ``ModT`` (``Union[Mod, str, int, list]``)
       will have the value of that parameter automatically converted to a
       ``Mod``, even if the user passes a `str`.
+
+    Parameters
+    ----------
+    scope: Scope
+        The scope required for this endpoint. If ``None``, no scope is required
+        and any authenticated cliient can access it.
+    requires_login: bool
+        Whether this endpoint requires a "logged-in" client to retrieve it.
+        Currently, only authtorization code grants can access these endpoints.
     """
     def decorator(function):
         instantiate = {}
