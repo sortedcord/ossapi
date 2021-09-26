@@ -1,6 +1,8 @@
+from functools import cached_property
+
 from osrparse import GameMode as OsrparseGameMode
 
-from ossapi.models import GameMode
+from ossapi.models import GameMode, User, Beatmap
 from ossapi.mod import Mod
 from ossapi.enums import UserLookupKey
 
@@ -38,8 +40,10 @@ class Replay:
         self.play_data = replay.play_data
         self.replay_id = replay.replay_id
 
-    def beatmap(self):
+    @cached_property
+    def beatmap(self) -> Beatmap:
         return self._api.beatmap(checksum=self.beatmap_hash)
 
-    def player(self):
+    @cached_property
+    def user(self) -> User:
         return self._api.user(self.player_name, key=UserLookupKey.USERNAME)
