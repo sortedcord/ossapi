@@ -277,7 +277,8 @@ class OssapiV2:
                     redirect_uri=self.redirect_uri,
                     auto_refresh_url=self.TOKEN_URL,
                     auto_refresh_kwargs=auto_refresh_kwargs,
-                    token_updater=self._save_token, scope=self.scopes)
+                    token_updater=self._save_token,
+                    scope=[scope.value for scope in self.scopes])
 
         if self.grant is Grant.CLIENT_CREDENTIALS:
             return self._new_client_grant(self.client_id, self.client_secret)
@@ -312,7 +313,8 @@ class OssapiV2:
         session = OAuth2Session(client_id, redirect_uri=redirect_uri,
             auto_refresh_url=self.TOKEN_URL,
             auto_refresh_kwargs=auto_refresh_kwargs,
-            token_updater=self._save_token, scope=scopes)
+            token_updater=self._save_token,
+            scope=[scope.value for scope in scopes])
 
         authorization_url, _state = (
             session.authorization_url(self.AUTH_CODE_URL)
