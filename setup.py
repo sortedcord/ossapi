@@ -37,6 +37,7 @@ setup(
     packages=find_packages(),
     install_requires=[
         "requests",
-        "requests_oauthlib"
+        "requests_oauthlib",
+        "osrparse"
     ]
 )

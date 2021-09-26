@@ -5,7 +5,6 @@ import webbrowser
 import socket
 import pickle
 from pathlib import Path
-from tempfile import NamedTemporaryFile
 from datetime import datetime
 from enum import Enum
 from urllib.parse import unquote
@@ -16,6 +15,7 @@ import hashlib
 
 from requests_oauthlib import OAuth2Session
 from oauthlib.oauth2 import BackendApplicationClient, TokenExpiredError
+import osrparse
 
 from ossapi.models import (Beatmap, BeatmapUserScore, ForumTopicAndPosts,
     Search, CommentBundle, Cursor, Score, BeatmapSearchResult,
@@ -24,7 +24,6 @@ from ossapi.models import (Beatmap, BeatmapUserScore, ForumTopicAndPosts,
     Event, BeatmapsetDiscussionPosts, Build, ChangelogListing,
     MultiplayerScores, MultiplayerScoresCursor, BeatmapsetDiscussionVotes,
     CreatePMResponse, BeatmapsetDiscussionListing)
-from ossapi.mod import Mod
 from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     UserBeatmapType, BeatmapDiscussionPostSort, UserLookupKey,
     BeatmapsetEventType, CommentableType, CommentSort, ForumTopicSort,
@@ -32,6 +31,8 @@ from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     BeatmapsetDiscussionVoteSort, BeatmapsetStatus, MessageType)
 from ossapi.utils import (is_compatible_type, is_primitive_type, is_optional,
     is_base_model_type, is_model_type, is_high_model_type)
+from ossapi.mod import Mod
+from ossapi.replay import Replay
 
 # our ``request`` function below relies on the ordering of these types. The
 # base type must come first, with any auxiliary types that the base type accepts
@@ -1043,10 +1044,11 @@ class OssapiV2:
     def download_score(self,
         mode: GameModeT,
         score_id: int
-    ) -> str:
+    ) -> Replay:
         r = self.session.get(f"{self.BASE_URL}/scores/{mode.value}/"
             f"{score_id}/download")
-        return r.content
+        replay = osrparse.parse_replay(r.content)
+        return Replay(replay, self)
 
     @request
     def search_beatmaps(self,

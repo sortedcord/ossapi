@@ -9,6 +9,7 @@ if sys.version_info[1] >= 8:
     from ossapi.ossapiv2 import OssapiV2, Grant
 
 from ossapi.mod import Mod
+from ossapi.replay import Replay
 from ossapi.version import __version__
 
 # TODO turn these back to explicit imports when ossapi (and api v2 itself) has
