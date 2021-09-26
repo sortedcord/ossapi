@@ -1046,12 +1046,7 @@ class OssapiV2:
     ) -> str:
         r = self.session.get(f"{self.BASE_URL}/scores/{mode.value}/"
             f"{score_id}/download")
-
-        tempfile = NamedTemporaryFile(mode="wb", delete=False)
-        with tempfile as f:
-            f.write(r.content)
-
-        return tempfile.name
+        return r.content
 
     @request
     def search_beatmaps(self,
