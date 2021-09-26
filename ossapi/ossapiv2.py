@@ -113,11 +113,11 @@ def request(scope, *, requires_login=False):
                     "authorized using the authorization code grant. You are "
                     "currently authorized with the client credentials grant")
 
-            # Automatically instantiates parameters with their type hint if the
-            # type hint is a union of a base class. This means, for instance,
-            # that a function which accepts a ``ModT`` will have the value of
-            # that parameter automatically converted to a ``Mod``, even if the
-            # user passes a `str`.
+            # the remaining code is to automatically instantiate parameters
+            # with their type hint, if the type hint is a union of a base class.
+            # This means, for instance, that a function which accepts a ``ModT``
+            # will have the value of that parameter automatically converted to a
+            # ``Mod``, even if the user passes a `str`.
 
             # we may need to edit this later so convert from tuple
             args = list(args)
