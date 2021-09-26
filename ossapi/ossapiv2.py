@@ -15,7 +15,9 @@ import hashlib
 import functools
 
 from requests_oauthlib import OAuth2Session
-from oauthlib.oauth2 import BackendApplicationClient, TokenExpiredError, InvalidScopeError
+from oauthlib.oauth2 import (BackendApplicationClient, TokenExpiredError,
+    AccessDeniedError)
+from oauthlib.oauth2.rfc6749.errors import InsufficientScopeError
 import osrparse
 
 from ossapi.models import (Beatmap, BeatmapUserScore, ForumTopicAndPosts,
@@ -62,56 +64,73 @@ BeatmapsetDiscussionVoteSortT = Union[BeatmapsetDiscussionVoteSort, str]
 MessageTypeT = Union[MessageType, str]
 BeatmapsetStatusT = Union[BeatmapsetStatus, str]
 
-def request(function):
+def request(scope, *, requires_login=False):
     """
-    Automatically instantiates parameters with their type hint if the type hint
-    is a union of a base class. This means, for instance, that a function which
-    accepts a ``ModT`` will have the value of that parameter automatically
-    converted to a ``Mod``, even if the user passes a `str`.
+    Handles various validation and preparation tasks for any endpoint request
+    method.
+
+    This method does the following things:
+    * makes sure the client has the requuired scope to access the endpoint in
+      question
+    * makes sure the client has the right grant to access the endpoint in
+      question (the client credentials grant cannot access endpoints which
+      require the user to be "logged in", such as downloading a replay)
+    * converts parameters to an instance of a base model if the parameter is
+      annotated as being a base model. This means, for instance, that a function
+      with an argument annotated as ``ModT`` (``Union[Mod, str, int, list]``)
+      will have the value of that parameter automatically converted to a
+      ``Mod``, even if the user passes a `str`.
     """
-    instantiate = {}
-    for name, type_ in function.__annotations__.items():
-        origin = get_origin(type_)
-        args = get_args(type_)
-        if origin is Union and is_base_model_type(args[0]):
-            instantiate[name] = args[0]
-
-    arg_names = list(inspect.signature(function).parameters)
-
-    @functools.wraps(function)
-    def wrapper(*args, **kwargs):
-        # we may need to edit this later so convert from tuple
-        args = list(args)
-
-        # args and kwargs are handled separately, but in a similar fashion.
-        # The difference is that for ``args`` we need to know the name of the
-        # argument so we can look up its type hint and see if it's a parameter
-        # we need to convert.
-        for i, (arg, arg_name) in enumerate(zip(args, arg_names)):
-            if arg_name in instantiate:
-                type_ = instantiate[arg_name]
-                args[i] = type_(arg)
-
-        for arg in kwargs:
-            if arg in instantiate:
-                type_ = instantiate[arg]
-                kwargs[arg] = type_(kwargs[arg])
-
-        return function(*args, **kwargs)
-    return wrapper
-
-def scope(scope):
     def decorator(function):
+        instantiate = {}
+        for name, type_ in function.__annotations__.items():
+            origin = get_origin(type_)
+            args = get_args(type_)
+            if origin is Union and is_base_model_type(args[0]):
+                instantiate[name] = args[0]
+
+        arg_names = list(inspect.signature(function).parameters)
+
         @functools.wraps(function)
         def wrapper(*args, **kwargs):
             self = args[0]
             if scope not in self.scopes:
-                raise InvalidScopeError(f"A scope of {scope} is required for "
-                    "this endpoint. Your client's current scopes: "
+                raise InsufficientScopeError(f"A scope of {scope} is required "
+                    "for this endpoint. Your client's current scopes are "
                     f"{self.scopes}")
+
+            if requires_login and self.grant is Grant.CLIENT_CREDENTIALS:
+                raise AccessDeniedError("To access this endpoint you must be "
+                    "authorized using the authorization code grant. You are "
+                    "currently authorized with the client credentials grant")
+
+            # Automatically instantiates parameters with their type hint if the
+            # type hint is a union of a base class. This means, for instance,
+            # that a function which accepts a ``ModT`` will have the value of
+            # that parameter automatically converted to a ``Mod``, even if the
+            # user passes a `str`.
+
+            # we may need to edit this later so convert from tuple
+            args = list(args)
+
+            # args and kwargs are handled separately, but in a similar fashion.
+            # The difference is that for ``args`` we need to know the name of
+            # the argument so we can look up its type hint and see if it's a
+            # parameter we need to convert.
+            for i, (arg, arg_name) in enumerate(zip(args, arg_names)):
+                if arg_name in instantiate:
+                    type_ = instantiate[arg_name]
+                    args[i] = type_(arg)
+
+            for arg in kwargs:
+                if arg in instantiate:
+                    type_ = instantiate[arg]
+                    kwargs[arg] = type_(kwargs[arg])
+
             return function(*args, **kwargs)
         return wrapper
     return decorator
+
 
 class Grant(Enum):
     CLIENT_CREDENTIALS = "client"
@@ -656,8 +675,7 @@ class OssapiV2:
     # /beatmaps
     # ---------
 
-    @request
-    @scope(Scope.PUBLIC)
+    @request(Scope.PUBLIC)
     def beatmap_user_score(self,
         beatmap_id: int,
         user_id: int,
@@ -671,8 +689,7 @@ class OssapiV2:
         return self._get(BeatmapUserScore,
             f"/beatmaps/{beatmap_id}/scores/users/{user_id}", params)
 
-    @request
-    @scope(Scope.PUBLIC)
+    @request(Scope.PUBLIC)
     def beatmap_scores(self,
         beatmap_id: int,
         mode: Optional[GameModeT] = None,
@@ -686,8 +703,7 @@ class OssapiV2:
         return self._get(BeatmapScores, f"/beatmaps/{beatmap_id}/scores",
             params)
 
-    @request
-    @scope(Scope.PUBLIC)
+    @request(Scope.PUBLIC)
     def beatmap(self,
         beatmap_id: Optional[int] = None,
         checksum: Optional[str] = None,
@@ -707,8 +723,7 @@ class OssapiV2:
     # /beatmapsets
     # ------------
 
-    @request
-    @scope(Scope.PUBLIC)
+    @request(Scope.PUBLIC)
     def beatmapset_discussion_posts(self,
         beatmapset_session_id: Optional[int] = None,
         limit: Optional[int] = None,
@@ -726,8 +741,7 @@ class OssapiV2:
         return self._get(BeatmapsetDiscussionPosts,
             "/beatmapsets/discussions/posts", params)
 
-    @request
-    @scope(Scope.PUBLIC)
+    @request(Scope.PUBLIC)
     def beatmapset_discussion_votes(self,
         beatmapset_discussion_id: Optional[int] = None,
         limit: Optional[int] = None,
@@ -748,8 +762,7 @@ class OssapiV2:
         return self._get(BeatmapsetDiscussionVotes,
             "/beatmapsets/discussions/votes", params)
 
-    @request
-    @scope(Scope.PUBLIC)
+    @request(Scope.PUBLIC)
     def beatmapset_discussion_listing(self,
         beatmapset_id: Optional[int] = None,
         beatmap_id: Optional[int] = None,
@@ -776,7 +789,7 @@ class OssapiV2:
     # /changelog
     # ----------
 
-    @request
+    @request(scope=None)
     def changelog_build(self,
         stream: str,
         build: str
@@ -786,7 +799,7 @@ class OssapiV2:
         """
         return self._get(Build, f"/changelog/{stream}/{build}")
 
-    @request
+    @request(scope=None)
     def changelog_listing(self,
         from_: Optional[str] = None,
         to: Optional[str] = None,
@@ -799,7 +812,7 @@ class OssapiV2:
         params = {"from": from_, "to": to, "max_id": max_id, "stream": stream}
         return self._get(ChangelogListing, "/changelog", params)
 
-    @request
+    @request(scope=None)
     def changelog_lookup(self,
         changelog: str,
         key: Optional[str] = None
@@ -814,8 +827,7 @@ class OssapiV2:
     # /chat
     # -----
 
-    @request
-    @scope(Scope.CHAT_WRITE)
+    @request(Scope.CHAT_WRITE)
     def create_pm(self,
         user_id: int,
         message: str,
@@ -832,8 +844,7 @@ class OssapiV2:
     # /comments
     # ---------
 
-    @request
-    @scope(Scope.PUBLIC)
+    @request(Scope.PUBLIC)
     def comments(self,
         commentable_type: Optional[CommentableTypeT] = None,
         commentable_id: Optional[int] = None,
@@ -856,7 +867,7 @@ class OssapiV2:
             "parent_id": parent_id, "sort": sort}
         return self._get(CommentBundle, "/comments", params)
 
-    @request
+    @request(scope=None)
     def comment(self,
         comment_id: int
     ) -> CommentBundle:
@@ -869,8 +880,7 @@ class OssapiV2:
     # /forums
     # -------
 
-    @request
-    @scope(Scope.PUBLIC)
+    @request(Scope.PUBLIC)
     def forum_topic(self,
         topic_id: int,
         cursor: Optional[Cursor] = None,
@@ -893,8 +903,7 @@ class OssapiV2:
     # / ("home")
     # ----------
 
-    @request
-    @scope(Scope.PUBLIC)
+    @request(Scope.PUBLIC)
     def search(self,
         mode: Optional[SearchModeT] = None,
         query: Optional[str] = None,
@@ -910,8 +919,7 @@ class OssapiV2:
     # /me
     # ---
 
-    @request
-    @scope(Scope.IDENTIFY)
+    @request(Scope.IDENTIFY)
     def get_me(self,
         mode: Optional[GameModeT] = None
     ):
@@ -924,8 +932,7 @@ class OssapiV2:
     # /rankings
     # ---------
 
-    @request
-    @scope(Scope.PUBLIC)
+    @request(Scope.PUBLIC)
     def ranking(self,
         mode: GameModeT,
         type_: RankingTypeT,
@@ -943,8 +950,7 @@ class OssapiV2:
         return self._get(Rankings, f"/rankings/{mode.value}/{type_.value}",
             params=params)
 
-    @request
-    @scope(Scope.PUBLIC)
+    @request(Scope.PUBLIC)
     def spotlights(self) -> List[Spotlight]:
         """
         https://osu.ppy.sh/docs/index.html#get-spotlights
@@ -958,8 +964,7 @@ class OssapiV2:
 
     # TODO add test for this once I figure out values for room_id and
     # playlist_id that actually produce a response lol
-    @request
-    @scope(Scope.PUBLIC)
+    @request(Scope.PUBLIC)
     def multiplayer_scores(self,
         room_id: int,
         playlist_id: int,
@@ -978,8 +983,7 @@ class OssapiV2:
     # /users
     # ------
 
-    @request
-    @scope(Scope.PUBLIC)
+    @request(Scope.PUBLIC)
     def user_kudosu(self,
         user_id: int,
         limit: Optional[int] = None,
@@ -992,8 +996,7 @@ class OssapiV2:
         return self._get(List[KudosuHistory], f"/users/{user_id}/kudosu",
             params)
 
-    @request
-    @scope(Scope.PUBLIC)
+    @request(Scope.PUBLIC)
     def user_scores(self,
         user_id: int,
         type_: ScoreTypeT,
@@ -1010,8 +1013,7 @@ class OssapiV2:
         return self._get(List[Score], f"/users/{user_id}/scores/{type_.value}",
             params)
 
-    @request
-    @scope(Scope.PUBLIC)
+    @request(Scope.PUBLIC)
     def user_beatmaps(self,
         user_id: int,
         type_: UserBeatmapTypeT,
@@ -1030,8 +1032,7 @@ class OssapiV2:
         return self._get(return_type,
             f"/users/{user_id}/beatmapsets/{type_.value}", params)
 
-    @request
-    @scope(Scope.PUBLIC)
+    @request(Scope.PUBLIC)
     def user_recent_activity(self,
         user_id: int,
         limit: Optional[int] = None,
@@ -1044,8 +1045,7 @@ class OssapiV2:
         return self._get(List[_Event], f"/users/{user_id}/recent_activity/",
             params)
 
-    @request
-    @scope(Scope.PUBLIC)
+    @request(Scope.PUBLIC)
     def user(self,
         user: Union[int, str],
         mode: Optional[GameModeT] = None,
@@ -1062,7 +1062,7 @@ class OssapiV2:
     # /wiki
     # -----
 
-    @request
+    @request(scope=None)
     def wiki_page(self,
         locale: str,
         path: str
@@ -1076,16 +1076,14 @@ class OssapiV2:
     # undocumented
     # ------------
 
-    @request
-    @scope(Scope.PUBLIC)
+    @request(Scope.PUBLIC)
     def score(self,
         mode: GameModeT,
         score_id: int
     ) -> Score:
         return self._get(Score, f"/scores/{mode.value}/{score_id}")
 
-    @request
-    @scope(Scope.PUBLIC)
+    @request(Scope.PUBLIC, requires_login=True)
     def download_score(self,
         mode: GameModeT,
         score_id: int
@@ -1095,8 +1093,7 @@ class OssapiV2:
         replay = osrparse.parse_replay(r.content)
         return Replay(replay, self)
 
-    @request
-    @scope(Scope.PUBLIC)
+    @request(Scope.PUBLIC)
     def search_beatmaps(self,
         query: Optional[str] = None,
         cursor: Optional[Cursor] = None
@@ -1109,8 +1106,7 @@ class OssapiV2:
         params = {"cursor": cursor, "q": query}
         return self._get(BeatmapSearchResult, "/beatmapsets/search/", params)
 
-    @request
-    @scope(Scope.PUBLIC)
+    @request(Scope.PUBLIC)
     def beatmapsets_events(self,
         limit: Optional[int] = None,
         page: Optional[int] = None,
