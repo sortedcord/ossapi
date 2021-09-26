@@ -94,7 +94,7 @@ def request(scope, *, requires_login=False):
         @functools.wraps(function)
         def wrapper(*args, **kwargs):
             self = args[0]
-            if scope not in self.scopes:
+            if scope is not None and scope not in self.scopes:
                 raise InsufficientScopeError(f"A scope of {scope} is required "
                     "for this endpoint. Your client's current scopes are "
                     f"{self.scopes}")
