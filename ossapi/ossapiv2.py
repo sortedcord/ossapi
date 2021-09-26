@@ -12,9 +12,10 @@ import inspect
 import json
 from keyword import iskeyword
 import hashlib
+import functools
 
 from requests_oauthlib import OAuth2Session
-from oauthlib.oauth2 import BackendApplicationClient, TokenExpiredError
+from oauthlib.oauth2 import BackendApplicationClient, TokenExpiredError, InvalidScopeError
 import osrparse
 
 from ossapi.models import (Beatmap, BeatmapUserScore, ForumTopicAndPosts,
@@ -77,6 +78,7 @@ def request(function):
 
     arg_names = list(inspect.signature(function).parameters)
 
+    @functools.wraps(function)
     def wrapper(*args, **kwargs):
         # we may need to edit this later so convert from tuple
         args = list(args)
@@ -98,9 +100,31 @@ def request(function):
         return function(*args, **kwargs)
     return wrapper
 
+def scope(scope):
+    def decorator(function):
+        @functools.wraps(function)
+        def wrapper(*args, **kwargs):
+            self = args[0]
+            if scope not in self.scopes:
+                raise InvalidScopeError(f"A scope of {scope} is required for "
+                    "this endpoint. Your client's current scopes: "
+                    f"{self.scopes}")
+            return function(*args, **kwargs)
+        return wrapper
+    return decorator
+
 class Grant(Enum):
     CLIENT_CREDENTIALS = "client"
     AUTHORIZATION_CODE = "authorization"
+
+class Scope(Enum):
+    CHAT_WRITE = "chat.write"
+    DELEGATE = "delegate"
+    FORUM_WRITE = "forum.write"
+    FRIENDS_READ = "friends.read"
+    IDENTIFY = "identify"
+    PUBLIC = "public"
+
 
 class OssapiV2:
     """
@@ -164,7 +188,7 @@ class OssapiV2:
         client_id: int,
         client_secret: str,
         redirect_uri: Optional[str] = None,
-        scopes: List[str] = ["public"],
+        scopes: List[Union[str, Scope]] = [Scope.PUBLIC],
         strict: bool = False,
         token_directory: Optional[str] = None,
         token_key: Optional[str] = None
@@ -175,7 +199,7 @@ class OssapiV2:
         self.client_id = client_id
         self.client_secret = client_secret
         self.redirect_uri = redirect_uri
-        self.scopes = scopes
+        self.scopes = [Scope(scope) for scope in scopes]
         self.strict = strict
 
         self.log = logging.getLogger(__name__)
@@ -208,11 +232,13 @@ class OssapiV2:
         need to reauthenticate unless absolutely necessary.
         """
         grant = Grant(grant)
+        scopes = [Scope(scope) for scope in scopes]
         m = hashlib.sha256()
         m.update(grant.value.encode("utf-8"))
         m.update(str(client_id).encode("utf-8"))
         m.update(client_secret.encode("utf-8"))
-        m.update("".join(scopes).encode("utf-8"))
+        for scope in scopes:
+            m.update(scope.value.encode("utf-8"))
         return m.hexdigest()
 
     @staticmethod
@@ -628,6 +654,7 @@ class OssapiV2:
     # ---------
 
     @request
+    @scope(Scope.PUBLIC)
     def beatmap_user_score(self,
         beatmap_id: int,
         user_id: int,
@@ -642,6 +669,7 @@ class OssapiV2:
             f"/beatmaps/{beatmap_id}/scores/users/{user_id}", params)
 
     @request
+    @scope(Scope.PUBLIC)
     def beatmap_scores(self,
         beatmap_id: int,
         mode: Optional[GameModeT] = None,
@@ -656,6 +684,7 @@ class OssapiV2:
             params)
 
     @request
+    @scope(Scope.PUBLIC)
     def beatmap(self,
         beatmap_id: Optional[int] = None,
         checksum: Optional[str] = None,
@@ -676,6 +705,7 @@ class OssapiV2:
     # ------------
 
     @request
+    @scope(Scope.PUBLIC)
     def beatmapset_discussion_posts(self,
         beatmapset_session_id: Optional[int] = None,
         limit: Optional[int] = None,
@@ -694,6 +724,7 @@ class OssapiV2:
             "/beatmapsets/discussions/posts", params)
 
     @request
+    @scope(Scope.PUBLIC)
     def beatmapset_discussion_votes(self,
         beatmapset_discussion_id: Optional[int] = None,
         limit: Optional[int] = None,
@@ -715,6 +746,7 @@ class OssapiV2:
             "/beatmapsets/discussions/votes", params)
 
     @request
+    @scope(Scope.PUBLIC)
     def beatmapset_discussion_listing(self,
         beatmapset_id: Optional[int] = None,
         beatmap_id: Optional[int] = None,
@@ -780,6 +812,7 @@ class OssapiV2:
     # -----
 
     @request
+    @scope(Scope.CHAT_WRITE)
     def create_pm(self,
         user_id: int,
         message: str,
@@ -797,6 +830,7 @@ class OssapiV2:
     # ---------
 
     @request
+    @scope(Scope.PUBLIC)
     def comments(self,
         commentable_type: Optional[CommentableTypeT] = None,
         commentable_id: Optional[int] = None,
@@ -833,6 +867,7 @@ class OssapiV2:
     # -------
 
     @request
+    @scope(Scope.PUBLIC)
     def forum_topic(self,
         topic_id: int,
         cursor: Optional[Cursor] = None,
@@ -856,6 +891,7 @@ class OssapiV2:
     # ----------
 
     @request
+    @scope(Scope.PUBLIC)
     def search(self,
         mode: Optional[SearchModeT] = None,
         query: Optional[str] = None,
@@ -872,6 +908,7 @@ class OssapiV2:
     # ---
 
     @request
+    @scope(Scope.IDENTIFY)
     def get_me(self,
         mode: Optional[GameModeT] = None
     ):
@@ -885,6 +922,7 @@ class OssapiV2:
     # ---------
 
     @request
+    @scope(Scope.PUBLIC)
     def ranking(self,
         mode: GameModeT,
         type_: RankingTypeT,
@@ -903,6 +941,7 @@ class OssapiV2:
             params=params)
 
     @request
+    @scope(Scope.PUBLIC)
     def spotlights(self) -> List[Spotlight]:
         """
         https://osu.ppy.sh/docs/index.html#get-spotlights
@@ -917,6 +956,7 @@ class OssapiV2:
     # TODO add test for this once I figure out values for room_id and
     # playlist_id that actually produce a response lol
     @request
+    @scope(Scope.PUBLIC)
     def multiplayer_scores(self,
         room_id: int,
         playlist_id: int,
@@ -936,6 +976,7 @@ class OssapiV2:
     # ------
 
     @request
+    @scope(Scope.PUBLIC)
     def user_kudosu(self,
         user_id: int,
         limit: Optional[int] = None,
@@ -949,6 +990,7 @@ class OssapiV2:
             params)
 
     @request
+    @scope(Scope.PUBLIC)
     def user_scores(self,
         user_id: int,
         type_: ScoreTypeT,
@@ -966,6 +1008,7 @@ class OssapiV2:
             params)
 
     @request
+    @scope(Scope.PUBLIC)
     def user_beatmaps(self,
         user_id: int,
         type_: UserBeatmapTypeT,
@@ -985,6 +1028,7 @@ class OssapiV2:
             f"/users/{user_id}/beatmapsets/{type_.value}", params)
 
     @request
+    @scope(Scope.PUBLIC)
     def user_recent_activity(self,
         user_id: int,
         limit: Optional[int] = None,
@@ -998,6 +1042,7 @@ class OssapiV2:
             params)
 
     @request
+    @scope(Scope.PUBLIC)
     def user(self,
         user: Union[int, str],
         mode: Optional[GameModeT] = None,
@@ -1029,6 +1074,7 @@ class OssapiV2:
     # ------------
 
     @request
+    @scope(Scope.PUBLIC)
     def score(self,
         mode: GameModeT,
         score_id: int
@@ -1036,6 +1082,7 @@ class OssapiV2:
         return self._get(Score, f"/scores/{mode.value}/{score_id}")
 
     @request
+    @scope(Scope.PUBLIC)
     def download_score(self,
         mode: GameModeT,
         score_id: int
@@ -1046,6 +1093,7 @@ class OssapiV2:
         return Replay(replay, self)
 
     @request
+    @scope(Scope.PUBLIC)
     def search_beatmaps(self,
         query: Optional[str] = None,
         cursor: Optional[Cursor] = None
@@ -1059,6 +1107,7 @@ class OssapiV2:
         return self._get(BeatmapSearchResult, "/beatmapsets/search/", params)
 
     @request
+    @scope(Scope.PUBLIC)
     def beatmapsets_events(self,
         limit: Optional[int] = None,
         page: Optional[int] = None,
