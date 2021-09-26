@@ -15,8 +15,13 @@ game_mode_map = {
 
 class Replay:
     """
-    A thin shim around an osrparse.Replay instance. Converts some attributes to
-    more appropriate types and adds a few api related methods.
+    A replay played by a player.
+
+    Notes
+    -----
+    This is a thin shim around an osrparse.Replay instance. It converts some
+    attributes to more appropriate types and adds #user and #beatmap to retrieve
+    api-related objects.
     """
     def __init__(self, replay, api):
         self._api = api
@@ -42,8 +47,26 @@ class Replay:
 
     @cached_property
     def beatmap(self) -> Beatmap:
+        """
+        The beatmap this replay was played on.
+
+        Warnings
+        --------
+        Accessing this property for the first time will result in a web request
+        to retrieve the beatmap from the api. We cache the return value, so
+        further accesses are free.
+        """
         return self._api.beatmap(checksum=self.beatmap_hash)
 
     @cached_property
     def user(self) -> User:
+        """
+        The user that played this replay.
+
+        Warnings
+        --------
+        Accessing this property for the first time will result in a web request
+        to retrieve the user from the api. We cache the return value, so further
+        accesses are free.
+        """
         return self._api.user(self.player_name, key=UserLookupKey.USERNAME)
