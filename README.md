@@ -56,7 +56,7 @@ Here is a complete list of endpoints we currently have implemented. You can trac
 
 ```python
 print(api.beatmapset_discussion_posts().discussions[0].message_type)
-print(api.user_recent_activity(10690090)[0].created_at)
+print(api.user_recent_activity(12092800)[0].created_at)
 print(api.spotlights()[0].name)
 print(api.user_beatmaps(user_id=12092800, type_="most_played")[0].count)
 print(api.user_kudosu(user_id=3178418)[0].action)
@@ -141,7 +141,7 @@ Basic usage:
 from ossapi import Ossapi
 
 api = Ossapi("key")
-print(api.get_beatmaps(user=10690090)[0].submit_date)
+print(api.get_beatmaps(user=53378)[0].submit_date)
 print(api.get_match(69063884).games[0].game_id)
 print(api.get_scores(221777)[0].username)
 print(len(api.get_replay(beatmap_id=221777, user=6974470)))
