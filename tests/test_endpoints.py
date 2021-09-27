@@ -1,5 +1,6 @@
 from unittest import TestCase
 
+from oauthlib.oauth2 import AccessDeniedError
 from ossapi import RankingType, BeatmapsetEventType
 
 from tests import api
@@ -10,7 +11,7 @@ class TestBeatmapsetDiscussionPosts(TestCase):
 
 class TestUserRecentActivity(TestCase):
     def test_deserialize(self):
-        api.user_recent_activity(10690090)
+        api.user_recent_activity(12092800)
 
 class TestSpotlights(TestCase):
     def test_deserialize(self):
@@ -66,7 +67,10 @@ class TestComment(TestCase):
 
 class TestDownloadScore(TestCase):
     def test_deserialize(self):
-        api.download_score(mode="osu", score_id=2797309065)
+        # api instance is using client credentials which doesn't have access to
+        # downloading replays
+        self.assertRaises(AccessDeniedError,
+            lambda: api.download_score(mode="osu", score_id=2797309065))
 
 class TestSearchBeatmaps(TestCase):
     def test_deserialize(self):
@@ -74,7 +78,7 @@ class TestSearchBeatmaps(TestCase):
 
 class TestUser(TestCase):
     def test_deserialize(self):
-        api.user(10690090)
+        api.user(12092800)
 
     def test_key(self):
         # make sure it automatically falls back to username if not specified
