@@ -730,7 +730,7 @@ class MultiplayerScoresCursor(Model):
 # ===================
 
 @dataclass
-class BeatmapSearchResult(Model):
+class BeatmapsetSearchResult(Model):
     beatmapsets: List[Beatmapset]
     cursor: CursorT
     recommended_difficulty: Optional[float]

@@ -20,8 +20,8 @@ from oauthlib.oauth2 import (BackendApplicationClient, TokenExpiredError,
 from oauthlib.oauth2.rfc6749.errors import InsufficientScopeError
 import osrparse
 
-from ossapi.models import (Beatmap, BeatmapUserScore, ForumTopicAndPosts,
-    Search, CommentBundle, Cursor, Score, BeatmapSearchResult,
+from ossapi.models import (Beatmap, BeatmapCompact, BeatmapUserScore, ForumTopicAndPosts,
+    Search, CommentBundle, Cursor, Score, BeatmapsetSearchResult,
     ModdingHistoryEventsBundle, User, Rankings, BeatmapScores, KudosuHistory,
     Beatmapset, BeatmapPlaycount, Spotlight, Spotlights, WikiPage, _Event,
     Event, BeatmapsetDiscussionPosts, Build, ChangelogListing,
@@ -1117,17 +1117,17 @@ class OssapiV2:
         return Replay(replay, self)
 
     @request(Scope.PUBLIC)
-    def search_beatmaps(self,
+    def search_beatmapsets(self,
         query: Optional[str] = None,
         cursor: Optional[Cursor] = None
-    ) -> BeatmapSearchResult:
+    ) -> BeatmapsetSearchResult:
         # Param key names are the same as https://osu.ppy.sh/beatmapsets,
         # so from eg https://osu.ppy.sh/beatmapsets?q=black&s=any we get that
         # the query uses ``q`` and the category uses ``s``.
         # TODO implement all possible queries, or wait for them to be
         # documented. Currently we only implement the most basic "query" option.
         params = {"cursor": cursor, "q": query}
-        return self._get(BeatmapSearchResult, "/beatmapsets/search/", params)
+        return self._get(BeatmapsetSearchResult, "/beatmapsets/search/", params)
 
     @request(Scope.PUBLIC)
     def beatmapsets_events(self,
