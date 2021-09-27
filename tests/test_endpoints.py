@@ -74,7 +74,7 @@ class TestDownloadScore(TestCase):
 
 class TestSearchBeatmaps(TestCase):
     def test_deserialize(self):
-        api.search_beatmaps(query="the big black")
+        api.search_beatmapsets(query="the big black")
 
 class TestUser(TestCase):
     def test_deserialize(self):
