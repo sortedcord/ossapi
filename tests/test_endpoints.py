@@ -1,6 +1,7 @@
 from unittest import TestCase
 
 from oauthlib.oauth2 import AccessDeniedError
+from oauthlib.oauth2.rfc6749.errors import InsufficientScopeError
 from ossapi import RankingType, BeatmapsetEventType
 
 from tests import api
@@ -89,9 +90,9 @@ class TestUser(TestCase):
 
 class TestMe(TestCase):
     def test_deserialize(self):
-        # TODO: requires another scope to be passed to OssapiV2
-        # api.get_me()
-        pass
+        # requires an authorization code api for the identify scope, client
+        # credentials can only request the public scope
+        self.assertRaises(InsufficientScopeError, lambda: api.get_me())
 
 class TestWikiPage(TestCase):
     def test_deserialize(self):
