@@ -1,8 +1,8 @@
 from unittest import TestCase
 
-from ossapi import RankingType, BeatmapsetEventType, OssapiV2
+from ossapi import RankingType, BeatmapsetEventType
 
-from tests import api, client_id, client_secret
+from tests import api
 
 class TestBeatmapsetDiscussionPosts(TestCase):
     def test_deserialize(self):
