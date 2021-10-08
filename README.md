@@ -131,6 +131,36 @@ r = api.ranking("osu", RankingType.PERFORMANCE, cursor=cursor)
 print(r.cursor) # None
 ```
 
+### Advanced Usage
+
+#### User and Beatmap as parameters
+
+Some functions, like `api.beatmap_scores`, take a beatmap_id (or user_id). We also allow passing a `Beatmap` / `BeatmapCompact` (or `User` / `UserCompact`) in place of the id as a convenience:
+
+```python
+beatmap = api.beatmap(221777)
+assert api.beatmap_scores(beatmap) == api.beatmap_scores(beatmap.id)
+```
+
+Internally, we simply take `beatmap.id` (or `user.id`) and supply that to the function.
+
+#### Expandable Models
+
+`UserCompact` and `BeatmapCompact` classes are "expandable" into `User` and `Beatmap` respectively. Some endpoints only return eg a `UserCompact`, but you may want attributes that are present on `User`. To expand such a class, call `#expand`:
+
+```python
+compact_user = api.search(query="tybug").user.data[0]
+# `statistics` is only available on `User` not `UserCompact`,
+# so expansion is necessary
+print(compact_user.expand().statistics.ranked_score)
+# this is equivalent to
+print(api.user(compact_user).statistics.ranked_score)
+```
+
+Similarly, `beatmap = compact_beatmap.expand()` is equivalent to `beatmap = api.beatmap(compact_beatmap)`.
+
+(Note that beatmapsets will also be expandable in the future; I am waiting for the beatmapset lookup endpoint to become documented first.)
+
 ## API v1 Usage
 
 You can get your api v1 key at <https://osu.ppy.sh/p/api/>. Note that due to a [redirection bug](https://github.com/ppy/osu-web/issues/2867), you may need to log in and wait 30 seconds before being able to access the api page through the above link.
