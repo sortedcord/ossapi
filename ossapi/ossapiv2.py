@@ -26,7 +26,7 @@ from ossapi.models import (Beatmap, BeatmapCompact, BeatmapUserScore,
     BeatmapScores, KudosuHistory, Beatmapset, BeatmapPlaycount, Spotlight,
     Spotlights, WikiPage, _Event, Event, BeatmapsetDiscussionPosts, Build,
     ChangelogListing, MultiplayerScores, MultiplayerScoresCursor,
-    BeatmapsetDiscussionVotes, CreatePMResponse, BeatmapsetDiscussionListing,
+    BeatmapsetDiscussionVotes, CreatePMResponse, BeatmapsetDiscussions,
     UserCompact)
 from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     UserBeatmapType, BeatmapDiscussionPostSort, UserLookupKey,
@@ -810,7 +810,7 @@ class OssapiV2:
             "/beatmapsets/discussions/votes", params)
 
     @request(Scope.PUBLIC)
-    def beatmapset_discussion_listing(self,
+    def beatmapset_discussions(self,
         beatmapset_id: Optional[int] = None,
         beatmap_id: Optional[BeatmapIdT] = None,
         beatmapset_status: Optional[BeatmapsetStatusT] = None,
@@ -821,7 +821,7 @@ class OssapiV2:
         sort: Optional[BeatmapDiscussionPostSortT] = None,
         user_id: Optional[UserIdT] = None,
         with_deleted: Optional[bool] = None,
-    ) -> BeatmapsetDiscussionListing:
+    ) -> BeatmapsetDiscussions:
         """
         https://osu.ppy.sh/docs/index.html#get-beatmapset-discussions
         """
@@ -830,7 +830,7 @@ class OssapiV2:
             "message_types": message_types, "only_unresolved": only_unresolved,
             "page": page, "sort": sort, "user": user_id,
             "with_deleted": with_deleted}
-        return self._get(BeatmapsetDiscussionListing,
+        return self._get(BeatmapsetDiscussions,
             "/beatmapsets/discussions", params)
 
     # /changelog

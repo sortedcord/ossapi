@@ -12,7 +12,7 @@ from ossapi.models import (Beatmap, BeatmapCompact, BeatmapUserScore,
     BeatmapScores, KudosuHistory, Beatmapset, BeatmapPlaycount, Spotlight,
     Spotlights, WikiPage, _Event, Event, BeatmapsetDiscussionPosts, Build,
     ChangelogListing, MultiplayerScores, MultiplayerScoresCursor,
-    BeatmapsetDiscussionVotes, CreatePMResponse, BeatmapsetDiscussionListing,
+    BeatmapsetDiscussionVotes, CreatePMResponse, BeatmapsetDiscussions,
     UserCompact)
 from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     UserBeatmapType, BeatmapDiscussionPostSort, UserLookupKey,
@@ -42,7 +42,7 @@ __all__ = [
     "Spotlights", "WikiPage", "_Event", "Event", "BeatmapsetDiscussionPosts",
     "Build", "ChangelogListing", "MultiplayerScores", "MultiplayerScoresCursor",
     "BeatmapsetDiscussionVotes", "CreatePMResponse",
-    "BeatmapsetDiscussionListing", "UserCompact",
+    "BeatmapsetDiscussions", "UserCompact",
     # OssapiV2 enums
     "GameMode", "ScoreType", "RankingFilter", "RankingType",
     "UserBeatmapType", "BeatmapDiscussionPostSort", "UserLookupKey",

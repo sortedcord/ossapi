@@ -739,7 +739,7 @@ class BeatmapsetSearchResult(Model):
     search: Any
 
 @dataclass
-class BeatmapsetDiscussionListing(Model):
+class BeatmapsetDiscussions(Model):
     beatmaps: List[Beatmap]
     cursor: CursorT
     discussions: List[BeatmapsetDiscussion]
