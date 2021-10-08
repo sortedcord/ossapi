@@ -162,47 +162,25 @@ class Datetime(datetime, BaseModel):
 # inheritance hierarchy and looks for any class which is a dataclass. If it
 # finds one, it adds the parameters for that class to the new dataclass'
 # __init__.
-# Since almost all of our models are dataclasses, this means that
-# ``RequiresAPI`` also needs to be a dataclass so that the new ``_api``
-# parameter gets picked up and added to the created ``__init__``.
+# Since almost all of our models are dataclasses, this means that ``Expandable``
+# also needs to be a dataclass so that the new ``_api`` parameter gets picked up
+# and added to the created ``__init__``.
 
 @dataclass
-class RequiresAPI:
-    """
-    A mixin for models which require api access after instantiation. Typically
-    this is to allow the model to expose a public method which retrieves some
-    additional information from the api, without requiring the user to pass an
-    api instance.
-
-    Models which subclass this can expect an ``_api`` attribute to be available
-    to them, which is the ``OssapiV2`` instance that loaded that model.
-    """
-    # can't annotate with OssapiV2 or we get a circular import error, this is
-    # good enough
-    _api: field()
-
-class Expandable(RequiresAPI, ABC):
+class Expandable(ABC):
     """
     A mixin for models which can be "expanded" to a different model which has a
     superset of attributes of the current model. Typically this expansion is
     expensive (requires an additional api call) which is why it is not done by
     default.
     """
+    # can't annotate with OssapiV2 or we get a circular import error, this is
+    # good enough
+    _api: field()
 
     @abstractmethod
     def expand(self):
         pass
-
-@dataclass
-class PaginatedModel(RequiresAPI, ABC):
-    cursor: field()
-
-    @abstractmethod
-    def next(self):
-        pass
-
-    def can_paginate(self):
-        return bool(self.cursor)
 
 
 # typing utils
@@ -227,29 +205,3 @@ def is_compatible_type(value, type_):
     if type_ is float and isinstance(value, int):
         return True
     return isinstance(value, type_)
-
-def flat_types(type_):
-    """
-    Returns the "flattened" version of the type hint ``type_``. Analogous to
-    flattening a nested list, where the nesting in this case is caused by the
-    ``Union`` type.
-
-    Examples
-    --------
-    >>> flat_types(Union[int, None])
-    [<class 'int'>, <class 'NoneType'>]
-    >>> flat_types(Optional[int])
-    [<class 'int'>, <class 'NoneType'>]
-    >>> flat_types(Union[int, Union[Union[str, int], float], \
-            Tuple[Optional[int], int]])
-    [<class 'int'>, <class 'str'>, <class 'float'>,
-        typing.Tuple[typing.Optional[int], int]]
-    """
-    if get_origin(type_) is not Union:
-        return [type_]
-
-    args = get_args(type_)
-    ret = []
-    for arg in args:
-        ret += flat_types(arg)
-    return ret
