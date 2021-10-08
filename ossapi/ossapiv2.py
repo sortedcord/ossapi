@@ -221,11 +221,11 @@ class OssapiV2:
         files instead of locally wherever ossapi is installed. Useful if you
         want more control over token files.
     token_key: str
-        If passed, this key will be used to name the token file instead of an
-        automatically generated one. Note that if you pass this, you are taking
-        responsibility for making sure it is unique / unused, and also for
-        remembering the key you passed if you wish to eg remove the token in the
-        future, which requires the key.
+        If passed, the given key will be used to name the token file instead of
+        an automatically generated one. Note that if you pass this, you are
+        taking responsibility for making sure it is unique / unused, and also
+        for remembering the key you passed if you wish to eg remove the token in
+        the future, which requires the key.
     """
     TOKEN_URL = "https://osu.ppy.sh/oauth/token"
     AUTH_CODE_URL = "https://osu.ppy.sh/oauth/authorize"
