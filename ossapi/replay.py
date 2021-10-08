@@ -1,5 +1,3 @@
-from functools import cached_property
-
 from osrparse import GameMode as OsrparseGameMode
 
 from ossapi.models import GameMode, User, Beatmap
@@ -44,8 +42,10 @@ class Replay:
         self.timestamp = replay.timestamp
         self.play_data = replay.play_data
         self.replay_id = replay.replay_id
+        self._beatmap = None
+        self._user = None
 
-    @cached_property
+    @property
     def beatmap(self) -> Beatmap:
         """
         The beatmap this replay was played on.
@@ -56,9 +56,11 @@ class Replay:
         to retrieve the beatmap from the api. We cache the return value, so
         further accesses are free.
         """
-        return self._api.beatmap(checksum=self.beatmap_hash)
+        if self._beatmap:
+            return self._beatmap
+        self._beatmap = self._api.beatmap(checksum=self.beatmap_hash)
+        return self._beatmap
 
-    @cached_property
     def user(self) -> User:
         """
         The user that played this replay.
@@ -69,4 +71,8 @@ class Replay:
         to retrieve the user from the api. We cache the return value, so further
         accesses are free.
         """
-        return self._api.user(self.player_name, key=UserLookupKey.USERNAME)
+        if self._user:
+            return self._user
+        self._user = self._api.user(self.player_name,
+            key=UserLookupKey.USERNAME)
+        return self._user

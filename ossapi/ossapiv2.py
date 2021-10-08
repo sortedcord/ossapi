@@ -1,5 +1,4 @@
-from typing import (get_type_hints, get_origin, get_args, Union, TypeVar,
-    Optional, List, _GenericAlias)
+from typing import Union, TypeVar, Optional, List, _GenericAlias
 import logging
 import webbrowser
 import socket
@@ -19,7 +18,7 @@ from oauthlib.oauth2 import (BackendApplicationClient, TokenExpiredError,
     AccessDeniedError)
 from oauthlib.oauth2.rfc6749.errors import InsufficientScopeError
 import osrparse
-from typing_utils import issubtype
+from typing_utils import issubtype, get_type_hints, get_origin, get_args
 
 from ossapi.models import (Beatmap, BeatmapCompact, BeatmapUserScore, ForumTopicAndPosts,
     Search, CommentBundle, Cursor, Score, BeatmapsetSearchResult,

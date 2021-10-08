@@ -3,16 +3,13 @@ import logging
 
 from ossapi.ossapi import (Ossapi, ReplayUnavailableException,
     InvalidKeyException, APIException)
-
-# OssapiV2 requires python 3.8+
-if sys.version_info[1] >= 8:
-    from ossapi.ossapiv2 import OssapiV2, Grant, Scope
-    from oauthlib.oauth2 import AccessDeniedError, TokenExpiredError
-    from oauthlib.oauth2.rfc6749.errors import InsufficientScopeError
-
+from ossapi.ossapiv2 import OssapiV2, Grant, Scope
 from ossapi.mod import Mod
 from ossapi.replay import Replay
 from ossapi.version import __version__
+
+from oauthlib.oauth2 import AccessDeniedError, TokenExpiredError
+from oauthlib.oauth2.rfc6749.errors import InsufficientScopeError
 
 # TODO turn these back to explicit imports when ossapi (and api v2 itself) has
 # stabilized a little bit

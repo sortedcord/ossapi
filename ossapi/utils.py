@@ -1,8 +1,10 @@
 from enum import EnumMeta, Enum, IntFlag
 from datetime import datetime, timezone
-from typing import get_args, get_origin, Union
+from typing import Union
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
+
+from typing_utils import get_args, get_origin
 
 def is_high_model_type(type_):
     """
