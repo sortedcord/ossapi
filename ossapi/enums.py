@@ -124,6 +124,7 @@ class BeatmapsetEventType(EnumModel):
     NOMINATE = "nominate"
     NOMINATE_MODES = "nominate_modes"
     NOMINATION_RESET = "nomination_reset"
+    NOMINATION_RESET_RECEIVED = "nomination_reset_received"
     QUALIFY = "qualify"
     RANK = "rank"
     REMOVE_FROM_LOVED = "remove_from_loved"

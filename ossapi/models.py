@@ -820,6 +820,11 @@ class BeatmapsetEventCommentWithNominators(BeatmapsetEventCommentNoPost):
     nominator_ids: Optional[List[int]]
 
 @dataclass
+class BeatmapsetEventCommentWithSourceUser(BeatmapsetEventCommentNoPost):
+    source_user_id: int
+    source_user_username: str
+
+@dataclass
 class BeatmapsetEvent(Model):
     # https://github.com/ppy/osu-web/blob/master/app/Models/BeatmapsetEvent.php
     # https://github.com/ppy/osu-web/blob/master/app/Transformers/BeatmapsetEventTransformer.php
@@ -862,6 +867,7 @@ class BeatmapsetEvent(Model):
             # same here
             # BeatmapsetEventType.NOMINATE_MODES: BeatmapsetEventComment,
             BeatmapsetEventType.NOMINATION_RESET: BeatmapsetEventCommentWithNominators,
+            BeatmapsetEventType.NOMINATION_RESET_RECEIVED: BeatmapsetEventCommentWithSourceUser,
             BeatmapsetEventType.QUALIFY: type(None),
             BeatmapsetEventType.RANK: type(None),
             BeatmapsetEventType.REMOVE_FROM_LOVED: BeatmapsetEventCommentLovedRemoval,
