@@ -20,13 +20,14 @@ from oauthlib.oauth2.rfc6749.errors import InsufficientScopeError
 import osrparse
 from typing_utils import issubtype, get_type_hints, get_origin, get_args
 
-from ossapi.models import (Beatmap, BeatmapCompact, BeatmapUserScore, ForumTopicAndPosts,
-    Search, CommentBundle, Cursor, Score, BeatmapsetSearchResult,
-    ModdingHistoryEventsBundle, User, Rankings, BeatmapScores, KudosuHistory,
-    Beatmapset, BeatmapPlaycount, Spotlight, Spotlights, WikiPage, _Event,
-    Event, BeatmapsetDiscussionPosts, Build, ChangelogListing,
-    MultiplayerScores, MultiplayerScoresCursor, BeatmapsetDiscussionVotes,
-    CreatePMResponse, BeatmapsetDiscussionListing, UserCompact)
+from ossapi.models import (Beatmap, BeatmapCompact, BeatmapUserScore,
+    ForumTopicAndPosts, Search, CommentBundle, Cursor, Score,
+    BeatmapsetSearchResult, ModdingHistoryEventsBundle, User, Rankings,
+    BeatmapScores, KudosuHistory, Beatmapset, BeatmapPlaycount, Spotlight,
+    Spotlights, WikiPage, _Event, Event, BeatmapsetDiscussionPosts, Build,
+    ChangelogListing, MultiplayerScores, MultiplayerScoresCursor,
+    BeatmapsetDiscussionVotes, CreatePMResponse, BeatmapsetDiscussionListing,
+    UserCompact)
 from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     UserBeatmapType, BeatmapDiscussionPostSort, UserLookupKey,
     BeatmapsetEventType, CommentableType, CommentSort, ForumTopicSort,
