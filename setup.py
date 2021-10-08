@@ -15,7 +15,7 @@ with open("ossapi/version.py") as f:
         VERSION = match.group(1)
     else:
         raise RuntimeError("Unable to find version string in "
-            "circlevis/version.py")
+            "ossapi/version.py")
 
 setup(
     name="ossapi",
