@@ -18,8 +18,6 @@ pip install -U ossapi
 
 ## API v2 Usage
 
-Please note that api v2 requires python 3.8+ (api v1 only requires python 3.6+).
-
 ### Authenticating
 
 The osu api provides two ways to authenticate, [authorization code](https://oauth.net/2/grant-types/authorization-code/) and [client credentials](https://oauth.net/2/grant-types/client-credentials/). Authorization code grants full access to the api, but requires user interaction to authenticate the first time. Client credentials grants guest user access only, but authenticates automatically.
