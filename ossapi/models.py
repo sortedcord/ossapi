@@ -279,7 +279,7 @@ class Score(Model):
     perfect: bool
     statistics: Statistics
     # documented as non-optional in docs but broken beatmaps like acid rain
-    # (1981090) have scores with null pp values. TODO open issue
+    # (1981090) have scores with null pp values
     pp: Optional[float]
     rank: Grade
     created_at: Datetime
@@ -812,7 +812,7 @@ class BeatmapsetEventCommentOwnerChange(BeatmapsetEventCommentNone):
 class BeatmapsetEventCommentNominate(Model):
     # for some reason this comment type doesn't have the normal
     # beatmap_discussion_id and beatmap_discussion_post_id attributes (they're
-    # not even null, just missing). TODO Open an issue on osu-web?
+    # not even null, just missing).
     modes: List[GameMode]
 
 @dataclass
@@ -836,7 +836,7 @@ class BeatmapsetEvent(Model):
         mapping = {
             BeatmapsetEventType.BEATMAP_OWNER_CHANGE: BeatmapsetEventCommentOwnerChange,
             BeatmapsetEventType.DISCUSSION_DELETE: BeatmapsetEventCommentNoPost,
-            # TODO: ``api.beatmapsets_events(types=[BeatmapsetEventType.DISCUSSION_LOCK])``
+            # ``api.beatmapsets_events(types=[BeatmapsetEventType.DISCUSSION_LOCK])``
             # doesn't seem to be recognized, just returns all events. Was this
             # type discontinued?
             # BeatmapsetEventType.DISCUSSION_LOCK: BeatmapsetEventComment,
