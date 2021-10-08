@@ -157,7 +157,7 @@ print(api.user(compact_user).statistics.ranked_score)
 
 Similarly, `beatmap = compact_beatmap.expand()` is equivalent to `beatmap = api.beatmap(compact_beatmap)`.
 
-(Note that beatmapsets will also be expandable in the future; I am waiting for the beatmapset lookup endpoint to become documented first.)
+(Note that beatmapsets will also be expandable in the future; I am waiting for the beatmapset lookup endpoint to become documented before implementing this.)
 
 ## API v1 Usage
 
