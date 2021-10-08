@@ -176,6 +176,20 @@ class OssapiV2:
 
     Parameters
     ----------
+    client_id: int
+        The id of the client to authenticate with.
+    client_secret: str
+        The secret of the client to authenticate with.
+    redirect_uri: str
+        The redirect uri for the client. Must be passed if using the
+        authorization code grant. This must exactly match the redirect uri on
+        the client's settings page. Additionally, in order for ossapi to receive
+        authentication from this redirect uri, it must be a port on localhost.
+        So "http://localhost:3914/", "http://localhost:727/", etc are all valid
+        redirect uris. You can change your client's redirect uri from its
+        settings page.
+    scopes: List[str]
+        What scopes to request when authenticating.
     grant: Grant or str
         Which oauth grant (aka flow) to use when authenticating with the api.
         Currently the api offers the client credentials (pass "client" for this
@@ -188,20 +202,10 @@ class OssapiV2:
         authenticate, but only grants guest user access to the api. This means
         you will not be able to do things like download replays on the client
         credentials grant.
-    client_id: int
-        The id of the client to authenticate with.
-    client_secret: str
-        The secret of the client to authenticate with.
-    redirect_uri: str
-        The redirect uri for the client.Must be passed if using the
-        authorization code grant. This must exactly match the redirect uri on
-        the client's settings page. Additionally, in order for ossapi to receive
-        authentication from this redirect uri, it must be a port on localhost.
-        So "http://localhost:3914/", "http://localhost:727/", etc are all valid
-        redirect uris. You can change your client's redirect uri from its
-        settings page.
-    scopes: List[str]
-        What scopes to request when authenticating.
+        |br|
+        If not passed, the grant will be automatically inferred as follows: if
+        ``redirect_uri`` is passed, use the authorization code grant. If
+        ``redirect_uri`` is not passed, use the client credentials grant.
     strict: bool
         Whether to run in "strict" mode. In strict mode, ossapi will raise an
         exception if the api returns an attribute in a response which we didn't
@@ -228,15 +232,19 @@ class OssapiV2:
     BASE_URL = "https://osu.ppy.sh/api/v2"
 
     def __init__(self,
-        grant: Union[Grant, str],
         client_id: int,
         client_secret: str,
         redirect_uri: Optional[str] = None,
         scopes: List[Union[str, Scope]] = [Scope.PUBLIC],
+        *,
+        grant: Optional[Union[Grant, str]] = None,
         strict: bool = False,
         token_directory: Optional[str] = None,
-        token_key: Optional[str] = None
+        token_key: Optional[str] = None,
     ):
+        if not grant:
+            grant = (Grant.AUTHORIZATION_CODE if redirect_uri else
+                Grant.CLIENT_CREDENTIALS)
         grant = Grant(grant)
 
         self.grant = grant
