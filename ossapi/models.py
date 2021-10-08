@@ -109,7 +109,7 @@ class UserCompact(Model, Expandable):
     rankHistory: Optional[RankHistory]
 
     def expand(self):
-        return self._api.user(self.id)
+        return self._api.user(self)
 
 @dataclass
 class User(UserCompact):
@@ -159,7 +159,7 @@ class BeatmapCompact(Model, Expandable):
     max_combo: Optional[int]
 
     def expand(self):
-        return self._api.beatmap(self.id)
+        return self._api.beatmap(self)
 
 @dataclass
 class Beatmap(BeatmapCompact):

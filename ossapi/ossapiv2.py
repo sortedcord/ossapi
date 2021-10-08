@@ -19,6 +19,7 @@ from oauthlib.oauth2 import (BackendApplicationClient, TokenExpiredError,
     AccessDeniedError)
 from oauthlib.oauth2.rfc6749.errors import InsufficientScopeError
 import osrparse
+from typing_utils import issubtype
 
 from ossapi.models import (Beatmap, BeatmapCompact, BeatmapUserScore, ForumTopicAndPosts,
     Search, CommentBundle, Cursor, Score, BeatmapsetSearchResult,
@@ -26,7 +27,7 @@ from ossapi.models import (Beatmap, BeatmapCompact, BeatmapUserScore, ForumTopic
     Beatmapset, BeatmapPlaycount, Spotlight, Spotlights, WikiPage, _Event,
     Event, BeatmapsetDiscussionPosts, Build, ChangelogListing,
     MultiplayerScores, MultiplayerScoresCursor, BeatmapsetDiscussionVotes,
-    CreatePMResponse, BeatmapsetDiscussionListing)
+    CreatePMResponse, BeatmapsetDiscussionListing, UserCompact)
 from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     UserBeatmapType, BeatmapDiscussionPostSort, UserLookupKey,
     BeatmapsetEventType, CommentableType, CommentSort, ForumTopicSort,
@@ -64,6 +65,9 @@ BeatmapsetDiscussionVoteSortT = Union[BeatmapsetDiscussionVoteSort, str]
 MessageTypeT = Union[MessageType, str]
 BeatmapsetStatusT = Union[BeatmapsetStatus, str]
 
+BeatmapIdT = Union[int, BeatmapCompact]
+UserIdT = Union[int, UserCompact]
+
 def request(scope, *, requires_login=False):
     """
     Handles various validation and preparation tasks for any endpoint request
@@ -80,6 +84,9 @@ def request(scope, *, requires_login=False):
       with an argument annotated as ``ModT`` (``Union[Mod, str, int, list]``)
       will have the value of that parameter automatically converted to a
       ``Mod``, even if the user passes a `str`.
+    * converts arguments of type ``BeatmapIdT`` or ``UserIdT`` into a beatmap or
+      user id, if the passed argument was a ``BeatmapCompact`` or
+      ``UserCompact`` respectively.
 
     Parameters
     ----------
@@ -113,28 +120,37 @@ def request(scope, *, requires_login=False):
                     "authorized using the authorization code grant. You are "
                     "currently authorized with the client credentials grant")
 
-            # the remaining code is to automatically instantiate parameters
-            # with their type hint, if the type hint is a union of a base class.
-            # This means, for instance, that a function which accepts a ``ModT``
-            # will have the value of that parameter automatically converted to a
-            # ``Mod``, even if the user passes a `str`.
-
             # we may need to edit this later so convert from tuple
             args = list(args)
+
+            def is_id_type(arg_name, arg):
+                annotations = function.__annotations__
+                if arg_name not in annotations:
+                    return False
+                arg_type = annotations[arg_name]
+                if (not issubtype(BeatmapIdT, arg_type) and not
+                    issubtype(UserIdT, arg_type)):
+                    return False
+                return isinstance(arg, (BeatmapCompact, UserCompact))
 
             # args and kwargs are handled separately, but in a similar fashion.
             # The difference is that for ``args`` we need to know the name of
             # the argument so we can look up its type hint and see if it's a
             # parameter we need to convert.
-            for i, (arg, arg_name) in enumerate(zip(args, arg_names)):
+
+            for i, (arg_name, arg) in enumerate(zip(arg_names, args)):
                 if arg_name in instantiate:
                     type_ = instantiate[arg_name]
                     args[i] = type_(arg)
+                if is_id_type(arg_name, arg):
+                    args[i] = arg.id
 
-            for arg in kwargs:
-                if arg in instantiate:
-                    type_ = instantiate[arg]
-                    kwargs[arg] = type_(kwargs[arg])
+            for arg_name, arg in kwargs.items():
+                if arg_name in instantiate:
+                    type_ = instantiate[arg_name]
+                    kwargs[arg_name] = type_(arg)
+                if is_id_type(arg_name, arg):
+                    kwargs[arg_name] = arg.id
 
             return function(*args, **kwargs)
         return wrapper
@@ -700,8 +716,8 @@ class OssapiV2:
 
     @request(Scope.PUBLIC)
     def beatmap_user_score(self,
-        beatmap_id: int,
-        user_id: int,
+        beatmap_id: BeatmapIdT,
+        user_id: UserIdT,
         mode: Optional[GameModeT] = None,
         mods: Optional[ModT] = None
     ) -> BeatmapUserScore:
@@ -714,7 +730,7 @@ class OssapiV2:
 
     @request(Scope.PUBLIC)
     def beatmap_scores(self,
-        beatmap_id: int,
+        beatmap_id: BeatmapIdT,
         mode: Optional[GameModeT] = None,
         mods: Optional[ModT] = None,
         type_: Optional[RankingTypeT] = None
@@ -728,7 +744,7 @@ class OssapiV2:
 
     @request(Scope.PUBLIC)
     def beatmap(self,
-        beatmap_id: Optional[int] = None,
+        beatmap_id: Optional[BeatmapIdT] = None,
         checksum: Optional[str] = None,
         filename: Optional[str] = None,
     ) -> Beatmap:
@@ -752,7 +768,7 @@ class OssapiV2:
         limit: Optional[int] = None,
         page: Optional[int] = None,
         sort: Optional[BeatmapDiscussionPostSortT] = None,
-        user_id: Optional[int] = None,
+        user_id: Optional[UserIdT] = None,
         with_deleted: Optional[bool] = None
     ) -> BeatmapsetDiscussionPosts:
         """
@@ -772,7 +788,7 @@ class OssapiV2:
         receiver_id: Optional[int] = None,
         vote: Optional[BeatmapsetDiscussionVoteT] = None,
         sort: Optional[BeatmapsetDiscussionVoteSortT] = None,
-        user_id: Optional[int] = None,
+        user_id: Optional[UserIdT] = None,
         with_deleted: Optional[bool] = None
     ) -> BeatmapsetDiscussionVotes:
         """
@@ -788,14 +804,14 @@ class OssapiV2:
     @request(Scope.PUBLIC)
     def beatmapset_discussion_listing(self,
         beatmapset_id: Optional[int] = None,
-        beatmap_id: Optional[int] = None,
+        beatmap_id: Optional[BeatmapIdT] = None,
         beatmapset_status: Optional[BeatmapsetStatusT] = None,
         limit: Optional[int] = None,
         message_types: Optional[List[MessageTypeT]] = None,
         only_unresolved: Optional[bool] = None,
         page: Optional[int] = None,
         sort: Optional[BeatmapDiscussionPostSortT] = None,
-        user_id: Optional[int] = None,
+        user_id: Optional[UserIdT] = None,
         with_deleted: Optional[bool] = None,
     ) -> BeatmapsetDiscussionListing:
         """
@@ -852,7 +868,7 @@ class OssapiV2:
 
     @request(Scope.CHAT_WRITE)
     def create_pm(self,
-        user_id: int,
+        user_id: UserIdT,
         message: str,
         is_action: Optional[bool] = False
     ) -> CreatePMResponse:
@@ -1008,7 +1024,7 @@ class OssapiV2:
 
     @request(Scope.PUBLIC)
     def user_kudosu(self,
-        user_id: int,
+        user_id: UserIdT,
         limit: Optional[int] = None,
         offset: Optional[int] = None
     ) -> List[KudosuHistory]:
@@ -1021,7 +1037,7 @@ class OssapiV2:
 
     @request(Scope.PUBLIC)
     def user_scores(self,
-        user_id: int,
+        user_id: UserIdT,
         type_: ScoreTypeT,
         include_fails: Optional[bool] = None,
         mode: Optional[GameModeT] = None,
@@ -1038,7 +1054,7 @@ class OssapiV2:
 
     @request(Scope.PUBLIC)
     def user_beatmaps(self,
-        user_id: int,
+        user_id: UserIdT,
         type_: UserBeatmapTypeT,
         limit: Optional[int] = None,
         offset: Optional[int] = None
@@ -1057,7 +1073,7 @@ class OssapiV2:
 
     @request(Scope.PUBLIC)
     def user_recent_activity(self,
-        user_id: int,
+        user_id: UserIdT,
         limit: Optional[int] = None,
         offset: Optional[int] = None
     ) -> List[Event]:
@@ -1070,7 +1086,7 @@ class OssapiV2:
 
     @request(Scope.PUBLIC)
     def user(self,
-        user: Union[int, str],
+        user: Union[UserIdT, str],
         mode: Optional[GameModeT] = None,
         key: Optional[UserLookupKeyT] = None
     ) -> User:
@@ -1133,7 +1149,7 @@ class OssapiV2:
     def beatmapsets_events(self,
         limit: Optional[int] = None,
         page: Optional[int] = None,
-        user_id: Optional[int] = None,
+        user_id: Optional[UserIdT] = None,
         types: Optional[List[BeatmapsetEventTypeT]] = None,
         min_date: Optional[datetime] = None,
         max_date: Optional[datetime] = None
