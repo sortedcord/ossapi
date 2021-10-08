@@ -61,6 +61,7 @@ class Replay:
         self._beatmap = self._api.beatmap(checksum=self.beatmap_hash)
         return self._beatmap
 
+    @property
     def user(self) -> User:
         """
         The user that played this replay.
