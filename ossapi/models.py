@@ -937,13 +937,13 @@ class UserRelation(Model):
 
 @dataclass
 class UserStatistics(Model):
-    # undocumented
     level: UserLevel
     pp: float
     ranked_score: int
     hit_accuracy: float
     play_count: int
-    play_time: int
+    # documented as non-optional (lookup user 17906393 for a null play time)
+    play_time: Optional[int]
     total_score: int
     total_hits: int
     maximum_combo: int
