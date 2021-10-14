@@ -129,12 +129,12 @@ class TestNewsPost(TestCase):
     def test_deserialize(self):
         api.news_post(1025, key="id")
 
-class TestFriends(TestCase):
-    def test_deserialize(self):
-        api.friends()
+# TODO requires friends.read scope
+# class TestFriends(TestCase):
+#     def test_deserialize(self):
+#         api.friends()
 
-# TODO revisit when either ``api`` is scoped differently (requires redirect_uri
-# stored) or auth handling is rewriting to allow multiple clients
+# TODO requires chat.write scope
 # class TestCreateNewPM(TestCase):
 #     def test_deserialize(self):
 #         api.create_pm(2070907, "Unit test from ossapi "
