@@ -129,6 +129,10 @@ class TestNewsPost(TestCase):
     def test_deserialize(self):
         api.news_post(1025, key="id")
 
+class TestFriends(TestCase):
+    def test_deserialize(self):
+        api.friends()
+
 # TODO revisit when either ``api`` is scoped differently (requires redirect_uri
 # stored) or auth handling is rewriting to allow multiple clients
 # class TestCreateNewPM(TestCase):

@@ -79,6 +79,7 @@ print(api.beatmapset_discussion_votes().votes[0].score)
 print(api.score(mode="osu", score_id=2797309065).accuracy)
 print(api.news_listing(year=2021).news_posts[0].author)
 print(api.news_post(1025, key="id"))
+print(api.friends()[0].username)
 ```
 
 Note that although this code just prints a single attribute for each endpoint, you can obviously do more complicated things like iterate over arrays:

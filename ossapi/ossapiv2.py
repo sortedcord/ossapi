@@ -1198,8 +1198,6 @@ class OssapiV2:
         max_date: Optional[datetime] = None
     ) -> ModdingHistoryEventsBundle:
         """
-        Beatmap history
-
         https://osu.ppy.sh/beatmapsets/events
         """
         # limit is 5-50
@@ -1208,6 +1206,9 @@ class OssapiV2:
         return self._get(ModdingHistoryEventsBundle, "/beatmapsets/events",
             params)
 
+    @request(Scope.FRIENDS_READ)
+    def friends(self) -> List[UserCompact]:
+        return self._get(List[UserCompact], "/friends")
 
     # /oauth
     # ------
