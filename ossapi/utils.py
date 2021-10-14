@@ -1,8 +1,8 @@
 from enum import EnumMeta, Enum, IntFlag
 from datetime import datetime, timezone
-from typing import Union
+from typing import Union, Any
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 from typing_utils import get_args, get_origin
 
@@ -176,7 +176,7 @@ class Expandable(ABC):
     """
     # can't annotate with OssapiV2 or we get a circular import error, this is
     # good enough
-    _api: field()
+    _api: Any
 
     @abstractmethod
     def expand(self):
