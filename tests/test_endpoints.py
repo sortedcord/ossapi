@@ -129,6 +129,11 @@ class TestNewsPost(TestCase):
     def test_deserialize(self):
         api.news_post(1025, key="id")
 
+class TestSeasonalBackgrounds(TestCase):
+    def test_deserialize(self):
+        api.seasonal_backgrounds()
+
+
 # TODO requires friends.read scope
 # class TestFriends(TestCase):
 #     def test_deserialize(self):

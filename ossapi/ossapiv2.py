@@ -27,7 +27,7 @@ from ossapi.models import (Beatmap, BeatmapCompact, BeatmapUserScore,
     Spotlights, WikiPage, _Event, Event, BeatmapsetDiscussionPosts, Build,
     ChangelogListing, MultiplayerScores, MultiplayerScoresCursor,
     BeatmapsetDiscussionVotes, CreatePMResponse, BeatmapsetDiscussions,
-    UserCompact, NewsListing, NewsPost)
+    UserCompact, NewsListing, NewsPost, SeasonalBackgrounds)
 from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     UserBeatmapType, BeatmapDiscussionPostSort, UserLookupKey,
     BeatmapsetEventType, CommentableType, CommentSort, ForumTopicSort,
@@ -1209,6 +1209,10 @@ class OssapiV2:
     @request(Scope.FRIENDS_READ)
     def friends(self) -> List[UserCompact]:
         return self._get(List[UserCompact], "/friends")
+
+    @request(scope=None)
+    def seasonal_backgrounds(self) -> SeasonalBackgrounds:
+        return self._get(SeasonalBackgrounds, "/seasonal-backgrounds")
 
     # /oauth
     # ------

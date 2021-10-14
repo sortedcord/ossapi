@@ -758,6 +758,16 @@ class NewsSidebar(Model):
     news_posts: List[NewsPost]
     years: list[int]
 
+@dataclass
+class SeasonalBackgrounds(Model):
+    ends_at: Datetime
+    backgrounds: List[SeasonalBackground]
+
+@dataclass
+class SeasonalBackground(Model):
+    url: str
+    user: UserCompact
+
 
 # ===================
 # Undocumented Models
