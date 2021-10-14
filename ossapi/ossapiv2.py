@@ -565,11 +565,19 @@ class OssapiV2:
 
         # validate that the values we're receiving are the types we expect them
         # to be
-        if is_primitive_type(type_):
+        def _check_primitive_type():
+            # The osu api occasionally makes attributes optional, so allow null
+            # values even for non-optional fields if we're not in
+            # strict mode.
+            if not self.strict and value is None:
+                return
             if not is_compatible_type(value, type_):
                 raise TypeError(f"expected type {type_} for value {value}, got "
                     f"type {type(value)}"
                     f" (for attribute: {attr_name})" if attr_name else "")
+
+        if is_primitive_type(type_):
+            _check_primitive_type()
 
         if is_base_model_type(type_):
             self.log.debug(f"instantiating base type {type_}")
