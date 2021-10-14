@@ -77,6 +77,7 @@ print(api.changelog_lookup("lazer").changelog_entries[0].github_pull_request_id)
 print(api.forum_topic(141240).posts[0].forum_id)
 print(api.beatmapset_discussion_votes().votes[0].score)
 print(api.score(mode="osu", score_id=2797309065).accuracy)
+print(api.news_listing(year=2021).news_posts[0].author)
 ```
 
 Note that although this code just prints a single attribute for each endpoint, you can obviously do more complicated things like iterate over arrays:

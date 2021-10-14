@@ -15,7 +15,7 @@ from ossapi.enums import (UserAccountHistory, ProfileBanner, UserBadge, Country,
     EventBeatmap, BeatmapsetApproval, EventBeatmapset, KudosuVote,
     BeatmapsetEventType, UserRelationType, UserLevel, UserGradeCounts,
     GithubUser, ChangelogSearch, ForumTopicType, ForumPostBody, ForumTopicSort,
-    ChannelType, ReviewsConfig)
+    ChannelType, ReviewsConfig, NewsSearch)
 from ossapi.utils import Datetime, Model, Expandable
 
 T = TypeVar("T")
@@ -358,7 +358,8 @@ class Cursor(SimpleNamespace, Model):
         "votes_count": int,
         "page": int,
         "limit": int,
-        "_score": float
+        "_score": float,
+        "published_at": Datetime
     }
 
 @dataclass
@@ -724,6 +725,39 @@ class MultiplayerScoresAround(Model):
 class MultiplayerScoresCursor(Model):
     score_id: int
     total_score: int
+
+@dataclass
+class NewsListing(Model):
+    cursor: CursorT
+    news_posts: List[NewsPost]
+    news_sidebar: NewsSidebar
+    search: NewsSearch
+
+@dataclass
+class NewsPost(Model):
+    author: str
+    edit_url: str
+    first_image: Optional[str]
+    id: int
+    published_at: Datetime
+    slug: str
+    title: str
+    updated_at: Datetime
+    content: Optional[str]
+    navigation: Optional[NewsNavigation]
+    preview: Optional[str]
+
+@dataclass
+class NewsNavigation(Model):
+    newer: Optional[NewsPost]
+    older: Optional[NewsPost]
+
+@dataclass
+class NewsSidebar(Model):
+    current_year: int
+    news_posts: List[NewsPost]
+    years: list[int]
+
 
 # ===================
 # Undocumented Models

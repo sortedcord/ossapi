@@ -27,7 +27,7 @@ from ossapi.models import (Beatmap, BeatmapCompact, BeatmapUserScore,
     Spotlights, WikiPage, _Event, Event, BeatmapsetDiscussionPosts, Build,
     ChangelogListing, MultiplayerScores, MultiplayerScoresCursor,
     BeatmapsetDiscussionVotes, CreatePMResponse, BeatmapsetDiscussions,
-    UserCompact)
+    UserCompact, NewsListing)
 from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     UserBeatmapType, BeatmapDiscussionPostSort, UserLookupKey,
     BeatmapsetEventType, CommentableType, CommentSort, ForumTopicSort,
@@ -983,6 +983,21 @@ class OssapiV2:
         """
         return self._get(User, f"/me/{mode.value if mode else ''}")
 
+
+    # /news
+    # -----
+
+    @request(scope=None)
+    def news_listing(self,
+        limit: Optional[int] = None,
+        year: Optional[int] = None,
+        cursor: Optional[Cursor] = None
+    ) -> NewsListing:
+        """
+        https://osu.ppy.sh/docs/index.html#get-news-listing
+        """
+        params = {"limit": limit, "year": year, "cursor": cursor}
+        return self._get(NewsListing, "/news", params=params)
 
     # /rankings
     # ---------

@@ -477,6 +477,13 @@ class ChangelogSearch(Model):
     to: Optional[str]
 
 @dataclass
+class NewsSearch(Model):
+    limit: int
+    sort: str
+    # undocumented
+    year: Optional[int]
+
+@dataclass
 class ForumPostBody(Model):
     html: str
     raw: str
