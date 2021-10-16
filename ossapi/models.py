@@ -3,7 +3,6 @@
 from __future__ import annotations
 from dataclasses import dataclass
 from typing import Optional, TypeVar, Generic, Any, List
-from types import SimpleNamespace
 
 from ossapi.mod import Mod
 from ossapi.enums import (UserAccountHistory, ProfileBanner, UserBadge, Country,
@@ -16,7 +15,7 @@ from ossapi.enums import (UserAccountHistory, ProfileBanner, UserBadge, Country,
     BeatmapsetEventType, UserRelationType, UserLevel, UserGradeCounts,
     GithubUser, ChangelogSearch, ForumTopicType, ForumPostBody, ForumTopicSort,
     ChannelType, ReviewsConfig, NewsSearch)
-from ossapi.utils import Datetime, Model, Expandable
+from ossapi.utils import Datetime, Model, Expandable, BaseModel
 
 T = TypeVar("T")
 S = TypeVar("S")
@@ -344,23 +343,28 @@ class Comment(Model):
 # endpoint. I don't want to have dozens of different cursor classes (although
 # that would perhaps be the proper way to go about this), so just allow
 # any attribute.
-# We do, however, have to tell our code what type each attribute is, if we
-# receive that atttribute. So ``__annotations`` will need updating as we
-# encounter new cursor attributes.
-class Cursor(SimpleNamespace, Model):
-    __annotations__ = {
-        "created_at": Datetime,
-        "id": int,
-        "_id": str,
-        "queued_at": str,
-        "approved_date": Datetime,
-        "last_update": str,
-        "votes_count": int,
-        "page": int,
-        "limit": int,
-        "_score": float,
-        "published_at": Datetime
-    }
+# This is essentially a reimplementation of SimpleNamespace to deal with
+# BaseModels being passed the data as a single dict (`_data`) instead of as
+# **kwargs, plus some other weird stuff we're doing like handling cursor
+# objects being passed as data
+# We want cursors to also be instantiatable manually (eg `Cursor(page=199)`),
+# so make `_data` optional and also allow arbitrary `kwargs`.
+
+class Cursor(BaseModel):
+    def __init__(self, _data=None, **kwargs):
+        # allow Cursor to be instantiated with another cursor as a no-op
+        if isinstance(_data, Cursor):
+            _data = _data.__dict__
+        _data = _data or kwargs
+        self.__dict__.update(_data)
+
+    def __repr__(self):
+        keys = sorted(self.__dict__)
+        items = (f"{k}={self.__dict__[k]!r}" for k in keys)
+        return f"{type(self).__name__}({', '.join(items)})"
+
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
 
 @dataclass
 class CommentBundle(Model):

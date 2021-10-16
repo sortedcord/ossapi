@@ -688,20 +688,15 @@ class OssapiV2:
         parameters = list(inspect.signature(signature_type.__init__).parameters)
         kwargs_ = {}
 
-        # Some special classes take arbitrary parameters, so we can't evaluate
-        # whether a parameter is unexpected or not until we instantiate it.
-        if isinstance(type_, type) and issubclass(type_, Cursor):
-            kwargs_ = kwargs
-        else:
-            for k, v in kwargs.items():
-                if k in parameters:
-                    kwargs_[k] = v
-                else:
-                    if self.strict:
-                        raise TypeError(f"unexpected parameter `{k}` for type "
-                            f"{type_}")
-                    self.log.info(f"ignoring unexpected parameter `{k}` from "
-                        f"api response for type {type_}")
+        for k, v in kwargs.items():
+            if k in parameters:
+                kwargs_[k] = v
+            else:
+                if self.strict:
+                    raise TypeError(f"unexpected parameter `{k}` for type "
+                        f"{type_}")
+                self.log.info(f"ignoring unexpected parameter `{k}` from "
+                    f"api response for type {type_}")
 
         # "expandable" models need an api instance to be injected into them on
         # instantiation. There isn't really a clean way to do this
