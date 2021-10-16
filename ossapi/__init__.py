@@ -23,6 +23,7 @@ from ossapi.utils import Expandable
 from ossapi.mod import Mod
 from ossapi.replay import Replay
 from ossapi.version import __version__
+from ossapi.encoder import ModelEncoder, serialize_model
 
 from oauthlib.oauth2 import AccessDeniedError, TokenExpiredError
 from oauthlib.oauth2.rfc6749.errors import InsufficientScopeError
@@ -52,5 +53,6 @@ __all__ = [
     # OssapiV2 exceptions
     "AccessDeniedError", "TokenExpiredError", "InsufficientScopeError",
     # misc
-    "Mod", "Replay", "__version__"
+    "Mod", "Replay", "__version__", "Expandable", "ModelEncoder",
+    "serialize_model"
 ]
