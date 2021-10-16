@@ -355,6 +355,7 @@ class Cursor(SimpleNamespace, Model):
         "queued_at": str,
         "approved_date": Datetime,
         "last_update": str,
+        "play_count": str,
         "votes_count": int,
         "page": int,
         "limit": int,
