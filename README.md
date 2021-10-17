@@ -16,6 +16,8 @@ To upgrade:
 pip install -U ossapi
 ```
 
+If you need support or would like to contribute, feel free to join the circleguard discord: https://discord.gg/e84qxkQ.
+
 ## API v2 Usage
 
 ### Authenticating
