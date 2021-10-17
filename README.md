@@ -163,6 +163,19 @@ Similarly, `beatmap = compact_beatmap.expand()` is equivalent to `beatmap = api.
 
 (Note that beatmapsets will also be expandable in the future; I am waiting for the beatmapset lookup endpoint to become documented before implementing this.)
 
+#### Serialize Models
+
+If you need to access the original json returned by the api, you can serialize the models back into a json string with `serialize_model`:
+
+```python
+from ossapi import serialize_model
+print(serialize_model(api.user("tybug2")))
+```
+
+Note that this is not guaranteed to be identical to the json returned by the api. For instance, there may be additional attributes in the serialized json which are optional in the api spec, not returned by the api, and set to null. But it should be essentially the same.
+
+There are various reasons why this approach was chosen over returning storing the raw json returned by the api, or some other solution. Please open an issue if this approach is not sufficient for your use case.
+
 ## API v1 Usage
 
 You can get your api v1 key at <https://osu.ppy.sh/p/api/>. Note that due to a [redirection bug](https://github.com/ppy/osu-web/issues/2867), you may need to log in and wait 30 seconds before being able to access the api page through the above link.
