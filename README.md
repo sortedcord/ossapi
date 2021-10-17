@@ -163,7 +163,7 @@ Similarly, `beatmap = compact_beatmap.expand()` is equivalent to `beatmap = api.
 
 (Note that beatmapsets will also be expandable in the future; I am waiting for the beatmapset lookup endpoint to become documented before implementing this.)
 
-#### Serialize Models
+#### Serializing Models
 
 If you need to access the original json returned by the api, you can serialize the models back into a json string with `serialize_model`:
 
