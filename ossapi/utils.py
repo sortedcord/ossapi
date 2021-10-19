@@ -1,7 +1,6 @@
 from enum import EnumMeta, Enum, IntFlag
 from datetime import datetime, timezone
 from typing import Union, Any
-from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
 from typing_utils import get_args, get_origin
@@ -31,7 +30,13 @@ def is_base_model_type(type_):
         return False
     return issubclass(type_, BaseModel)
 
-class Model:
+
+class Field:
+    def __init__(self, *, name=None):
+        self.name = name
+
+
+class _Model:
     """
     Base class for all models in ``ossapi``. If you want a model which handles
     its own members and cleanup after instantion, subclass ``BaseModel``
@@ -67,7 +72,52 @@ class Model:
         """
         return None
 
-class BaseModel(Model):
+class ModelMeta(type):
+    def __new__(cls, name, bases, dct):
+        model = super().__new__(cls, name, bases, dct)
+        field_names = []
+        for name, value in model.__dict__.items():
+            if name.startswith("__") and name.endswith("__"):
+                continue
+            if isinstance(value, Field):
+                field_names.append(name)
+
+        for name in model.__annotations__:
+            if name in field_names:
+                continue
+            setattr(model, name, None)
+
+        return dataclass(model)
+
+class Model(_Model, metaclass=ModelMeta):
+    """
+    A dataclass-style model. Provides an ``_api`` attribute.
+    """
+    # This is the ``OssapiV2`` instance that loaded this model.
+    # can't annotate with OssapiV2 or we get a circular import error, this is
+    # good enough.
+    _api: Any
+
+    def _foreign_key(self, fk, func, existing):
+        if existing:
+            return existing
+        if fk is None:
+            return None
+        return func()
+
+    def _fk_user(self, user_id, existing=None):
+        func = lambda: self._api.user(user_id)
+        return self._foreign_key(user_id, func, existing)
+
+    def _fk_beatmap(self, beatmap_id, existing=None):
+        func = lambda: self._api.beatmap(beatmap_id)
+        return self._foreign_key(beatmap_id, func, existing)
+
+    def _fk_beatmapset(self, beatmapset_id, existing=None):
+        func = lambda: self._api.beatmapset(beatmapset_id)
+        return self._foreign_key(beatmapset_id, func, existing)
+
+class BaseModel(_Model):
     """
     A model which promises to take care of its own members and cleanup, after we
     instantiate it.
@@ -158,29 +208,6 @@ class Datetime(datetime, BaseModel):
             return False
         return True
 
-# whenever a dataclass gets created, ``dataclasses`` traverses up the
-# inheritance hierarchy and looks for any class which is a dataclass. If it
-# finds one, it adds the parameters for that class to the new dataclass'
-# __init__.
-# Since almost all of our models are dataclasses, this means that ``Expandable``
-# also needs to be a dataclass so that the new ``_api`` parameter gets picked up
-# and added to the created ``__init__``.
-
-@dataclass
-class Expandable(ABC):
-    """
-    A mixin for models which can be "expanded" to a different model which has a
-    superset of attributes of the current model. Typically this expansion is
-    expensive (requires an additional api call) which is why it is not done by
-    default.
-    """
-    # can't annotate with OssapiV2 or we get a circular import error, this is
-    # good enough
-    _api: Any
-
-    @abstractmethod
-    def expand(self):
-        pass
 
 
 # typing utils

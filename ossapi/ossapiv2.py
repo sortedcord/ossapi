@@ -27,14 +27,14 @@ from ossapi.models import (Beatmap, BeatmapCompact, BeatmapUserScore,
     Spotlights, WikiPage, _Event, Event, BeatmapsetDiscussionPosts, Build,
     ChangelogListing, MultiplayerScores, MultiplayerScoresCursor,
     BeatmapsetDiscussionVotes, CreatePMResponse, BeatmapsetDiscussions,
-    UserCompact, NewsListing, NewsPost, SeasonalBackgrounds)
+    UserCompact, NewsListing, NewsPost, SeasonalBackgrounds, BeatmapsetCompact)
 from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     UserBeatmapType, BeatmapDiscussionPostSort, UserLookupKey,
     BeatmapsetEventType, CommentableType, CommentSort, ForumTopicSort,
     SearchMode, MultiplayerScoresSort, BeatmapsetDiscussionVote,
     BeatmapsetDiscussionVoteSort, BeatmapsetStatus, MessageType)
 from ossapi.utils import (is_compatible_type, is_primitive_type, is_optional,
-    is_base_model_type, is_model_type, is_high_model_type, Expandable)
+    is_base_model_type, is_model_type, is_high_model_type, Field)
 from ossapi.mod import Mod
 from ossapi.replay import Replay
 
@@ -67,6 +67,7 @@ BeatmapsetStatusT = Union[BeatmapsetStatus, str]
 
 BeatmapIdT = Union[int, BeatmapCompact]
 UserIdT = Union[int, UserCompact]
+BeatmapsetIdT = Union[int, BeatmapCompact, BeatmapsetCompact]
 
 def request(scope, *, requires_login=False):
     """
@@ -123,15 +124,23 @@ def request(scope, *, requires_login=False):
             # we may need to edit this later so convert from tuple
             args = list(args)
 
-            def is_id_type(arg_name, arg):
+            def id_from_id_type(arg_name, arg):
                 annotations = function.__annotations__
                 if arg_name not in annotations:
-                    return False
+                    return None
                 arg_type = annotations[arg_name]
-                if (not issubtype(BeatmapIdT, arg_type) and not
-                    issubtype(UserIdT, arg_type)):
-                    return False
-                return isinstance(arg, (BeatmapCompact, UserCompact))
+
+                if issubtype(BeatmapsetIdT, arg_type):
+                    if isinstance(arg, BeatmapCompact):
+                        return arg.beatmapset_id
+                    if isinstance(arg, BeatmapsetCompact):
+                        return arg.id
+                elif issubtype(BeatmapIdT, arg_type):
+                    if isinstance(arg, BeatmapCompact):
+                        return arg.id
+                elif issubtype(UserIdT, arg_type):
+                    if isinstance(arg, UserCompact):
+                        return arg.id
 
             # args and kwargs are handled separately, but in a similar fashion.
             # The difference is that for ``args`` we need to know the name of
@@ -142,15 +151,17 @@ def request(scope, *, requires_login=False):
                 if arg_name in instantiate:
                     type_ = instantiate[arg_name]
                     args[i] = type_(arg)
-                if is_id_type(arg_name, arg):
-                    args[i] = arg.id
+                id_ = id_from_id_type(arg_name, arg)
+                if id_:
+                    args[i] = id_
 
             for arg_name, arg in kwargs.items():
                 if arg_name in instantiate:
                     type_ = instantiate[arg_name]
                     kwargs[arg_name] = type_(arg)
-                if is_id_type(arg_name, arg):
-                    kwargs[arg_name] = arg.id
+                id_ = id_from_id_type(arg_name, arg)
+                if id_:
+                    kwargs[arg_name] = id_
 
             return function(*args, **kwargs)
         return wrapper
@@ -647,19 +658,28 @@ class OssapiV2:
             signature_type = get_origin(type_)
             type_hints = get_type_hints(signature_type)
 
+        field_names = {}
+        for name in type_hints:
+            # any inherited attributes will be present in the annotations
+            # (type_hints) but not actually an attribute of the type. Just skip
+            # them for now. TODO I'm pretty sure this is going to cause issues
+            # if we ever have a field on a model and then another model
+            # inheriting from it; the inheriting model won't have the field
+            # picked up here and the override name won't come into play.
+            # probably just traverse the mro?
+            if not hasattr(type_, name):
+                continue
+            value = getattr(type_, name)
+            if not isinstance(value, Field):
+                continue
+            if value.name:
+                field_names[value.name] = name
+
         # make a copy so we can modify while iterating
         for key in list(kwargs):
             value = kwargs.pop(key)
-            # replace any key names that are invalid python syntax with a valid
-            # one. Note: this is relying on our models replacing an at sign with
-            # an underscore when declaring attributes.
-            key = key.replace("@", "_")
-            # python classes can't have keywords as attribute names, so if the
-            # api has given us a keyword attribute, append an underscore. As
-            # above, this is relying on our models to match this by appending
-            # an underscore to keyword attribute names.
-            if iskeyword(key):
-                key += "_"
+            if key in field_names:
+                key = field_names[key]
             kwargs[key] = value
 
         # if we've annotated a class with ``Optional[X]``, and the api response
@@ -698,15 +718,9 @@ class OssapiV2:
                 self.log.info(f"ignoring unexpected parameter `{k}` from "
                     f"api response for type {type_}")
 
-        # "expandable" models need an api instance to be injected into them on
-        # instantiation. There isn't really a clean way to do this
-        # unfortunately. If the parameter name on the ``Expandable`` class ever
-        # changes from ``_api``, this will also need to be changed. And it's not
-        # very transparent as to where this parameter is coming from, from
-        # Expandable's perspective. But such is the way of life when abusing
-        # python type hints.
-        if isinstance(type_, type) and issubclass(type_, Expandable):
-            kwargs_["_api"] = self
+        # every model gets a special ``_api`` parameter, which is the
+        # ``OssapiV2`` instance which loaded it (aka us).
+        kwargs_["_api"] = self
 
         try:
             val = type_(**kwargs_)
@@ -1184,14 +1198,31 @@ class OssapiV2:
         return self._get(BeatmapsetSearchResult, "/beatmapsets/search/", params)
 
     @request(Scope.PUBLIC)
-    def beatmapsets_lookup(self,
+    def beatmapset_lookup(self,
         beatmap_id: BeatmapIdT,
     ) -> Beatmapset:
         params = {"beatmap_id": beatmap_id}
         return self._get(Beatmapset, "/beatmapsets/lookup", params)
 
     @request(Scope.PUBLIC)
-    def beatmapsets_events(self,
+    def beatmapset(self,
+        beatmap_id: Optional[BeatmapIdT] = None,
+        beatmapset_id: Optional[BeatmapsetIdT] = None
+    ) -> Beatmapset:
+        """
+        Combines https://osu.ppy.sh/docs/index.html#beatmapsetslookup and
+        https://osu.ppy.sh/docs/index.html#beatmapsetsbeatmapset.
+        """
+        if not bool(beatmap_id) ^ bool(beatmapset_id):
+            raise ValueError("exactly one of beatmap_id and beatmapset_id must "
+                "be passed.")
+        if beatmap_id:
+            params = {"beatmap_id": beatmap_id}
+            return self._get(Beatmapset, "/beatmapsets/lookup", params)
+        return self._get(Beatmapset, f"/beatmapsets/{beatmapset_id}")
+
+    @request(Scope.PUBLIC)
+    def beatmapset_events(self,
         limit: Optional[int] = None,
         page: Optional[int] = None,
         user_id: Optional[UserIdT] = None,

@@ -33,21 +33,21 @@ class TestBeatmap(TestCase):
     def test_deserialize(self):
         api.beatmap(beatmap_id=221777)
 
-class TestBeatmapsetLookup(TestCase):
+class TestBeatmapset(TestCase):
     def test_deserialize(self):
-        api.beatmapsets_lookup(3207950)
+        api.beatmapset(beatmap_id=3207950)
 
 class TestBeatmapsetEvents(TestCase):
     def test_deserialize(self):
-        api.beatmapsets_events()
+        api.beatmapset_events()
 
     def test_all_types(self):
-        # beatmapsets_events is a really complicated endpoint in terms of return
+        # beatmapset_events is a really complicated endpoint in terms of return
         # types. We want to make sure both that we're not doing anything wrong,
         # and the osu! api isn't doing anything wrong by returning something
         # that doesn't match their documentation.
         for event_type in BeatmapsetEventType:
-            api.beatmapsets_events(types=[event_type])
+            api.beatmapset_events(types=[event_type])
 
 class TestRanking(TestCase):
     def test_deserialize(self):

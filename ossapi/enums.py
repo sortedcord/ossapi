@@ -1,8 +1,8 @@
-from dataclasses import dataclass
 from typing import Optional, List, Any
 from enum import IntFlag
 
-from ossapi.utils import EnumModel, ListEnumMeta, Datetime, Model, BaseModel
+from ossapi.utils import (EnumModel, ListEnumMeta, Datetime, Model, BaseModel,
+    Field)
 
 # ================
 # Documented Enums
@@ -295,12 +295,10 @@ class BeatmapsetDiscussionVoteSort(EnumModel):
 # Documented Models
 # =================
 
-@dataclass
 class Failtimes(Model):
     exit: Optional[List[int]]
     fail: Optional[List[int]]
 
-@dataclass
 class Ranking(Model):
     # https://github.com/ppy/osu-web/blob/master/app/Transformers/CountryTransformer.php#L30
     active_users: int
@@ -308,7 +306,6 @@ class Ranking(Model):
     ranked_score: int
     performance: int
 
-@dataclass
 class Country(Model):
     # https://github.com/ppy/osu-web/blob/master/app/Transformers/CountryTransformer.php#L10
     code: str
@@ -319,7 +316,6 @@ class Country(Model):
     display: Optional[int]
     ranking: Optional[Ranking]
 
-@dataclass
 class Cover(Model):
     # https://github.com/ppy/osu-web/blob/master/app/Transformers/UserCompactTransformer.php#L158
     custom_url: Optional[str]
@@ -328,13 +324,11 @@ class Cover(Model):
     id: Optional[str]
 
 
-@dataclass
 class ProfileBanner(Model):
     id: int
     tournament_id: int
     image: str
 
-@dataclass
 class UserAccountHistory(Model):
     description: Optional[str]
     type: UserAccountHistoryType
@@ -342,19 +336,16 @@ class UserAccountHistory(Model):
     length: int
 
 
-@dataclass
 class UserBadge(Model):
     awarded_at: Datetime
     description: str
     image_url: str
     url: str
 
-@dataclass
 class GroupDescription(Model):
     html: str
     markdown: str
 
-@dataclass
 class UserGroup(Model):
     # https://github.com/ppy/osu-web/blob/master/app/Transformers/UserGroupTransformer.php#L10
     id: int
@@ -368,21 +359,19 @@ class UserGroup(Model):
     has_listing: bool
     has_playmodes: bool
 
-@dataclass
 class Covers(Model):
     """
     https://osu.ppy.sh/docs/index.html#beatmapsetcompact-covers
     """
     cover: str
-    cover_2x: str
+    cover_2x: str = Field(name="cover@2x")
     card: str
-    card_2x: str
+    card_2x: str = Field(name="card@2x")
     list: str
-    list_2x: str
+    list_2x: str = Field(name="list@2x")
     slimcover: str
-    slimcover_2x: str
+    slimcover_2x: str = Field(name="slimcover@2x")
 
-@dataclass
 class Statistics(Model):
     count_50: int
     count_100: int
@@ -391,32 +380,26 @@ class Statistics(Model):
     count_katu: int
     count_miss: int
 
-@dataclass
 class Availability(Model):
     download_disabled: bool
     more_information: Optional[str]
 
-@dataclass
 class Hype(Model):
     current: int
     required: int
 
-@dataclass
 class Nominations(Model):
     current: int
     required: int
 
-@dataclass
 class Kudosu(Model):
     total: int
     available: int
 
-@dataclass
 class KudosuGiver(Model):
     url: str
     username: str
 
-@dataclass
 class KudosuPost(Model):
     url: Optional[str]
     # will be "[deleted beatmap]" for deleted beatmaps. TODO codify this
@@ -424,28 +407,26 @@ class KudosuPost(Model):
     # https://osu.ppy.sh/docs/index.html#kudosuhistory
     title: str
 
-@dataclass
 class KudosuVote(Model):
     user_id: int
     score: int
 
-@dataclass
+    def user(self):
+        return self._fk_user(self.user_id)
+
 class EventUser(Model):
     username: str
     url: str
     previousUsername: Optional[str]
 
-@dataclass
 class EventBeatmap(Model):
     title: str
     url: str
 
-@dataclass
 class EventBeatmapset(Model):
     title: str
     url: str
 
-@dataclass
 class EventAchivement(Model):
     icon_url: str
     id: int
@@ -459,7 +440,6 @@ class EventAchivement(Model):
     mode: GameMode
     instructions: Optional[Any]
 
-@dataclass
 class GithubUser(Model):
     display_name: str
     github_url: Optional[str]
@@ -468,27 +448,26 @@ class GithubUser(Model):
     user_id: Optional[int]
     user_url: Optional[str]
 
-@dataclass
+    def user(self):
+        return self._fk_user(self.user_id)
+
 class ChangelogSearch(Model):
-    from_: Optional[str]
+    from_: Optional[str] = Field(name="from")
     limit: int
     max_id: Optional[int]
     stream: Optional[str]
     to: Optional[str]
 
-@dataclass
 class NewsSearch(Model):
     limit: int
     sort: str
     # undocumented
     year: Optional[int]
 
-@dataclass
 class ForumPostBody(Model):
     html: str
     raw: str
 
-@dataclass
 class ReviewsConfig(Model):
     max_blocks: int
 
@@ -497,28 +476,24 @@ class ReviewsConfig(Model):
 # Undocumented Models
 # ===================
 
-@dataclass
 class UserMonthlyPlaycount(Model):
     # undocumented
     # https://github.com/ppy/osu-web/blob/master/app/Transformers/UserMonthlyPlaycountTransformer.php
     start_date: Datetime
     count: int
 
-@dataclass
 class UserPage(Model):
     # undocumented (and not a class on osu-web)
     # https://github.com/ppy/osu-web/blob/master/app/Transformers/UserCompactTransformer.php#L270
     html: str
     raw: str
 
-@dataclass
 class UserLevel(Model):
     # undocumented (and not a class on osu-web)
     # https://github.com/ppy/osu-web/blob/master/app/Transformers/UserStatisticsTransformer.php#L27
     current: int
     progress: int
 
-@dataclass
 class UserGradeCounts(Model):
     # undocumented (and not a class on osu-web)
     # https://github.com/ppy/osu-web/blob/master/app/Transformers/UserStatisticsTransformer.php#L43
@@ -528,21 +503,18 @@ class UserGradeCounts(Model):
     sh: int
     a: int
 
-@dataclass
 class UserReplaysWatchedCount(Model):
     # undocumented
     # https://github.com/ppy/osu-web/blob/master/app/Transformers/UserReplaysWatchedCountTransformer.php
     start_date: Datetime
     count: int
 
-@dataclass
 class UserAchievement(Model):
     # undocumented
     # https://github.com/ppy/osu-web/blob/master/app/Transformers/UserAchievementTransformer.php#L10
     achieved_at: Datetime
     achievement_id: int
 
-@dataclass
 class UserProfileCustomization(Model):
     # undocumented
     # https://github.com/ppy/osu-web/blob/master/app/Transformers/UserCompactTransformer.php#L363
@@ -560,14 +532,12 @@ class UserProfileCustomization(Model):
     user_list_sort: Optional[UserListSorts]
     user_list_view: Optional[UserListViews]
 
-@dataclass
 class RankHistory(Model):
     # undocumented
     # https://github.com/ppy/osu-web/blob/master/app/Transformers/RankHistoryTransformer.php
     mode: GameMode
     data: List[int]
 
-@dataclass
 class Weight(Model):
     percentage: float
     pp: float

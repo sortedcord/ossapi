@@ -1,8 +1,7 @@
 # opt-in to forward type annotations
 # https://docs.python.org/3.7/whatsnew/3.7.html#pep-563-postponed-evaluation-of-annotations
 from __future__ import annotations
-from dataclasses import dataclass
-from typing import Optional, TypeVar, Generic, Any, List
+from typing import Optional, TypeVar, Generic, Any, List, Union
 
 from ossapi.mod import Mod
 from ossapi.enums import (UserAccountHistory, ProfileBanner, UserBadge, Country,
@@ -15,7 +14,7 @@ from ossapi.enums import (UserAccountHistory, ProfileBanner, UserBadge, Country,
     BeatmapsetEventType, UserRelationType, UserLevel, UserGradeCounts,
     GithubUser, ChangelogSearch, ForumTopicType, ForumPostBody, ForumTopicSort,
     ChannelType, ReviewsConfig, NewsSearch)
-from ossapi.utils import Datetime, Model, Expandable, BaseModel
+from ossapi.utils import Datetime, Model, BaseModel, Field
 
 T = TypeVar("T")
 S = TypeVar("S")
@@ -34,8 +33,7 @@ is, not that the api actually lets any type be returned there.
 # Documented Models
 # =================
 
-@dataclass
-class UserCompact(Model, Expandable):
+class UserCompact(Model):
     """
     https://osu.ppy.sh/docs/index.html#usercompact
     """
@@ -107,10 +105,9 @@ class UserCompact(Model, Expandable):
     # deprecated, replaced by rank_history
     rankHistory: Optional[RankHistory]
 
-    def expand(self):
-        return self._api.user(self)
+    def expand(self) -> User:
+        return self._fk_user(self.id)
 
-@dataclass
 class User(UserCompact):
     comments_count: int
     cover_url: str
@@ -132,13 +129,12 @@ class User(UserCompact):
     twitter: Optional[str]
     website: Optional[str]
 
-    def expand(self):
+    def expand(self) -> User:
         # we're already expanded, no need to waste an api call
         return self
 
 
-@dataclass
-class BeatmapCompact(Model, Expandable):
+class BeatmapCompact(Model):
     # required fields
     # ---------------
     difficulty_rating: float
@@ -151,16 +147,22 @@ class BeatmapCompact(Model, Expandable):
 
     # optional fields
     # ---------------
-    beatmapset: Optional[BeatmapsetCompact]
+    _beatmapset: Optional[BeatmapsetCompact] = Field(name="beatmapset")
     beatmapset_id: Optional[int]
     checksum: Optional[str]
     failtimes: Optional[Failtimes]
     max_combo: Optional[int]
 
-    def expand(self):
-        return self._api.beatmap(self)
+    def expand(self) -> Beatmap:
+        return self._fk_beatmap(self.id)
 
-@dataclass
+    def user(self) -> User:
+        return self._fk_user(self.user_id)
+
+    def beatmapset(self) -> Union[Beatmapset, BeatmapsetCompact]:
+        return self._fk_beatmapset(self.beatmapset_id,
+            existing=self._beatmapset)
+
 class Beatmap(BeatmapCompact):
     total_length: int
     version: str
@@ -188,13 +190,11 @@ class Beatmap(BeatmapCompact):
 
     # overridden fields
     # -----------------
-    beatmapset: Optional[Beatmapset]
+    _beatmapset: Optional[Beatmapset] = Field(name="beatmapset")
 
-    def expand(self):
+    def expand(self) -> Beatmapset:
         return self
 
-# TODO make this expandable when we implement beatmapset lookup
-@dataclass
 class BeatmapsetCompact(Model):
     """
     https://osu.ppy.sh/docs/index.html#beatmapsetcompact
@@ -236,11 +236,13 @@ class BeatmapsetCompact(Model):
     ratings: Optional[Any]
     recent_favourites: Optional[Any]
     related_users: Optional[Any]
-    user: Optional[UserCompact]
+    _user: Optional[UserCompact] = Field(name="user")
     # undocumented
     track_id: Optional[int]
 
-@dataclass
+    def user(self) -> Union[UserCompact, User]:
+        return self._fk_user(self.user_id, existing=self._user)
+
 class Beatmapset(BeatmapsetCompact):
     availability: Availability
     bpm: float
@@ -258,11 +260,9 @@ class Beatmapset(BeatmapsetCompact):
     tags: str
 
 
-@dataclass
 class Match(Model):
     pass
 
-@dataclass
 class Score(Model):
     """
     https://osu.ppy.sh/docs/index.html#score
@@ -292,21 +292,21 @@ class Score(Model):
     rank_country: Optional[int]
     rank_global: Optional[int]
     weight: Optional[Weight]
-    user: Optional[UserCompact]
+    _user: Optional[UserCompact] = Field(name="user")
     match: Optional[Match]
 
-@dataclass
+    def user(self) -> Union[UserCompact, User]:
+        return self._fk_user(self.user_id, existing=self._user)
+
 class BeatmapUserScore(Model):
     position: int
     score: Score
 
-@dataclass
 class BeatmapScores(Model):
     scores: List[Score]
     userScore: Optional[BeatmapUserScore]
 
 
-@dataclass
 class CommentableMeta(Model):
     # this class is currently not following the documentation in order to work
     # around https://github.com/ppy/osu-web/issues/7317. Will be updated when
@@ -319,7 +319,6 @@ class CommentableMeta(Model):
     owner_id: Optional[int]
     owner_title: Optional[str]
 
-@dataclass
 class Comment(Model):
     commentable_id: int
     commentable_type: str
@@ -338,6 +337,12 @@ class Comment(Model):
     user_id: int
     votes_count: int
 
+    def user(self) -> User:
+        return self._fk_user(self.user_id)
+
+    def edited_by(self) -> Optional[User]:
+        return self._fk_user(self.edited_by_id)
+
 # Cursors are an interesting case. As I understand it, they don't have a
 # predefined set of attributes across all endpoints, but instead differ per
 # endpoint. I don't want to have dozens of different cursor classes (although
@@ -352,6 +357,7 @@ class Comment(Model):
 
 class Cursor(BaseModel):
     def __init__(self, _data=None, **kwargs):
+        super().__init__()
         # allow Cursor to be instantiated with another cursor as a no-op
         if isinstance(_data, Cursor):
             _data = _data.__dict__
@@ -366,7 +372,6 @@ class Cursor(BaseModel):
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
 
-@dataclass
 class CommentBundle(Model):
     commentable_meta: List[CommentableMeta]
     comments: List[Comment]
@@ -383,7 +388,6 @@ class CommentBundle(Model):
     # undocumented
     cursor: CursorT
 
-@dataclass
 class ForumPost(Model):
     created_at: Datetime
     # documented as non optional
@@ -398,7 +402,12 @@ class ForumPost(Model):
     user_id: int
     body: ForumPostBody
 
-@dataclass
+    def user(self) -> User:
+        return self._fk_user(self.user_id)
+
+    def edited_by(self) -> Optional[User]:
+        return self._fk_user(self.edited_by_id)
+
 class ForumTopic(Model):
     created_at: Datetime
     # documented as non optional
@@ -414,26 +423,25 @@ class ForumTopic(Model):
     updated_at: Datetime
     user_id: int
 
-@dataclass
+    def user(self) -> User:
+        return self._fk_user(self.user_id)
+
 class ForumTopicAndPosts(Model):
     cursor: CursorT
     search: ForumTopicSearch
     posts: List[ForumPost]
     topic: ForumTopic
 
-@dataclass
 class ForumTopicSearch(Model):
     sort: Optional[ForumTopicSort]
     limit: Optional[int]
     start: Optional[int]
     end: Optional[int]
 
-@dataclass
 class SearchResult(Generic[T], Model):
     data: List[T]
     total: int
 
-@dataclass
 class WikiPage(Model):
     layout: str
     locale: str
@@ -444,12 +452,10 @@ class WikiPage(Model):
     title: str
     available_locales: List[str]
 
-@dataclass
 class Search(Model):
     user: Optional[SearchResult[UserCompact]]
     wiki_page: Optional[SearchResult[WikiPage]]
 
-@dataclass
 class Spotlight(Model):
     end_date: Datetime
     id: int
@@ -459,11 +465,9 @@ class Spotlight(Model):
     start_date: Datetime
     type: str
 
-@dataclass
 class Spotlights(Model):
     spotlights: List[Spotlight]
 
-@dataclass
 class Rankings(Model):
     beatmapsets: Optional[List[Beatmapset]]
     cursor: CursorT
@@ -471,7 +475,6 @@ class Rankings(Model):
     spotlight: Optional[Spotlight]
     total: int
 
-@dataclass
 class BeatmapsetDiscussionPost(Model):
     id: int
     beatmapset_discussion_id: int
@@ -486,7 +489,15 @@ class BeatmapsetDiscussionPost(Model):
     updated_at: Datetime
     deleted_at: Optional[Datetime]
 
-@dataclass
+    def user(self) -> user:
+        return self._fk_user(self.user_id)
+
+    def last_editor(self) -> Optional[User]:
+        return self._fk_user(self.last_editor_id)
+
+    def deleted_by(self) -> Optional[User]:
+        return self._fk_user(self.deleted_by_id)
+
 class BeatmapsetDiscussion(Model):
     id: int
     beatmapset_id: int
@@ -503,7 +514,7 @@ class BeatmapsetDiscussion(Model):
     can_be_resolved: bool
     can_grant_kudosu: bool
     created_at: Datetime
-    # documented as non-optional, but just try api.beatmapsets_events() to see
+    # documented as non-optional, but just try api.beatmapset_events() to see
     # it can't be non-optional
     current_user_attributes: Optional[Any]
     updated_at: Datetime
@@ -515,10 +526,22 @@ class BeatmapsetDiscussion(Model):
     starting_post: Optional[BeatmapsetDiscussionPost]
     # documented as non-optional
     posts: Optional[List[BeatmapsetDiscussionPost]]
-    beatmap: Optional[BeatmapCompact]
-    beatmapset: Optional[BeatmapsetCompact]
+    _beatmap: Optional[BeatmapCompact] = Field(name="beatmap")
+    _beatmapset: Optional[BeatmapsetCompact] = Field(name="beatmapset")
 
-@dataclass
+    def user(self) -> User:
+        return self._fk_user(self.user_id)
+
+    def deleted_by(self) -> Optional[User]:
+        return self._fk_user(self.deleted_by_id)
+
+    def beatmapset(self) -> Union[Beatmapset, BeatmapsetCompact]:
+        return self._fk_beatmapset(self.beatmapset_id,
+            existing=self._beatmapset)
+
+    def beatmap(self) -> Union[Optional[Beatmap], BeatmapCompact]:
+        return self._fk_beatmap(self.beatmap_id, existing=self._beatmap)
+
 class BeatmapsetDiscussionVote(Model):
     score: int
     user_id: int
@@ -531,7 +554,9 @@ class BeatmapsetDiscussionVote(Model):
     # documented as non optional
     updated_at: Optional[Datetime]
 
-@dataclass
+    def user(self):
+        return self._fk_user(self.user_id)
+
 class KudosuHistory(Model):
     id: int
     action: KudosuAction
@@ -545,12 +570,14 @@ class KudosuHistory(Model):
     # see https://github.com/ppy/osu-web/issues/7549
     details: Any
 
-@dataclass
 class BeatmapPlaycount(Model):
     beatmap_id: int
-    beatmap: Optional[BeatmapCompact]
+    _beatmap: Optional[BeatmapCompact] = Field(name="beatmap")
     beatmapset: Optional[BeatmapsetCompact]
     count: int
+
+    def beatmap(self) -> Union[Beatmap, BeatmapCompact]:
+        return self._fk_beatmap(self.beatmap_id, existing=self._beatmap)
 
 
 # we use this class to determine which event dataclass to instantiate and
@@ -576,49 +603,40 @@ class _Event(Model):
         type_ = EventType(data["type"])
         return mapping[type_]
 
-@dataclass
 class Event(Model):
     created_at: Datetime
     createdAt: Datetime
     id: int
     type: EventType
 
-@dataclass
 class AchievementEvent(Event):
     achievement: EventAchivement
     user: EventUser
 
-@dataclass
 class BeatmapPlaycountEvent(Event):
     beatmap: EventBeatmap
     count: int
 
-@dataclass
 class BeatmapsetApproveEvent(Event):
     approval: BeatmapsetApproval
     beatmapset: EventBeatmapset
     user: EventUser
 
-@dataclass
 class BeatmapsetDeleteEvent(Event):
     beatmapset: EventBeatmapset
 
-@dataclass
 class BeatmapsetReviveEvent(Event):
     beatmapset: EventBeatmapset
     user: EventUser
 
-@dataclass
 class BeatmapsetUpdateEvent(Event):
     beatmapset: EventBeatmapset
     user: EventUser
 
-@dataclass
 class BeatmapsetUploadEvent(Event):
     beatmapset: EventBeatmapset
     user: EventUser
 
-@dataclass
 class RankEvent(Event):
     scoreRank: str
     rank: int
@@ -626,29 +644,23 @@ class RankEvent(Event):
     beatmap: EventBeatmap
     user: EventUser
 
-@dataclass
 class RankLostEvent(Event):
     mode: GameMode
     beatmap: EventBeatmap
     user: EventUser
 
-@dataclass
 class UserSupportFirstEvent(Event):
     user: EventUser
 
-@dataclass
 class UserSupportAgainEvent(Event):
     user: EventUser
 
-@dataclass
 class UserSupportGiftEvent(Event):
     beatmap: EventBeatmap
 
-@dataclass
 class UsernameChangeEvent(Event):
     user: EventUser
 
-@dataclass
 class Build(Model):
     created_at: Datetime
     display_version: str
@@ -659,12 +671,10 @@ class Build(Model):
     changelog_entries: Optional[List[ChangelogEntry]]
     versions: Optional[Versions]
 
-@dataclass
 class Versions(Model):
     next: Optional[Build]
     previous: Optional[Build]
 
-@dataclass
 class UpdateStream(Model):
     display_name: Optional[str]
     id: int
@@ -673,7 +683,6 @@ class UpdateStream(Model):
     latest_build: Optional[Build]
     user_count: Optional[int]
 
-@dataclass
 class ChangelogEntry(Model):
     category: str
     created_at: Optional[Datetime]
@@ -689,13 +698,11 @@ class ChangelogEntry(Model):
     url: Optional[str]
     github_user: GithubUser
 
-@dataclass
 class ChangelogListing(Model):
     builds: List[Build]
     search: ChangelogSearch
     streams: List[UpdateStream]
 
-@dataclass
 class MultiplayerScores(Model):
     cursor: MultiplayerScoresCursor
     params: str
@@ -703,7 +710,6 @@ class MultiplayerScores(Model):
     total: Optional[int]
     user_score: Optional[MultiplayerScore]
 
-@dataclass
 class MultiplayerScore(Model):
     id: int
     user_id: int
@@ -720,24 +726,23 @@ class MultiplayerScore(Model):
     scores_around: Optional[MultiplayerScoresAround]
     user: User
 
-@dataclass
+    def beatmap(self):
+        return self._fk_beatmap(self.beatmap_id)
+
 class MultiplayerScoresAround(Model):
     higher: List[MultiplayerScore]
     lower: List[MultiplayerScore]
 
-@dataclass
 class MultiplayerScoresCursor(Model):
     score_id: int
     total_score: int
 
-@dataclass
 class NewsListing(Model):
     cursor: CursorT
     news_posts: List[NewsPost]
     news_sidebar: NewsSidebar
     search: NewsSearch
 
-@dataclass
 class NewsPost(Model):
     author: str
     edit_url: str
@@ -751,23 +756,19 @@ class NewsPost(Model):
     navigation: Optional[NewsNavigation]
     preview: Optional[str]
 
-@dataclass
 class NewsNavigation(Model):
     newer: Optional[NewsPost]
     older: Optional[NewsPost]
 
-@dataclass
 class NewsSidebar(Model):
     current_year: int
     news_posts: List[NewsPost]
     years: list[int]
 
-@dataclass
 class SeasonalBackgrounds(Model):
     ends_at: Datetime
     backgrounds: List[SeasonalBackground]
 
-@dataclass
 class SeasonalBackground(Model):
     url: str
     user: UserCompact
@@ -777,7 +778,6 @@ class SeasonalBackground(Model):
 # Undocumented Models
 # ===================
 
-@dataclass
 class BeatmapsetSearchResult(Model):
     beatmapsets: List[Beatmapset]
     cursor: CursorT
@@ -786,7 +786,6 @@ class BeatmapsetSearchResult(Model):
     total: int
     search: Any
 
-@dataclass
 class BeatmapsetDiscussions(Model):
     beatmaps: List[Beatmap]
     cursor: CursorT
@@ -795,12 +794,10 @@ class BeatmapsetDiscussions(Model):
     reviews_config: ReviewsConfig
     users: List[UserCompact]
 
-@dataclass
 class BeatmapsetDiscussionReview(Model):
     # https://github.com/ppy/osu-web/blob/master/app/Libraries/BeatmapsetDiscussionReview.php
     max_blocks: int
 
-@dataclass
 class BeatmapsetDiscussionPosts(Model):
     beatmapsets: List[BeatmapsetCompact]
     discussions: List[BeatmapsetDiscussion]
@@ -808,71 +805,58 @@ class BeatmapsetDiscussionPosts(Model):
     posts: List[BeatmapsetDiscussionPost]
     users: List[UserCompact]
 
-@dataclass
 class BeatmapsetDiscussionVotes(Model):
     cursor: CursorT
     discussions: List[BeatmapsetDiscussion]
     votes: List[BeatmapsetDiscussionVote]
     users: List[UserCompact]
 
-@dataclass
 class BeatmapsetEventComment(Model):
     beatmap_discussion_id: int
     beatmap_discussion_post_id: int
 
-@dataclass
 class BeatmapsetEventCommentNoPost(Model):
     beatmap_discussion_id: int
     beatmap_discussion_post_id: None
 
-@dataclass
 class BeatmapsetEventCommentNone(Model):
     beatmap_discussion_id: None
     beatmap_discussion_post_id: None
 
 
-@dataclass
 class BeatmapsetEventCommentChange(Generic[S], BeatmapsetEventCommentNone):
     old: S
     new: S
 
-@dataclass
 class BeatmapsetEventCommentLovedRemoval(BeatmapsetEventCommentNone):
     reason: str
 
-@dataclass
 class BeatmapsetEventCommentKudosuChange(BeatmapsetEventCommentNoPost):
     new_vote: KudosuVote
     votes: List[KudosuVote]
 
-@dataclass
 class BeatmapsetEventCommentKudosuRecalculate(BeatmapsetEventCommentNoPost):
     new_vote: Optional[KudosuVote]
 
-@dataclass
 class BeatmapsetEventCommentOwnerChange(BeatmapsetEventCommentNone):
     beatmap_id: int
     beatmap_version: str
     new_user_id: int
     new_user_username: str
 
-@dataclass
 class BeatmapsetEventCommentNominate(Model):
     # for some reason this comment type doesn't have the normal
     # beatmap_discussion_id and beatmap_discussion_post_id attributes (they're
     # not even null, just missing).
     modes: List[GameMode]
 
-@dataclass
 class BeatmapsetEventCommentWithNominators(BeatmapsetEventCommentNoPost):
     nominator_ids: Optional[List[int]]
 
-@dataclass
 class BeatmapsetEventCommentWithSourceUser(BeatmapsetEventCommentNoPost):
     source_user_id: int
     source_user_username: str
 
-@dataclass
 class BeatmapsetEvent(Model):
     # https://github.com/ppy/osu-web/blob/master/app/Models/BeatmapsetEvent.php
     # https://github.com/ppy/osu-web/blob/master/app/Transformers/BeatmapsetEventTransformer.php
@@ -889,7 +873,7 @@ class BeatmapsetEvent(Model):
         mapping = {
             BeatmapsetEventType.BEATMAP_OWNER_CHANGE: BeatmapsetEventCommentOwnerChange,
             BeatmapsetEventType.DISCUSSION_DELETE: BeatmapsetEventCommentNoPost,
-            # ``api.beatmapsets_events(types=[BeatmapsetEventType.DISCUSSION_LOCK])``
+            # ``api.beatmapset_events(types=[BeatmapsetEventType.DISCUSSION_LOCK])``
             # doesn't seem to be recognized, just returns all events. Was this
             # type discontinued?
             # BeatmapsetEventType.DISCUSSION_LOCK: BeatmapsetEventComment,
@@ -924,7 +908,9 @@ class BeatmapsetEvent(Model):
         type_ = BeatmapsetEventType(self.type)
         return {"comment": mapping[type_]}
 
-@dataclass
+    def user(self) -> Optional[User]:
+        return self._fk_user(self.user_id)
+
 class ChatChannel(Model):
     channel_id: int
     description: Optional[str]
@@ -942,7 +928,6 @@ class ChatChannel(Model):
     recent_messages: Optional[List[ChatMessage]]
     users: Optional[List[int]]
 
-@dataclass
 class ChatMessage(Model):
     channel_id: int
     content: str
@@ -952,7 +937,9 @@ class ChatMessage(Model):
     sender_id: int
     timestamp: Datetime
 
-@dataclass
+    def sender(self) -> User:
+        return self._fk_user(self.sender_id)
+
 class CreatePMResponse(Model):
     message: ChatMessage
     new_channel_id: int
@@ -963,14 +950,12 @@ class CreatePMResponse(Model):
     # documented but not present in response
     presence: Optional[List[ChatChannel]]
 
-@dataclass
 class ModdingHistoryEventsBundle(Model):
     # https://github.com/ppy/osu-web/blob/master/app/Libraries/ModdingHistoryEventsBundle.php#L84
     events: List[BeatmapsetEvent]
     reviewsConfig: BeatmapsetDiscussionReview
     users: List[UserCompact]
 
-@dataclass
 class UserRelation(Model):
     # undocumented (and not a class on osu-web)
     # https://github.com/ppy/osu-web/blob/master/app/Transformers/UserRelationTransformer.php#L16
@@ -982,8 +967,10 @@ class UserRelation(Model):
     # ---------------
     target: Optional[UserCompact]
 
+    def target(self) -> Union[User, UserCompact]:
+        return self._fk_user(self.target_id, existing=self.target)
 
-@dataclass
+
 class UserStatistics(Model):
     level: UserLevel
     pp: float
@@ -1007,7 +994,6 @@ class UserStatistics(Model):
     user: Optional[UserCompact]
     variants: Optional[Any]
 
-@dataclass
 class UserStatisticsRulesets(Model):
     # undocumented
     # https://github.com/ppy/osu-web/blob/master/app/Transformers/UserStatisticsRulesetsTransformer.php

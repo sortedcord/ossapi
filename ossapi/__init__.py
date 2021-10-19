@@ -19,7 +19,6 @@ from ossapi.enums import (GameMode, ScoreType, RankingFilter, RankingType,
     BeatmapsetEventType, CommentableType, CommentSort, ForumTopicSort,
     SearchMode, MultiplayerScoresSort, BeatmapsetDiscussionVote,
     BeatmapsetDiscussionVoteSort, BeatmapsetStatus, MessageType)
-from ossapi.utils import Expandable
 from ossapi.mod import Mod
 from ossapi.replay import Replay
 from ossapi.version import __version__
@@ -53,6 +52,6 @@ __all__ = [
     # OssapiV2 exceptions
     "AccessDeniedError", "TokenExpiredError", "InsufficientScopeError",
     # misc
-    "Mod", "Replay", "__version__", "Expandable", "ModelEncoder",
+    "Mod", "Replay", "__version__", "ModelEncoder",
     "serialize_model"
 ]
