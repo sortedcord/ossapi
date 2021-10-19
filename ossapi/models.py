@@ -240,6 +240,9 @@ class BeatmapsetCompact(Model):
     # undocumented
     track_id: Optional[int]
 
+    def expand(self) -> Beatmapset:
+        return self._fk_beatmapset(self.id)
+
     def user(self) -> Union[UserCompact, User]:
         return self._fk_user(self.user_id, existing=self._user)
 
@@ -258,6 +261,9 @@ class Beatmapset(BeatmapsetCompact):
     storyboard: bool
     submitted_date: Optional[Datetime]
     tags: str
+
+    def expand(self) -> Beatmapset:
+        return self
 
 
 class Match(Model):
