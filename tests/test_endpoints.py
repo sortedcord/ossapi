@@ -33,6 +33,10 @@ class TestBeatmap(TestCase):
     def test_deserialize(self):
         api.beatmap(beatmap_id=221777)
 
+class TestBeatmapsetLookup(TestCase):
+    def test_deserialize(self):
+        api.beatmapsets_lookup(3207950)
+
 class TestBeatmapsetEvents(TestCase):
     def test_deserialize(self):
         api.beatmapsets_events()
