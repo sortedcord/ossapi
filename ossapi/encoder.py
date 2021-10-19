@@ -27,5 +27,5 @@ class ModelEncoder(JSONEncoder):
         return super().default(o)
 
 
-def serialize_model(model):
-    return json.dumps(model, cls=ModelEncoder)
+def serialize_model(model, ensure_ascii=False, **kwargs):
+    return json.dumps(model, cls=ModelEncoder,  ensure_ascii=False, **kwargs)
