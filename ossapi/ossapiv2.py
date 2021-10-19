@@ -9,7 +9,6 @@ from enum import Enum
 from urllib.parse import unquote
 import inspect
 import json
-from keyword import iskeyword
 import hashlib
 import functools
 
