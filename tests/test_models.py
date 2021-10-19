@@ -15,5 +15,24 @@ class TestExpandableModels(TestCase):
         # ``statistics`` is only available on User models, so make sure it's not
         # present before expanding and is present afterwards
         self.assertIsNone(user.statistics)
+
         user = user.expand()
         self.assertIsNotNone(user.statistics)
+
+        # make sure expanding the user again returns the identical user
+        user_new = user.expand()
+        self.assertIs(user_new, user)
+
+    def test_expand_beatmapset(self):
+        beatmapset = api.beatmapset_discussion_posts().beatmapsets[0]
+        self.assertIsNone(beatmapset.description)
+
+        beatmapset = beatmapset.expand()
+        self.assertIsNotNone(beatmapset.description)
+
+        beatmapset_new = beatmapset.expand()
+        self.assertIs(beatmapset_new, beatmapset)
+
+    # TODO add test_expand_beatmap when I find a good endpoint that returns
+    # BeatmapCompacts and not full Beatmaps.
+
