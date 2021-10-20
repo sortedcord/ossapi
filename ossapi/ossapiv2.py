@@ -1198,8 +1198,8 @@ class OssapiV2:
 
     @request(Scope.PUBLIC)
     def beatmapset(self,
-        beatmap_id: Optional[BeatmapIdT] = None,
-        beatmapset_id: Optional[BeatmapsetIdT] = None
+        beatmapset_id: Optional[BeatmapsetIdT] = None,
+        beatmap_id: Optional[BeatmapIdT] = None
     ) -> Beatmapset:
         """
         Combines https://osu.ppy.sh/docs/index.html#beatmapsetslookup and
