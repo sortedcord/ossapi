@@ -459,8 +459,8 @@ class WikiPage(Model):
     available_locales: List[str]
 
 class Search(Model):
-    user: Optional[SearchResult[UserCompact]]
-    wiki_page: Optional[SearchResult[WikiPage]]
+    users: Optional[SearchResult[UserCompact]] = Field(name="user")
+    wiki_pages: Optional[SearchResult[WikiPage]] = Field(name="wiki_page")
 
 class Spotlight(Model):
     end_date: Datetime
