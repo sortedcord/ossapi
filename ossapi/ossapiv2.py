@@ -1197,13 +1197,6 @@ class OssapiV2:
         return self._get(BeatmapsetSearchResult, "/beatmapsets/search/", params)
 
     @request(Scope.PUBLIC)
-    def beatmapset_lookup(self,
-        beatmap_id: BeatmapIdT,
-    ) -> Beatmapset:
-        params = {"beatmap_id": beatmap_id}
-        return self._get(Beatmapset, "/beatmapsets/lookup", params)
-
-    @request(Scope.PUBLIC)
     def beatmapset(self,
         beatmap_id: Optional[BeatmapIdT] = None,
         beatmapset_id: Optional[BeatmapsetIdT] = None
