@@ -144,11 +144,11 @@ class BeatmapCompact(Model):
     total_length: int
     version: str
     user_id: int
+    beatmapset_id: int
 
     # optional fields
     # ---------------
     _beatmapset: Optional[BeatmapsetCompact] = Field(name="beatmapset")
-    beatmapset_id: Optional[int]
     checksum: Optional[str]
     failtimes: Optional[Failtimes]
     max_combo: Optional[int]
@@ -168,7 +168,6 @@ class Beatmap(BeatmapCompact):
     version: str
     accuracy: float
     ar: float
-    beatmapset_id: int
     # documented as non-optional. See api.beatmap(beatmap_id=2279323) for a
     # beatmap with a null bpm
     bpm: Optional[float]
