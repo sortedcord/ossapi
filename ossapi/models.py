@@ -947,9 +947,6 @@ class ChatMessage(Model):
     sender_id: int
     timestamp: Datetime
 
-    def sender(self) -> User:
-        return self._fk_user(self.sender_id)
-
 class CreatePMResponse(Model):
     message: ChatMessage
     new_channel_id: int
