@@ -194,6 +194,11 @@ class Beatmap(BeatmapCompact):
     def expand(self) -> Beatmap:
         return self
 
+    def beatmapset(self) -> Beatmapset:
+        return self._fk_beatmapset(self.beatmapset_id,
+            existing=self._beatmapset)
+
+
 class BeatmapsetCompact(Model):
     """
     https://osu.ppy.sh/docs/index.html#beatmapsetcompact
