@@ -1,6 +1,7 @@
 from unittest import TestCase
 
-from ossapi import User, BeatmapsetCompact, UserCompact, GameMode
+from ossapi import (User, BeatmapsetCompact, UserCompact, GameMode,
+    BeatmapCompact)
 
 from tests import api
 
@@ -107,3 +108,11 @@ class TestFollowingForeignKeys(TestCase):
 
         deleted_by = bmset_disc_post.deleted_by()
         self.assertIsNone(deleted_by)
+
+    def test_beatmap_playcount_fks(self):
+        most_played = api.user_beatmaps(user_id=12092800, type_="most_played")
+        bm_playcount = most_played[0]
+
+        beatmap = bm_playcount.beatmap()
+        self.assertIsInstance(beatmap, BeatmapCompact)
+        self.assertEqual(beatmap.id, 1626537)
