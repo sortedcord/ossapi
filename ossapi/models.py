@@ -191,7 +191,7 @@ class Beatmap(BeatmapCompact):
     # -----------------
     _beatmapset: Optional[Beatmapset] = Field(name="beatmapset")
 
-    def expand(self) -> Beatmapset:
+    def expand(self) -> Beatmap:
         return self
 
 class BeatmapsetCompact(Model):
