@@ -165,6 +165,52 @@ Similarly, `beatmap = compact_beatmap.expand()` is equivalent to `beatmap = api.
 
 (Note that beatmapsets will also be expandable in the future; I am waiting for the beatmapset lookup endpoint to become documented before implementing this.)
 
+#### Following Foreign Keys
+
+Many models contain an id which references another model - for instance, `Beatmap.beatmapset_id`. These are called "foreign keys" in the database world. Just the id isn't very useful to us, though. We would like to be able to ask what the title, author, genre, nominations etc of the beatmapset is. What we need is the ability to "follow" this foreign key to retrieve a full `Beatmapset` instance. Ossapi provides a convenience method to do just that:
+
+```python
+beatmap = api.beatmap(221777)
+bmset = beatmap.beatmapset()
+```
+
+You can do the same for `user()` and `beatmap()`, in applicable models:
+
+```python
+disc = api.beatmapset_discussion_posts(2641058).posts[0]
+user = disc.user()
+
+bm_playcount = api.user_beatmaps(user_id=12092800, type_="most_played")[0]
+beatmap = bm_playcount.beatmap()
+```
+
+Note that the id field and corresponding method isn't always called `beatmap`, `beatmapset`, or `user`. For instance, a beatmapset discussion post has two foreign key fields `last_editor_id` and `deleted_by_id`. So we expose two methods `last_editor` and `deleted_by` to follow these foreign keys:
+
+```python
+disc = api.beatmapset_discussion_posts(2641058).posts[0]
+last_editor = disc.last_editor()
+deleted_by = disc.deleted_by()
+print(last_editor.username, deleted_by)
+```
+
+The attentive reader may notice that the api docs say that a `Beatmapset` attribute is optionally returned inside a `Beatmap` object. Why do we need a method to access this then, instead of accessing directly? Well, the key factor here is that this beatmapset could be null (`None`). If it's not, and you call `beatmapset()`, we actually just return the beatmapset given by the api. However, if it is null, we make a single api request to `api.beatmapset` to retrieve the beatmapset from the beatmapset id, and return that.
+
+In short, calling such a foreign key method will cost an api call if the backing model attribute is not present, and is free otherwise. You can check for the presence of the backing model by accessing the attribute with the same name as the method, but prefixed with a underscore:
+
+```python
+beatmap = api.beatmap(2217777)
+print(beatmap._beatmapset)
+# not None, so beatmap.beatmapset() would just return this attribute
+```
+
+Note that in some cases, the backing model is a `*Compact` version instead of the full version of the model. In this case, if you require the full version, I recommend calling `.expand()` after the foreign key method:
+
+```python
+beatmap = api.beatmap(2217777)
+# guaranteed to be a Beatmapset, not a BeatmapsetCompact
+bmset = beatmap.beatmapset().expand()
+```
+
 #### Serializing Models
 
 If you need to access the original json returned by the api, you can serialize the models back into a json string with `serialize_model`:
