@@ -28,4 +28,5 @@ class ModelEncoder(JSONEncoder):
 
 
 def serialize_model(model, ensure_ascii=False, **kwargs):
-    return json.dumps(model, cls=ModelEncoder,  ensure_ascii=ensure_ascii, **kwargs)
+    return json.dumps(model, cls=ModelEncoder,  ensure_ascii=ensure_ascii,
+        **kwargs)
