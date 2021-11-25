@@ -50,7 +50,6 @@ class UserCompact(Model):
     is_supporter: bool
     last_visit: Optional[Datetime]
     pm_friends_only: bool
-    # documented as non-optional
     profile_colour: Optional[str]
     username: str
 
@@ -168,8 +167,6 @@ class Beatmap(BeatmapCompact):
     version: str
     accuracy: float
     ar: float
-    # documented as non-optional. See api.beatmap(beatmap_id=2279323) for a
-    # beatmap with a null bpm
     bpm: Optional[float]
     convert: bool
     count_circles: int
@@ -218,7 +215,6 @@ class BeatmapsetCompact(Model):
     title: str
     title_unicode: str
     user_id: int
-    # documented as being a str, docs should say this is a bool
     video: bool
     nsfw: bool
     # documented as being in ``Beatmapset`` only, but returned by
@@ -278,7 +274,6 @@ class Score(Model):
     https://osu.ppy.sh/docs/index.html#score
     """
     id: int
-    # documented as non-optional in docs
     best_id: Optional[int]
     user_id: int
     accuracy: float
@@ -287,8 +282,6 @@ class Score(Model):
     max_combo: int
     perfect: bool
     statistics: Statistics
-    # documented as non-optional in docs but broken beatmaps like acid rain
-    # (1981090) have scores with null pp values
     pp: Optional[float]
     rank: Grade
     created_at: Datetime
@@ -400,11 +393,8 @@ class CommentBundle(Model):
 
 class ForumPost(Model):
     created_at: Datetime
-    # documented as non optional
     deleted_at: Optional[Datetime]
-    # documented as non optional
     edited_at: Optional[Datetime]
-    # documented as non optional
     edited_by_id: Optional[int]
     forum_id: int
     id: int
@@ -420,7 +410,6 @@ class ForumPost(Model):
 
 class ForumTopic(Model):
     created_at: Datetime
-    # documented as non optional
     deleted_at: Optional[Datetime]
     first_post_id: int
     forum_id: int
@@ -489,9 +478,7 @@ class BeatmapsetDiscussionPost(Model):
     id: int
     beatmapset_discussion_id: int
     user_id: int
-    # documented as non-optional
     last_editor_id: Optional[int]
-    # documented as non-optional
     deleted_by_id: Optional[int]
     system: bool
     message: str
@@ -511,10 +498,8 @@ class BeatmapsetDiscussionPost(Model):
 class BeatmapsetDiscussion(Model):
     id: int
     beatmapset_id: int
-    # documented as non-optional
     beatmap_id: Optional[int]
     user_id: int
-    # documented as non-optional
     deleted_by_id: Optional[int]
     message_type: MessageType
     parent_id: Optional[int]
@@ -524,17 +509,16 @@ class BeatmapsetDiscussion(Model):
     can_be_resolved: bool
     can_grant_kudosu: bool
     created_at: Datetime
-    # documented as non-optional, but just try api.beatmapset_events() to see
-    # it can't be non-optional
-    current_user_attributes: Optional[Any]
+    # documented as non-optional, api.beatmapset_events() might give a null
+    # response for this? but very rarely. need to find a repro case
+    current_user_attributes: Any
     updated_at: Datetime
     deleted_at: Optional[Datetime]
-    # documented as non-optional
-    last_post_at: Optional[Datetime]
+    # similarly as for current_user_attributes, in the past this has been null
+    # but can't find a repro case
+    last_post_at: Datetime
     kudosu_denied: bool
-    # documented as non-optional
     starting_post: Optional[BeatmapsetDiscussionPost]
-    # documented as non-optional
     posts: Optional[List[BeatmapsetDiscussionPost]]
     _beatmap: Optional[BeatmapCompact] = Field(name="beatmap")
     _beatmapset: Optional[BeatmapsetCompact] = Field(name="beatmapset")
@@ -553,16 +537,12 @@ class BeatmapsetDiscussion(Model):
         return self._fk_beatmap(self.beatmap_id, existing=self._beatmap)
 
 class BeatmapsetDiscussionVote(Model):
+    id: int
     score: int
     user_id: int
-    # documented as non optional
-    beatmapset_discussion_id: Optional[int]
-    # documented as non optional
-    created_at: Optional[Datetime]
-    # documented as non optional
-    id: Optional[int]
-    # documented as non optional
-    updated_at: Optional[Datetime]
+    beatmapset_discussion_id: int
+    created_at: Datetime
+    updated_at: Datetime
 
     def user(self):
         return self._fk_user(self.user_id)
@@ -984,7 +964,6 @@ class UserStatistics(Model):
     ranked_score: int
     hit_accuracy: float
     play_count: int
-    # documented as non-optional (lookup user 17906393 for a null play time)
     play_time: Optional[int]
     total_score: int
     total_hits: int

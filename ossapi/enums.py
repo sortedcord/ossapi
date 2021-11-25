@@ -151,8 +151,6 @@ class UserListViews(EnumModel):
     BRICK = "brick"
 
 class KudosuAction(EnumModel):
-    # names don't match documentation in
-    # https://osu.ppy.sh/docs/index.html#kudosuhistory
     GIVE = "vote.give"
     RESET = "vote.reset"
     REVOKE = "vote.revoke"
