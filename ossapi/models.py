@@ -964,7 +964,7 @@ class UserStatistics(Model):
     ranked_score: int
     hit_accuracy: float
     play_count: int
-    play_time: Optional[int]
+    play_time: int
     total_score: int
     total_hits: int
     maximum_combo: int
