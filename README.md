@@ -66,7 +66,7 @@ print(api.ranking("osu", RankingType.PERFORMANCE, country="US").ranking[0].user.
 print(api.user_scores(12092800, "best")[0].accuracy)
 print(api.beatmap(beatmap_id=221777).last_updated)
 print(api.beatmap_user_score(beatmap_id=221777, user_id=2757689).score.mods)
-print(api.search(query="peppy").user.data[0].profile_colour)
+print(api.search(query="peppy").users.data[0].profile_colour)
 print(api.comment(comment_id=1).comments[0].message)
 print(api.download_score(mode="osu", score_id=2797309065))
 print(api.search_beatmapsets(query="the big black").beatmapsets[0].title)
@@ -153,7 +153,7 @@ Internally, we simply take `beatmap.id` (or `user.id`) and supply that to the fu
 `UserCompact` and `BeatmapCompact` classes are "expandable" into `User` and `Beatmap` respectively. Some endpoints only return eg a `UserCompact`, but you may want attributes that are present on `User`. To expand such a class, call `#expand`:
 
 ```python
-compact_user = api.search(query="tybug").user.data[0]
+compact_user = api.search(query="tybug").users.data[0]
 # `statistics` is only available on `User` not `UserCompact`,
 # so expansion is necessary
 print(compact_user.expand().statistics.ranked_score)
