@@ -435,7 +435,7 @@ class EventAchivement(Model):
     ordering: int
     slug: str
     description: str
-    mode: GameMode
+    mode: Optional[GameMode]
     instructions: Optional[Any]
 
 class GithubUser(Model):
