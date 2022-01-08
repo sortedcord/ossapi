@@ -23,24 +23,24 @@ class Replay:
     """
     def __init__(self, replay, api):
         self._api = api
-        self.game_mode = game_mode_map[replay.game_mode]
+        self.mode = game_mode_map[replay.mode]
         self.game_version = replay.game_version
         self.beatmap_hash = replay.beatmap_hash
-        self.player_name = replay.player_name
+        self.username = replay.username
         self.replay_hash = replay.replay_hash
-        self.count_300 = replay.number_300s
-        self.count_100 = replay.number_100s
-        self.count_50 = replay.number_50s
-        self.count_geki = replay.gekis
-        self.count_katu = replay.katus
-        self.count_miss = replay.misses
+        self.count_300 = replay.count_300
+        self.count_100 = replay.count_100
+        self.count_50 = replay.count_50
+        self.count_geki = replay.count_geki
+        self.count_katu = replay.count_katu
+        self.count_miss = replay.count_miss
         self.score = replay.score
         self.max_combo = replay.max_combo
-        self.is_perfect_combo = replay.is_perfect_combo
-        self.mods = Mod(replay.mod_combination.value)
+        self.perfect = replay.perfect
+        self.mods = Mod(replay.mods.value)
         self.life_bar_graph = replay.life_bar_graph
         self.timestamp = replay.timestamp
-        self.play_data = replay.play_data
+        self.replay_data = replay.replay_data
         self.replay_id = replay.replay_id
         self._beatmap = None
         self._user = None
@@ -74,6 +74,5 @@ class Replay:
         """
         if self._user:
             return self._user
-        self._user = self._api.user(self.player_name,
-            key=UserLookupKey.USERNAME)
+        self._user = self._api.user(self.username, key=UserLookupKey.USERNAME)
         return self._user

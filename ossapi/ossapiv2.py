@@ -1180,7 +1180,7 @@ class OssapiV2:
     ) -> Replay:
         r = self.session.get(f"{self.BASE_URL}/scores/{mode.value}/"
             f"{score_id}/download")
-        replay = osrparse.parse_replay(r.content)
+        replay = osrparse.Replay.from_string(r.content)
         return Replay(replay, self)
 
     @request(Scope.PUBLIC)
