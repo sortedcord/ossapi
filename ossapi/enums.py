@@ -213,7 +213,7 @@ class Grade(EnumModel):
 
 class ScoreType(EnumModel):
     BEST = "best"
-    FIRST = "first"
+    FIRSTS = "firsts"
     RECENT = "recent"
 
 class RankingFilter(EnumModel):
