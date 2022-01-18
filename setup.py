@@ -38,7 +38,7 @@ setup(
     install_requires=[
         "requests",
         "requests_oauthlib",
-        "osrparse",
+        "osrparse~=6.0",
         "typing_utils"
     ]
 )
